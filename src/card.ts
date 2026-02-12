@@ -1,0 +1,383 @@
+import { mdiClose } from '@mdi/js';
+import { fetchCalendarEvents } from './ha/data/calendar';
+import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { HomeAssistant } from './ha/types';
+import { CalendarCardPlusConfig } from './types';
+import { renderCalendar } from './calendar';
+
+
+
+interface DetailPopupState {
+    open: boolean;
+    title: string;
+    events: CalendarEvent[];
+}
+
+import { CalendarEvent } from './types';
+
+@customElement('calendar-card-plus')
+export class CalendarCardPlus extends LitElement {
+    @property({ attribute: false }) public hass!: HomeAssistant;
+    @state() private config!: CalendarCardPlusConfig;
+    @state() private _detailPopup: DetailPopupState = { open: false, title: '', events: [] };
+    @state() private _events: CalendarEvent[] | undefined = undefined;
+
+    public connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener('calendar-card-show-detail', this._handleShowDetail as EventListener);
+    }
+
+    public disconnectedCallback() {
+        super.disconnectedCallback();
+        this.removeEventListener('calendar-card-show-detail', this._handleShowDetail as EventListener);
+    }
+
+    protected willUpdate(changedProps: Map<string, any>) {
+        super.willUpdate(changedProps);
+        
+        // Fetch if we have both hass and config, and events haven't been loaded yet
+        // OR if config changed (need to refetch)
+        if (this.hass && this.config) {
+            if (this._events === undefined || changedProps.has('config')) {
+                this._fetchEvents();
+            }
+        }
+    }
+
+    public setConfig(config: CalendarCardPlusConfig): void {
+        if (!config) {
+            throw new Error('Invalid configuration');
+        }
+        this.config = config;
+    }
+
+    private async _fetchEvents() {
+        if (!this.hass || !this.config) return;
+
+        const minutes = this.config.max_minutes_until_start || 1440;
+        const now = new Date();
+        const end = new Date(now.getTime() + minutes * 60000);
+
+        // Get relevant calendar entities
+        const calendars = Object.keys(this.hass.states)
+            .filter(eid => eid.startsWith('calendar.'))
+            .filter(eid => !this.config.exclude_entities?.includes(eid));
+
+        if (calendars.length === 0) {
+            this._events = [];
+            return;
+        }
+
+        const allEvents = await fetchCalendarEvents(this.hass, now, end, calendars);
+
+        // Sort: Earliest start time first
+        allEvents.sort((a: CalendarEvent, b: CalendarEvent) => {
+            const dateA = new Date(a.start.dateTime || a.start.date!).getTime();
+            const dateB = new Date(b.start.dateTime || b.start.date!).getTime();
+            return dateA - dateB;
+        });
+
+        this._events = allEvents;
+        this.requestUpdate();
+    }
+
+    private _handleShowDetail = (e: CustomEvent) => {
+        this._detailPopup = {
+            open: true,
+            title: e.detail.title,
+            events: e.detail.entities
+        };
+        this.requestUpdate();
+    }
+
+    private _closeDetailPopup() {
+        this._detailPopup = { ...this._detailPopup, open: false };
+        this.requestUpdate();
+    }
+
+    protected render(): TemplateResult {
+        if (!this.config || !this.hass) {
+            return html``;
+        }
+
+        const content = renderCalendar(this._events, this.config);
+
+        return html`
+            <ha-card>
+                ${content}
+
+                ${this._detailPopup.open ? html`
+                    <ha-dialog
+                        open
+                        hideActions
+                        @closed=${this._closeDetailPopup}
+                        class="detail-dialog"
+                    >
+                        <div class="dialog-header">
+                            <ha-icon-button .path=${mdiClose} @click=${this._closeDetailPopup}></ha-icon-button>
+                            <h2 class="mdc-dialog__title">${this._detailPopup.title}</h2>
+                        </div>
+                        <div class="dialog-content">
+                            ${this._renderGroupedEntities(this._detailPopup.events)}
+                        </div>
+                    </ha-dialog>
+                ` : ''}
+            </ha-card>
+        `;
+    }
+
+    private _renderGroupedEntities(events: CalendarEvent[]): TemplateResult[] {
+        return events.map(event => {
+            const name = event.summary;
+            let stateText = '';
+            
+            // Parse Dates
+            let start: Date;
+            let end: Date;
+            try {
+                start = new Date(event.start.dateTime || event.start.date!);
+                end = new Date(event.end.dateTime || event.end.date!);
+            } catch (e) {
+                return html`<div class="error">Date Error</div>`;
+            }
+
+            const now = new Date();
+            const isAllDay = !event.start.dateTime;
+
+            if (start > now) {
+                stateText = this._formatRelativeTime(start);
+            } else {
+                 if (isAllDay) {
+                    stateText = 'Ganztägig';
+                 } else {
+                    const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    stateText = `${formatTime(start)} - ${formatTime(end)}`;
+                 }
+            }
+
+            // Simple event display (not trying to mimic tile card)
+            return html`
+            <div class="event-item" @click=${() => this._handleMoreInfo(event.entity_id)}>
+                <div class="event-icon">
+                     <ha-state-icon .hass=${this.hass} .stateObj=${this.hass.states[event.entity_id]}></ha-state-icon>
+                </div>
+                <div class="event-info">
+                    <div class="event-name">${name}</div>
+                    <div class="event-state">${stateText}</div>
+                </div>
+            </div>
+            `;
+        });
+    }
+
+    private _formatRelativeTime(date: Date): string {
+        const now = new Date();
+        const diffMs = date.getTime() - now.getTime();
+        const diffMins = Math.ceil(diffMs / 60000);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffMins < 60) {
+            return `In ${diffMins} min`;
+        } else if (diffHours < 24) {
+            return `In ${diffHours} hour${diffHours > 1 ? 's' : ''}`;
+        } else if (diffDays < 7) {
+            return `In ${diffDays} day${diffDays > 1 ? 's' : ''}`;
+        } else {
+            return date.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+        }
+    }
+
+    private _handleMoreInfo(entityId: string) {
+        const event = new CustomEvent('hass-more-info', {
+            bubbles: true,
+            composed: true,
+            detail: { entityId }
+        });
+        this.dispatchEvent(event);
+    }
+
+    static get styles(): CSSResultGroup {
+        return css`
+            :host {
+                display: block;
+            }
+            ha-card {
+                height: 100%;
+                box-sizing: border-box;
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            /* Calendar Styles ported from module */
+            .calendar-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                height: 100%;
+                width: 100%;
+            }
+            .calendar-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                cursor: pointer;
+            }
+            .calendar-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background-color: var(--primary-color, #03a9f4);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                flex-shrink: 0;
+            }
+            .calendar-icon ha-icon {
+                --mdc-icon-size: 20px;
+            }
+            .calendar-content {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                flex: 1;
+            }
+            .event-title {
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--primary-text-color);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .event-time {
+                font-size: 12px;
+                color: var(--secondary-text-color);
+            }
+            .progress-bar {
+                margin-top: 4px;
+                height: 4px;
+                background-color: var(--secondary-background-color, #444);
+                border-radius: 2px;
+                overflow: hidden;
+                width: 100%;
+            }
+            .progress-fill {
+                height: 100%;
+                background-color: var(--primary-text-color, #fff);
+                border-radius: 2px;
+                opacity: 0.7;
+            }
+
+            /* Dialog Styles */
+            ha-dialog {
+                --mdc-dialog-min-width: 400px;
+                --mdc-dialog-max-width: 600px;
+                --dialog-content-padding: 12px;
+            }
+
+            .dialog-header {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 8px;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+                background: var(--mdc-theme-surface, #fff);
+            }
+            h2.mdc-dialog__title {
+                margin: 0;
+                font-size: 1.25rem;
+                font-weight: 500;
+            }
+            .dialog-content {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            /* Simple Event Item Styles */
+            .event-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                background-color: var(--ha-card-background, var(--card-background-color, #fff));
+                border: 1px solid var(--ha-card-border-color, var(--divider-color, #e0e0e0));
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            .event-item:hover {
+                background-color: rgba(var(--rgb-primary-text-color), 0.05);
+            }
+            .event-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background-color: var(--secondary-background-color);
+                color: var(--primary-text-color);
+                flex-shrink: 0;
+            }
+            .event-info {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                overflow: hidden;
+            }
+            .event-name {
+                font-weight: 500;
+                font-size: 14px;
+                color: var(--primary-text-color);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .event-state {
+                font-size: 12px;
+                color: var(--secondary-text-color);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        `;
+    }
+
+    public getCardSize(): number {
+        return 1;
+    }
+
+    public static async getConfigElement() {
+        await import('./editor');
+        return document.createElement('calendar-card-plus-editor');
+    }
+
+    public static getStubConfig(_hass: HomeAssistant): CalendarCardPlusConfig {
+         // Try to find a calendar entity
+         // Default to all calendars (empty list) and compact mode
+         return {
+            type: 'custom:calendar-card-plus',
+            exclude_entities: [],
+            display_mode: 'compact'
+         };
+    }
+}
+
+// Register custom card
+(window as any).customCards = (window as any).customCards || [];
+(window as any).customCards.push({
+    type: 'calendar-card-plus',
+    name: 'Dynamic Calendar Card Plus',
+    preview: true,
+    description: 'A standalone calendar card with dynamic grid styling',
+});
