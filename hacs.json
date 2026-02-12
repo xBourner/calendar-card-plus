@@ -1,0 +1,7 @@
+{
+  "name": "calendar-card-plus",
+  "content_in_root": false,
+  "render_readme": true,
+  "filename": "calendar-card-plus.js",
+  "homeassistant": "2026.2.0"
+}
