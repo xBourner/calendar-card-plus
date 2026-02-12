@@ -8,10 +8,14 @@ import { CalendarCardPlusConfig } from './types';
 @customElement('calendar-card-plus-editor')
 export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEditor {
     @property({ attribute: false }) public hass?: HomeAssistant;
-    @state() private _config?: CalendarCardPlusConfig;
+    @state() private _config: CalendarCardPlusConfig = { type: 'custom:calendar-card-plus' };
+    public set config(c: CalendarCardPlusConfig) {
+        this.setConfig(c);
+    }
 
     public setConfig(config: CalendarCardPlusConfig): void {
         this._config = config;
+        this.requestUpdate();
     }
 
     protected render(): TemplateResult {
@@ -19,30 +23,28 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             return html``;
         }
 
-        if (!this._config) {
-            this._config = {
-                type: 'custom:calendar-card-plus',
-                exclude_entities: [],
-                max_minutes_until_start: 1440,
-                display_mode: 'compact' // Default to compact
-            };
-        }
+        // Use defaults for display, but don't mutate strict config unless changed
+        const show_all = this._config.show_all ?? false;
+        const multiple_events = this._config.multiple_events ?? false;
+        const max_minutes = this._config.max_minutes_until_start ?? 1440;
+        const exclude_entities = this._config.exclude_entities ?? [];
 
         return html`
             <div class="card-config">
-                
+
+
                 <div class="settings-row">
                     <span class="label">Show entries even if not running</span>
                     <ha-switch
-                        .checked=${this._config.show_all || false}
+                        .checked=${show_all}
                         @change=${this._calendarShowAllChanged}
                     ></ha-switch>
                 </div>
 
                 <div class="settings-row">
-                    <span class="label">List Mode</span>
+                    <span class="label">Multiple Events</span>
                     <ha-switch
-                        .checked=${(this._config.display_mode || 'compact') === 'list'}
+                        .checked=${multiple_events}
                         @change=${this._compactModeChanged}
                     ></ha-switch>
                 </div>
@@ -51,33 +53,65 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                     <ha-textfield
                         label="Lookahead (minutes)"
                         type="number"
-                        .value=${this._config.max_minutes_until_start || 1440}
+                        .value=${max_minutes}
                         @input=${this._calendarLookAheadChanged}
                     ></ha-textfield>
+                </div>
+
+                <div class="settings-row">
+                    <span class="label">Show Calendar Divider</span>
+                    <ha-switch
+                        .checked=${this._config.show_calendar_divider ?? false}
+                        @change=${this._calendarDividerChanged}
+                    ></ha-switch>
+                </div>
+
+                <div class="settings-row full-width">
+                    <ha-selector
+                        .hass=${this.hass}
+                        .selector=${{ ui_color: {} }}
+                        .value=${this._config.calendar_icon_color || ''}
+                        .label=${'Global Icon Color'}
+                        .configValue=${'calendar_icon_color'}
+                        @value-changed=${this._valueChanged}
+                    ></ha-selector>
                 </div>
 
                 <h4>Include Calendars</h4>
                 <div class="entities-list">
                     ${this._getCalendarEntities().map(entity => {
-                        const isIncluded = this._isCalendarIncluded(entity.entity_id);
+                        const isIncluded = !exclude_entities.includes(entity.entity_id);
+                        const entityColor = this._config.calendar_colors?.[entity.entity_id] || '';
+                        
                         return html`
                             <div class="entity-row ${isIncluded ? '' : 'disabled'}">
-                                <div class="entity-icon">
-                                    <ha-svg-icon .path=${mdiCalendar}></ha-svg-icon>
+                                <div class="entity-row-top">
+                                    <div class="entity-icon">
+                                        <ha-svg-icon .path=${mdiCalendar}></ha-svg-icon>
+                                    </div>
+                                    <div class="entity-info">
+                                        <span class="entity-name">${entity.attributes.friendly_name || entity.entity_id}</span>
+                                        <span class="entity-id">${entity.entity_id}</span>
+                                    </div>
+                                    <ha-button
+                                        size="small" 
+                                        appearance="filled" 
+                                        variant="brand" 
+                                        class="${isIncluded ? 'action-hide' : 'action-show'}"
+                                        @click=${(e: Event) => this._calendarToggleEntity(e, entity.entity_id)}
+                                    >
+                                        ${isIncluded ? 'Hide' : 'Show'}
+                                    </ha-button>
                                 </div>
-                                <div class="entity-info">
-                                    <span class="entity-name">${entity.attributes.friendly_name || entity.entity_id}</span>
-                                    <span class="entity-id">${entity.entity_id}</span>
+                                <div class="entity-row-bottom">
+                                     <ha-selector
+                                        .hass=${this.hass}
+                                        .selector=${{ ui_color: {} }}
+                                        .value=${entityColor}
+                                        .label=${'Color'}
+                                        @value-changed=${(e: CustomEvent) => this._calendarColorChanged(e, entity.entity_id)}
+                                    ></ha-selector>
                                 </div>
-                                <ha-button
-                                    size="small" 
-                                    appearance="filled" 
-                                    variant="brand" 
-                                    class="${isIncluded ? 'action-hide' : 'action-show'}"
-                                    @click=${(e: Event) => this._calendarToggleEntity(e, entity.entity_id)}
-                                >
-                                    ${isIncluded ? 'Hide' : 'Show'}
-                                </ha-button>
                             </div>
                         `;
                     })}
@@ -93,18 +127,11 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             .map(eid => this.hass?.states[eid]);
     }
 
-    private _isCalendarIncluded(entityId: string): boolean {
-        // Included means NOT in config.exclude_entities
-        if (!this._config) return true;
-        const exclude = this._config.exclude_entities || [];
-        return !exclude.includes(entityId);
-    }
-
     private _calendarToggleEntity(ev: Event, entityId: string) {
         ev.stopPropagation();
-        if (!this._config) return;
         
-        const exclude = [...(this._config.exclude_entities || [])];
+        // Ensure array exists
+        const exclude = [...(this._config.exclude_entities ?? [])];
         const index = exclude.indexOf(entityId);
 
         if (index === -1) {
@@ -120,11 +147,9 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             exclude_entities: exclude
         };
         fireEvent(this, 'config-changed', { config: this._config });
-        this.requestUpdate();
     }
 
     private _calendarShowAllChanged(ev: Event) {
-        if (!this._config) return;
         const checked = (ev.target as any).checked;
         this._config = {
             ...this._config,
@@ -134,7 +159,6 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
     }
 
     private _calendarLookAheadChanged(ev: Event) {
-        if (!this._config) return;
         const value = parseInt((ev.target as HTMLInputElement).value);
         if (isNaN(value)) return;
         
@@ -146,11 +170,52 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
     }
 
     private _compactModeChanged(ev: Event) {
-        if (!this._config) return;
         const checked = (ev.target as any).checked;
         this._config = {
             ...this._config,
-            display_mode: checked ? 'list' : 'compact'
+            multiple_events: checked
+        };
+        fireEvent(this, 'config-changed', { config: this._config });
+    }
+
+    private _calendarDividerChanged(ev: Event) {
+        const checked = (ev.target as any).checked;
+        this._config = {
+            ...this._config,
+            show_calendar_divider: checked
+        };
+        fireEvent(this, 'config-changed', { config: this._config });
+    }
+
+    private _valueChanged(ev: CustomEvent): void {
+        if (!this._config || !this.hass) {
+            return;
+        }
+        const target = ev.target as any;
+        const value = ev.detail?.value ?? target.value;
+        
+        if (this._config[target.configValue] === value) {
+            return;
+        }
+        if (target.configValue) {
+            this._config = {
+                ...this._config,
+                [target.configValue]: value,
+            };
+            fireEvent(this, 'config-changed', { config: this._config });
+        }
+    }
+
+    private _calendarColorChanged(ev: CustomEvent, entityId: string) {
+        const value = ev.detail.value;
+        const currentColors = this._config.calendar_colors || {};
+        
+        this._config = {
+            ...this._config,
+            calendar_colors: {
+                ...currentColors,
+                [entityId]: value
+            }
         };
         fireEvent(this, 'config-changed', { config: this._config });
     }
@@ -175,6 +240,14 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                 justify-content: space-between;
                 align-items: center;
                 padding: 12px 0;
+                width: 100%;
+            }
+            .settings-row.full-width {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .settings-row.full-width ha-selector {
+                width: 100%;
             }
             .entities-list {
                 display: flex;
@@ -184,12 +257,21 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             }
             .entity-row {
                 display: flex;
-                align-items: center;
-                gap: 12px;
-                padding: 8px 12px;
+                flex-direction: column;
+                gap: 8px;
+                padding: 12px;
                 border: 1px solid var(--divider-color, #eee);
                 border-radius: 8px;
                 transition: opacity 0.2s;
+            }
+            .entity-row-top {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                width: 100%;
+            }
+            .entity-row-bottom {
+                width: 100%;
             }
             .entity-row.disabled {
                 opacity: 0.6;

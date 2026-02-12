@@ -17,10 +17,11 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
   
-  display_mode?: DisplayMode; // 'list' | 'compact'
+  multiple_events?: boolean;
+  calendar_icon_color?: string; // CSS color for the top part of the calendar icon
+  calendar_colors?: Record<string, string>; // Map of entity_id to CSS color
+  show_calendar_divider?: boolean; // Show divider between different calendars
 }
-
-export type DisplayMode = 'list' | 'compact';
 
 export interface CalendarEvent {
     start: { date?: string; dateTime?: string };

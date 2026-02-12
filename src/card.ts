@@ -101,7 +101,7 @@ export class CalendarCardPlus extends LitElement {
             return html``;
         }
 
-        const content = renderCalendar(this._events, this.config);
+        const content = renderCalendar(this.hass, this._events, this.config);
 
         return html`
             <ha-card>
@@ -272,6 +272,11 @@ export class CalendarCardPlus extends LitElement {
                 border-radius: 2px;
                 opacity: 0.7;
             }
+            .calendar-divider {
+                width: 100%;
+                border-top: 1px solid var(--divider-color, #e0e0e0);
+                margin: 0 0 4px ;
+            }
 
             /* Dialog Styles */
             ha-dialog {
@@ -368,7 +373,7 @@ export class CalendarCardPlus extends LitElement {
          return {
             type: 'custom:calendar-card-plus',
             exclude_entities: [],
-            display_mode: 'compact'
+            multiple_events: false
          };
     }
 }

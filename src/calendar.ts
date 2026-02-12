@@ -1,8 +1,10 @@
 import { html, TemplateResult } from "lit";
 import { CalendarEvent, CalendarCardPlusConfig } from "./types";
+import { HomeAssistant } from "./ha/types";
+import { localize } from "./localize";
 
-export function renderCalendar(events: CalendarEvent[] | undefined, config?: CalendarCardPlusConfig): TemplateResult {
-    const displayMode = config?.display_mode || 'compact';
+export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | undefined, config?: CalendarCardPlusConfig): TemplateResult {
+    const multipleEvents = config?.multiple_events || false;
 
     // Loading state
     if (events === undefined) {
@@ -13,8 +15,7 @@ export function renderCalendar(events: CalendarEvent[] | undefined, config?: Cal
                     <ha-icon icon="mdi:calendar-clock"></ha-icon>
                 </div>
                 <div class="calendar-content">
-                    <div class="event-title">Loading events...</div>
-                    <div class="event-time">Please wait</div>
+                    <div class="event-title">${localize(hass, 'loading')}</div>
                 </div>
             </div>
         </div>
@@ -30,15 +31,14 @@ export function renderCalendar(events: CalendarEvent[] | undefined, config?: Cal
                     <ha-icon icon="mdi:calendar-remove"></ha-icon>
                 </div>
                 <div class="calendar-content">
-                    <div class="event-title">No active events</div>
-                    <div class="event-time">No upcoming events found</div>
+                    <div class="event-title">${localize(hass, 'no_events')}</div>
                 </div>
             </div>
         </div>
         `;
     }
 
-    if (displayMode === 'compact') {
+    if (!multipleEvents) {
         const event = events[0];
         const moreCount = events.length - 1;
         const title = event.summary;
@@ -61,10 +61,10 @@ export function renderCalendar(events: CalendarEvent[] | undefined, config?: Cal
         if (start > now) {
             const diffMs = start.getTime() - now.getTime();
             const diffMins = Math.ceil(diffMs / 60000);
-            timeText = _formatDuration(diffMins);
+            timeText = _formatLocalizedDuration(hass, diffMins);
         } else {
             if (isAllDay) {
-                timeText = 'Ganztägig';
+                timeText = localize(hass, 'all_day');
             } else {
                 const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 timeText = `${formatTime(start)} - ${formatTime(end)}`;
@@ -72,12 +72,13 @@ export function renderCalendar(events: CalendarEvent[] | undefined, config?: Cal
         }
 
         if (moreCount > 0) {
-            timeText += ` (+${moreCount} weitere)`;
+            timeText += ` ${localize(hass, 'more_events', '{x}', moreCount.toString())}`;
         }
 
         const isActive = start <= now && end >= now;
         const iconDate = isActive ? now : start;
-        const dynamicIcon = _renderDynamicIcon(iconDate);
+        const iconColor = _resolveColor(event.entity_id, config);
+        const dynamicIcon = _renderDynamicIcon(iconDate, iconColor);
 
         return html`
             <div class="calendar-container">
@@ -100,7 +101,7 @@ export function renderCalendar(events: CalendarEvent[] | undefined, config?: Cal
     // LIST MODE (Default)
     return html`
         <div class="calendar-container">
-            ${events.map(event => {
+            ${events.map((event, index) => {
                 const title = event.summary;
                 let start: Date;
                 let end: Date;
@@ -124,11 +125,11 @@ export function renderCalendar(events: CalendarEvent[] | undefined, config?: Cal
                 if (start > now) {
                     const diffMs = start.getTime() - now.getTime();
                     const diffMins = Math.ceil(diffMs / 60000);
-                    timeText = _formatDuration(diffMins);
+                    timeText = _formatLocalizedDuration(hass, diffMins);
                 } else {
                     // Event is current
                     if (isAllDay) {
-                        timeText = 'Ganztägig';
+                        timeText = localize(hass, 'all_day');
                     } else {
                         const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         timeText = `${formatTime(start)} - ${formatTime(end)}`;
@@ -143,11 +144,16 @@ export function renderCalendar(events: CalendarEvent[] | undefined, config?: Cal
 
                 const isActive = start <= now && end >= now;
                 const iconDate = isActive ? now : start;
+                const iconColor = _resolveColor(event.entity_id, config);
                 // Only render dynamic icon if date is valid (checked above)
-                const dynamicIcon = _renderDynamicIcon(iconDate);
+                const dynamicIcon = _renderDynamicIcon(iconDate, iconColor);
+
+                const showDivider = config?.show_calendar_divider && index > 0 && events[index - 1].entity_id !== event.entity_id;
 
                 return html`
+                ${showDivider ? html`<div class="calendar-divider"></div>` : ''}
                 <div class="calendar-item"  
+                     style="margin-bottom: 6px;"
                      title="${title}"
                      @click=${(e: Event) => _handleCalendarClick(e, event.entity_id)}>
                      <div class="calendar-icon dynamic">
@@ -167,6 +173,23 @@ export function renderCalendar(events: CalendarEvent[] | undefined, config?: Cal
             })}
         </div>
     `;
+}
+
+function _resolveColor(entityId: string, config?: CalendarCardPlusConfig): string {
+    const color = config?.calendar_colors?.[entityId] || config?.calendar_icon_color || '#fa3e3e';
+    return _toCssColor(color);
+}
+
+function _toCssColor(color: string): string {
+    if (
+        color.startsWith('#') ||
+        color.startsWith('rgb') ||
+        color.startsWith('hsl') ||
+        color.startsWith('var')
+    ) {
+        return color;
+    }
+    return `var(--${color}-color)`;
 }
 
 function _handleCompactClick(e: Event, events: CalendarEvent[]) {
@@ -193,36 +216,40 @@ function _handleCalendarClick(e: Event, entityId: string) {
 }
 
 
-function _renderDynamicIcon(date: Date): TemplateResult {
+function _renderDynamicIcon(date: Date, color: string): TemplateResult {
     const month = date.toLocaleDateString([], { month: 'short' }).toUpperCase();
     const day = date.getDate();
 
     // Apple-style calendar icon SVG
     // Background: White rounded square
-    // Header: Red top area for month
+    // Header: Colored top area for month
     // Body: Large day number
     return html`
         <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
             <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="white"></rect>
-            <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="#fa3e3e"></path>
+            <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="${color}"></path>
             <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">${month}</text>
             <text x="50" y="82" font-family="sans-serif" font-size="52" font-weight="bold" fill="#333" text-anchor="middle">${day}</text>
         </svg>
     `;
 }
 
-function _formatDuration(minutes: number): string {
+function _formatLocalizedDuration(hass: HomeAssistant, minutes: number): string {
     if (minutes < 60) {
-        return `Startet in ${minutes} min`;
+        if (minutes === 1) return localize(hass, 'starts_in_min', '{x}', minutes.toString());
+        return localize(hass, 'starts_in_mins', '{x}', minutes.toString());
     }
     if (minutes < 1440) { // 24 hours
         const hours = Math.round(minutes / 60);
-        return `Startet in ${hours} Std`;
+        if (hours === 1) return localize(hass, 'starts_in_hour', '{x}', hours.toString());
+        return localize(hass, 'starts_in_hours', '{x}', hours.toString());
     }
     if (minutes < 43200) { // 30 days
         const days = Math.round(minutes / 1440);
-        return `Startet in ${days} ${days === 1 ? 'Tag' : 'Tagen'}`;
+        if (days === 1) return localize(hass, 'starts_in_day', '{x}', days.toString());
+        return localize(hass, 'starts_in_days', '{x}', days.toString());
     }
     const weeks = Math.round(minutes / 10080);
-    return `Startet in ${weeks} Wochen`;
+    if (weeks === 1) return localize(hass, 'starts_in_week', '{x}', weeks.toString());
+    return localize(hass, 'starts_in_weeks', '{x}', weeks.toString());
 }
