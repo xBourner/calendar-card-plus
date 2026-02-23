@@ -4,7 +4,7 @@ import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant } from './ha/types';
 import { CalendarCardPlusConfig } from './types';
-import { renderCalendar } from './calendar';
+import { renderCalendar, _resolveColor, _renderDynamicIcon, _formatLocalizedDuration } from './calendar';
 
 
 
@@ -55,9 +55,25 @@ export class CalendarCardPlus extends LitElement {
     private async _fetchEvents() {
         if (!this.hass || !this.config) return;
 
-        const minutes = this.config.max_minutes_until_start || 1440;
         const now = new Date();
-        const end = new Date(now.getTime() + minutes * 60000);
+        let end: Date;
+
+        if (this.config.upcoming_events) {
+            // Support new split config, or fallback to legacy max_minutes_until_start, or default to 24h
+            let minutes = 1440; 
+            if (this.config.days !== undefined || this.config.hours !== undefined || this.config.minutes !== undefined) {
+                minutes = (this.config.days || 0) * 1440 + 
+                          (this.config.hours || 0) * 60 + 
+                          (this.config.minutes || 0);
+            } else if (this.config.max_minutes_until_start !== undefined) {
+                 minutes = this.config.max_minutes_until_start;
+            }
+            end = new Date(now.getTime() + minutes * 60000);
+        } else {
+            // End of current day
+            end = new Date(now);
+            end.setHours(23, 59, 59, 999);
+        }
 
         // Get relevant calendar entities
         const calendars = Object.keys(this.hass.states)
@@ -130,7 +146,7 @@ export class CalendarCardPlus extends LitElement {
     private _renderGroupedEntities(events: CalendarEvent[]): TemplateResult[] {
         return events.map(event => {
             const name = event.summary;
-            let stateText = '';
+            let timeText = '';
             
             // Parse Dates
             let start: Date;
@@ -146,48 +162,55 @@ export class CalendarCardPlus extends LitElement {
             const isAllDay = !event.start.dateTime;
 
             if (start > now) {
-                stateText = this._formatRelativeTime(start);
+                if (this.config?.show_date) {
+                    const lang = this.hass.locale?.language || this.hass.language || navigator.language;
+                    const dateStr = start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    if (isAllDay) {
+                        timeText = dateStr;
+                    } else {
+                        const timeStr = start.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+                        timeText = `${dateStr}, ${timeStr}${lang.startsWith('de') ? ' Uhr' : ''}`;
+                    }
+                } else {
+                    const diffMs = start.getTime() - now.getTime();
+                    const diffMins = Math.ceil(diffMs / 60000);
+                    timeText = _formatLocalizedDuration(this.hass, diffMins);
+                }
             } else {
                  if (isAllDay) {
-                    stateText = 'Ganztägig';
+                    timeText = this.hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
                  } else {
-                    const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    stateText = `${formatTime(start)} - ${formatTime(end)}`;
+                    const lang = this.hass.locale?.language || this.hass.language || navigator.language;
+                    const formatTime = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+                    timeText = `${formatTime(start)} - ${formatTime(end)}`;
                  }
             }
+
+            if (this.config?.show_calendar_name && event.calendar_name) {
+                timeText += ` • ${event.calendar_name}`;
+            }
+
+            const isActive = start <= now && end >= now;
+            const iconDate = isActive ? now : start;
+            const iconColor = _resolveColor(event.entity_id, this.config);
+            const dynamicIcon = _renderDynamicIcon(this.hass, iconDate, iconColor);
 
             // Simple event display (not trying to mimic tile card)
             return html`
             <div class="event-item" @click=${() => this._handleMoreInfo(event.entity_id)}>
-                <div class="event-icon">
-                     <ha-state-icon .hass=${this.hass} .stateObj=${this.hass.states[event.entity_id]}></ha-state-icon>
+                <div class="event-icon dynamic" style="background: transparent;">
+                     ${dynamicIcon}
                 </div>
                 <div class="event-info">
                     <div class="event-name">${name}</div>
-                    <div class="event-state">${stateText}</div>
+                    <div class="event-state">${timeText}</div>
                 </div>
             </div>
             `;
         });
     }
 
-    private _formatRelativeTime(date: Date): string {
-        const now = new Date();
-        const diffMs = date.getTime() - now.getTime();
-        const diffMins = Math.ceil(diffMs / 60000);
-        const diffHours = Math.floor(diffMins / 60);
-        const diffDays = Math.floor(diffHours / 24);
 
-        if (diffMins < 60) {
-            return `In ${diffMins} min`;
-        } else if (diffHours < 24) {
-            return `In ${diffHours} hour${diffHours > 1 ? 's' : ''}`;
-        } else if (diffDays < 7) {
-            return `In ${diffDays} day${diffDays > 1 ? 's' : ''}`;
-        } else {
-            return date.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
-        }
-    }
 
     private _handleMoreInfo(entityId: string) {
         const event = new CustomEvent('hass-more-info', {
@@ -373,7 +396,7 @@ export class CalendarCardPlus extends LitElement {
          return {
             type: 'custom:calendar-card-plus',
             exclude_entities: [],
-            multiple_events: false
+            unfold_events: false
          };
     }
 }

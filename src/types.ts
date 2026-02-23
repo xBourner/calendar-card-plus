@@ -10,17 +10,21 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   
   // Calendar specific
   exclude_entities?: string[]; // If undefined or empty, check all calendars. If present, exclude these.
-  show_all?: boolean;          // If true, show distinct inactive calendars
-  max_minutes_until_start?: number; // How many minutes into the future to look for upcoming events. Default 60.
+  upcoming_events?: boolean;          // If true, show distinct inactive calendars
+  days?: number;
+  hours?: number;
+  minutes?: number;
+  max_minutes_until_start?: number; // Deprecated but kept for backwards compatibility
 
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
   
-  multiple_events?: boolean;
+  unfold_events?: boolean;
   calendar_icon_color?: string; // CSS color for the top part of the calendar icon
-  calendar_colors?: Record<string, string>; // Map of entity_id to CSS color
-  show_calendar_divider?: boolean; // Show divider between different calendars
+  show_divider?: boolean; // Show divider between different calendars
+  show_calendar_name?: boolean; // Show calendar name alongside time
+  show_date?: boolean; // Show exact date instead of relative time
 }
 
 export interface CalendarEvent {

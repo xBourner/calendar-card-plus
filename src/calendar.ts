@@ -4,7 +4,7 @@ import { HomeAssistant } from "./ha/types";
 import { localize } from "./localize";
 
 export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | undefined, config?: CalendarCardPlusConfig): TemplateResult {
-    const multipleEvents = config?.multiple_events || false;
+    const unfoldEvents = config?.unfold_events || false;
 
     // Loading state
     if (events === undefined) {
@@ -38,7 +38,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         `;
     }
 
-    if (!multipleEvents) {
+    if (!unfoldEvents) {
         const event = events[0];
         const moreCount = events.length - 1;
         const title = event.summary;
@@ -59,14 +59,26 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         // Compact Timer Logic
         let timeText;
         if (start > now) {
-            const diffMs = start.getTime() - now.getTime();
-            const diffMins = Math.ceil(diffMs / 60000);
-            timeText = _formatLocalizedDuration(hass, diffMins);
+            if (config?.show_date) {
+                const lang = hass.locale?.language || hass.language || navigator.language;
+                const dateStr = start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+                if (isAllDay) {
+                    timeText = dateStr;
+                } else {
+                    const timeStr = start.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+                    timeText = `${dateStr}, ${timeStr}${lang.startsWith('de') ? ' Uhr' : ''}`;
+                }
+            } else {
+                const diffMs = start.getTime() - now.getTime();
+                const diffMins = Math.ceil(diffMs / 60000);
+                timeText = _formatLocalizedDuration(hass, diffMins);
+            }
         } else {
             if (isAllDay) {
-                timeText = localize(hass, 'all_day');
+                timeText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
             } else {
-                const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const lang = hass.locale?.language || hass.language || navigator.language;
+                const formatTime = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
                 timeText = `${formatTime(start)} - ${formatTime(end)}`;
             }
         }
@@ -74,17 +86,21 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         if (moreCount > 0) {
             timeText += ` ${localize(hass, 'more_events', '{x}', moreCount.toString())}`;
         }
+        
+        if (config?.show_calendar_name && event.calendar_name) {
+            timeText += ` • ${event.calendar_name}`;
+        }
 
         const isActive = start <= now && end >= now;
         const iconDate = isActive ? now : start;
         const iconColor = _resolveColor(event.entity_id, config);
-        const dynamicIcon = _renderDynamicIcon(iconDate, iconColor);
+        const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor);
 
         return html`
             <div class="calendar-container">
                 <div class="calendar-item"  
                      title="${title}"
-                     @click=${(e: Event) => _handleCompactClick(e, events)}>
+                     @click=${(e: Event) => _handleCompactClick(e, hass, events)}>
                      <div class="calendar-icon dynamic">
                         ${dynamicIcon}
                     </div>
@@ -123,15 +139,27 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 let progress = -1;
 
                 if (start > now) {
-                    const diffMs = start.getTime() - now.getTime();
-                    const diffMins = Math.ceil(diffMs / 60000);
-                    timeText = _formatLocalizedDuration(hass, diffMins);
+                    if (config?.show_date) {
+                        const lang = hass.locale?.language || hass.language || navigator.language;
+                        const dateStr = start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        if (isAllDay) {
+                            timeText = dateStr;
+                        } else {
+                            const timeStr = start.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+                            timeText = `${dateStr}, ${timeStr}${lang.startsWith('de') ? ' Uhr' : ''}`;
+                        }
+                    } else {
+                        const diffMs = start.getTime() - now.getTime();
+                        const diffMins = Math.ceil(diffMs / 60000);
+                        timeText = _formatLocalizedDuration(hass, diffMins);
+                    }
                 } else {
                     // Event is current
                     if (isAllDay) {
-                        timeText = localize(hass, 'all_day');
+                        timeText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
                     } else {
-                        const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const lang = hass.locale?.language || hass.language || navigator.language;
+                        const formatTime = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
                         timeText = `${formatTime(start)} - ${formatTime(end)}`;
             
                         const totalDuration = end.getTime() - start.getTime();
@@ -141,14 +169,18 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                         }
                     }
                 }
+                
+                if (config?.show_calendar_name && event.calendar_name) {
+                    timeText += ` • ${event.calendar_name}`;
+                }
 
                 const isActive = start <= now && end >= now;
                 const iconDate = isActive ? now : start;
                 const iconColor = _resolveColor(event.entity_id, config);
                 // Only render dynamic icon if date is valid (checked above)
-                const dynamicIcon = _renderDynamicIcon(iconDate, iconColor);
+                const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor);
 
-                const showDivider = config?.show_calendar_divider && index > 0 && events[index - 1].entity_id !== event.entity_id;
+                const showDivider = config?.show_divider && index > 0 && events[index - 1].entity_id !== event.entity_id;
 
                 return html`
                 ${showDivider ? html`<div class="calendar-divider"></div>` : ''}
@@ -175,12 +207,12 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
     `;
 }
 
-function _resolveColor(entityId: string, config?: CalendarCardPlusConfig): string {
+export function _resolveColor(entityId: string, config?: CalendarCardPlusConfig): string {
     const color = config?.calendar_colors?.[entityId] || config?.calendar_icon_color || '#fa3e3e';
     return _toCssColor(color);
 }
 
-function _toCssColor(color: string): string {
+export function _toCssColor(color: string): string {
     if (
         color.startsWith('#') ||
         color.startsWith('rgb') ||
@@ -192,12 +224,12 @@ function _toCssColor(color: string): string {
     return `var(--${color}-color)`;
 }
 
-function _handleCompactClick(e: Event, events: CalendarEvent[]) {
+function _handleCompactClick(e: Event, hass: HomeAssistant, events: CalendarEvent[]) {
     const event = new CustomEvent('calendar-card-show-detail', {
         bubbles: true,
         composed: true,
         detail: { 
-            title: 'Upcoming Events',
+            title: localize(hass, 'popup_upcoming_events'),
             entities: events
         }
     });
@@ -216,8 +248,9 @@ function _handleCalendarClick(e: Event, entityId: string) {
 }
 
 
-function _renderDynamicIcon(date: Date, color: string): TemplateResult {
-    const month = date.toLocaleDateString([], { month: 'short' }).toUpperCase();
+export function _renderDynamicIcon(hass: HomeAssistant, date: Date, color: string): TemplateResult {
+    const lang = hass.locale?.language || hass.language || navigator.language;
+    const month = date.toLocaleDateString(lang, { month: 'short' }).toUpperCase();
     const day = date.getDate();
 
     // Apple-style calendar icon SVG
@@ -234,7 +267,7 @@ function _renderDynamicIcon(date: Date, color: string): TemplateResult {
     `;
 }
 
-function _formatLocalizedDuration(hass: HomeAssistant, minutes: number): string {
+export function _formatLocalizedDuration(hass: HomeAssistant, minutes: number): string {
     if (minutes < 60) {
         if (minutes === 1) return localize(hass, 'starts_in_min', '{x}', minutes.toString());
         return localize(hass, 'starts_in_mins', '{x}', minutes.toString());

@@ -10,10 +10,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Starts in {x} days",
         starts_in_week: "Starts in {x} week",
         starts_in_weeks: "Starts in {x} weeks",
-        all_day: "All day",
         loading: "Loading events...",
         no_events: "No active events",
-        more_events: "+{x} more"
+        more_events: "+{x} more",
+        editor_show_upcoming: "Show upcoming events",
+        editor_unfold_events: "Unfold Events",
+        editor_show_divider: "Show Divider",
+        popup_upcoming_events: "Upcoming events"
     },
     de: {
         starts_in_min: "Beginnt in {x} Minute",
@@ -24,10 +27,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Beginnt in {x} Tagen",
         starts_in_week: "Beginnt in {x} Woche",
         starts_in_weeks: "Beginnt in {x} Wochen",
-        all_day: "Ganztägig",
         loading: "Lade Termine...",
         no_events: "Keine aktiven Termine",
-        more_events: "+{x} weitere"
+        more_events: "+{x} weitere",
+        editor_show_upcoming: "Zeige bevorstehende Ereignisse",
+        editor_unfold_events: "Ereignisse ausklappen",
+        editor_show_divider: "Zeige Trenner",
+        popup_upcoming_events: "Bevorstehende Ereignisse"
     },
     fr: {
         starts_in_min: "Commence dans {x} minute",
@@ -38,10 +44,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Commence dans {x} jours",
         starts_in_week: "Commence dans {x} semaine",
         starts_in_weeks: "Commence dans {x} semaines",
-        all_day: "Toute la journée",
         loading: "Chargement...",
         no_events: "Aucun événement",
-        more_events: "+{x} autres"
+        more_events: "+{x} autres",
+        editor_show_upcoming: "Afficher les événements à venir",
+        editor_unfold_events: "Déplier les événements",
+        editor_show_divider: "Afficher le séparateur",
+        popup_upcoming_events: "Événements à venir"
     },
     it: {
         starts_in_min: "Inizia tra {x} minuto",
@@ -52,10 +61,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Inizia tra {x} giorni",
         starts_in_week: "Inizia tra {x} settimana",
         starts_in_weeks: "Inizia tra {x} settimane",
-        all_day: "Tutto il giorno",
         loading: "Caricamento...",
         no_events: "Nessun evento",
-        more_events: "+{x} altri"
+        more_events: "+{x} altri",
+        editor_show_upcoming: "Mostra prossimi eventi",
+        editor_unfold_events: "Espandi gli eventi",
+        editor_show_divider: "Mostra divisore",
+        popup_upcoming_events: "Prossimi eventi"
     },
     es: {
         starts_in_min: "Empieza en {x} minuto",
@@ -66,10 +78,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Empieza en {x} días",
         starts_in_week: "Empieza en {x} semana",
         starts_in_weeks: "Empieza en {x} semanas",
-        all_day: "Todo el día",
         loading: "Cargando...",
         no_events: "No hay eventos",
-        more_events: "+{x} más"
+        more_events: "+{x} más",
+        editor_show_upcoming: "Mostrar próximos eventos",
+        editor_unfold_events: "Desplegar eventos",
+        editor_show_divider: "Mostrar divisor",
+        popup_upcoming_events: "Próximos eventos"
     },
     nl: {
         starts_in_min: "Begint over {x} minuut",
@@ -80,10 +95,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Begint over {x} dagen",
         starts_in_week: "Begint over {x} week",
         starts_in_weeks: "Begint over {x} weken",
-        all_day: "Hele dag",
         loading: "Laden...",
         no_events: "Geen evenementen",
-        more_events: "+{x} meer"
+        more_events: "+{x} meer",
+        editor_show_upcoming: "Toon aankomende evenementen",
+        editor_unfold_events: "Evenementen uitvouwen",
+        editor_show_divider: "Toon verdeler",
+        popup_upcoming_events: "Aankomende evenementen"
     },
     pt: {
         starts_in_min: "Começa em {x} minuto",
@@ -94,10 +112,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Começa em {x} dias",
         starts_in_week: "Começa em {x} semana",
         starts_in_weeks: "Começa em {x} semanas",
-        all_day: "Todo o dia",
         loading: "A carregar...",
         no_events: "Sem eventos",
-        more_events: "+{x} mais"
+        more_events: "+{x} mais",
+        editor_show_upcoming: "Mostrar próximos eventos",
+        editor_unfold_events: "Desdobrar eventos",
+        editor_show_divider: "Mostrar divisor",
+        popup_upcoming_events: "Próximos eventos"
     },
     ru: {
         starts_in_min: "Начнется через {x} минуту",
@@ -108,10 +129,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Начнется через {x} дн.",
         starts_in_week: "Начнется через {x} неделю",
         starts_in_weeks: "Начнется через {x} нед.",
-        all_day: "Весь день",
         loading: "Загрузка...",
         no_events: "Нет событий",
-        more_events: "ещё +{x}"
+        more_events: "ещё +{x}",
+        editor_show_upcoming: "Показать предстоящие события",
+        editor_unfold_events: "Развернуть события",
+        editor_show_divider: "Показать разделитель",
+        popup_upcoming_events: "Предстоящие события"
     },
     pl: {
         starts_in_min: "Rozpoczyna się za {x} minutę",
@@ -122,10 +146,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Rozpoczyna się za {x} dni",
         starts_in_week: "Rozpoczyna się za {x} tydzień",
         starts_in_weeks: "Rozpoczyna się za {x} tyg.",
-        all_day: "Cały dzień",
         loading: "Ładowanie...",
         no_events: "Brak wydarzeń",
-        more_events: "+{x} więcej"
+        more_events: "+{x} więcej",
+        editor_show_upcoming: "Pokaż nadchodzące wydarzenia",
+        editor_unfold_events: "Rozwiń wydarzenia",
+        editor_show_divider: "Pokaż dzielnik",
+        popup_upcoming_events: "Nadchodzące wydarzenia"
     },
     sv: {
         starts_in_min: "Börjar om {x} minut",
@@ -136,10 +163,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Börjar om {x} dagar",
         starts_in_week: "Börjar om {x} vecka",
         starts_in_weeks: "Börjar om {x} veckor",
-        all_day: "Hela dagen",
         loading: "Laddar...",
         no_events: "Inga händelser",
-        more_events: "+{x} till"
+        more_events: "+{x} till",
+        editor_show_upcoming: "Visa kommande händelser",
+        editor_unfold_events: "Fäll ut evenemang",
+        editor_show_divider: "Visa avdelare",
+        popup_upcoming_events: "Kommande händelser"
     },
     da: {
         starts_in_min: "Starter om {x} minut",
@@ -150,10 +180,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Starter om {x} dage",
         starts_in_week: "Starter om {x} uge",
         starts_in_weeks: "Starter om {x} uger",
-        all_day: "Hele dagen",
         loading: "Indlæser...",
         no_events: "Ingen begivenheder",
-        more_events: "+{x} mere"
+        more_events: "+{x} mere",
+        editor_show_upcoming: "Vis kommende begivenheder",
+        editor_unfold_events: "Udfold begivenheder",
+        editor_show_divider: "Vis skillelinje",
+        popup_upcoming_events: "Kommende begivenheder"
     },
     no: {
         starts_in_min: "Starter om {x} minutt",
@@ -164,10 +197,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Starter om {x} dager",
         starts_in_week: "Starter om {x} uke",
         starts_in_weeks: "Starter om {x} uker",
-        all_day: "Hele dagen",
         loading: "Laster...",
         no_events: "Ingen hendelser",
-        more_events: "+{x} til"
+        more_events: "+{x} til",
+        editor_show_upcoming: "Vis kommende hendelser",
+        editor_unfold_events: "Brett ut hendelser",
+        editor_show_divider: "Vis skillelinje",
+        popup_upcoming_events: "Kommende hendelser"
     },
     fi: {
         starts_in_min: "Alkaa {x} minuutin kuluttua",
@@ -178,10 +214,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Alkaa {x} päivän kuluttua",
         starts_in_week: "Alkaa {x} viikon kuluttua",
         starts_in_weeks: "Alkaa {x} viikon kuluttua",
-        all_day: "Koko päivä",
         loading: "Ladataan...",
         no_events: "Ei tapahtumia",
-        more_events: "+{x} lisää"
+        more_events: "+{x} lisää",
+        editor_show_upcoming: "Näytä tulevat tapahtumat",
+        editor_unfold_events: "Avaa tapahtumat",
+        editor_show_divider: "Näytä jakaja",
+        popup_upcoming_events: "Tulevat tapahtumat"
     },
     cs: {
         starts_in_min: "Začíná za {x} minutu",
@@ -192,10 +231,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Začíná za {x} dní",
         starts_in_week: "Začíná za {x} týden",
         starts_in_weeks: "Začíná za {x} týdnů",
-        all_day: "Celý den",
         loading: "Načítání...",
         no_events: "Žádné události",
-        more_events: "+{x} další"
+        more_events: "+{x} další",
+        editor_show_upcoming: "Zobrazit nadcházející události",
+        editor_unfold_events: "Rozvinout události",
+        editor_show_divider: "Zobrazit dělič",
+        popup_upcoming_events: "Nadcházející události"
     },
     hu: {
         starts_in_min: "Kezdés {x} perc múlva",
@@ -206,10 +248,13 @@ const languages: Record<string, Record<string, string>> = {
         starts_in_days: "Kezdés {x} nap múlva",
         starts_in_week: "Kezdés {x} hét múlva",
         starts_in_weeks: "Kezdés {x} hét múlva",
-        all_day: "Egész nap",
         loading: "Betöltés...",
         no_events: "Nincs esemény",
-        more_events: "+{x} további"
+        more_events: "+{x} további",
+        editor_show_upcoming: "Közelgő események megjelenítése",
+        editor_unfold_events: "Események kibontása",
+        editor_show_divider: "Osztó megjelenítése",
+        popup_upcoming_events: "Közelgő események"
     }
 };
 
