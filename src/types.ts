@@ -25,6 +25,10 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   show_divider?: boolean; // Show divider between different calendars
   show_calendar_name?: boolean; // Show calendar name alongside time
   show_date?: boolean; // Show exact date instead of relative time
+  dark_mode?: boolean; // Dark mode for calendar icons
+  show_weekday?: boolean; // Show day of week abbreviation
+  show_weekday_long?: boolean; // Show full day of week instead of short
+  show_add_event?: boolean; // Show add event button
 }
 
 export interface CalendarEvent {

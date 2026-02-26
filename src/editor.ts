@@ -9,6 +9,7 @@ import { localize } from './localize';
 export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEditor {
     @property({ attribute: false }) public hass?: HomeAssistant;
     @state() private _config: CalendarCardPlusConfig = { type: 'custom:calendar-card-plus' };
+    @state() private _showAllCalendars: boolean = false;
     public set config(c: CalendarCardPlusConfig) {
         this.setConfig(c);
     }
@@ -35,47 +36,78 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             <div class="card-config">
 
 
-                <div class="settings-row">
-                    <span class="label">${localize(this.hass, 'editor_unfold_events')}</span>
-                    <ha-switch
-                        .checked=${unfold_events}
-                        @change=${this._compactModeChanged}
-                    ></ha-switch>
-                </div>
+                <div class="settings-grid">
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'editor_unfold_events')}</span>
+                        <ha-switch
+                            .checked=${unfold_events}
+                            @change=${this._compactModeChanged}
+                        ></ha-switch>
+                    </div>
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'editor_show_divider')}</span>
+                        <ha-switch
+                            .checked=${this._config.show_divider ?? false}
+                            @change=${this._calendarDividerChanged}
+                        ></ha-switch>
+                    </div>
 
-            ${unfold_events ? html`
-                <div class="settings-row">
-                    <span class="label">${localize(this.hass, 'editor_show_divider')}</span>
-                    <ha-switch
-                        .checked=${this._config.show_divider ?? false}
-                        @change=${this._calendarDividerChanged}
-                    ></ha-switch>
-                </div>
-            ` : ''}
+                    <div class="settings-row">
+                        <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('component.calendar.entity_component._.name')} ${this.hass?.localize('ui.common.name')}</span>
+                        <ha-switch
+                            .checked=${this._config.show_calendar_name ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_calendar_name')}
+                        ></ha-switch>
+                    </div>
+                    <div class="settings-row">
+                        <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('ui.dialogs.helper_settings.input_datetime.date') || 'Date'}</span>
+                        <ha-switch
+                            .checked=${this._config.show_date ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_date')}
+                        ></ha-switch>
+                    </div>
 
-                <div class="settings-row">
-                    <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('component.calendar.entity_component._.name')} ${this.hass?.localize('ui.common.name')}</span>
-                    <ha-switch
-                        .checked=${this._config.show_calendar_name ?? false}
-                        @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_calendar_name')}
-                    ></ha-switch>
-                </div>
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'editor_show_weekday')}</span>
+                        <ha-switch
+                            .checked=${this._config.show_weekday ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_weekday')}
+                        ></ha-switch>
+                    </div>
+                    <div class="settings-row">
+                        <span class="label">Dark Mode</span>
+                        <ha-switch
+                            .checked=${this._config.dark_mode ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'dark_mode')}
+                        ></ha-switch>
+                    </div>
 
-                <div class="settings-row">
-                    <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('ui.dialogs.helper_settings.input_datetime.date') || 'Date'}</span>
-                    <ha-switch
-                        .checked=${this._config.show_date ?? false}
-                        @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_date')}
-                    ></ha-switch>
-                </div>
+                ${this._config.show_weekday ? html`
+                    <div class="settings-row">
+                        <span class="label" style="color: var(--secondary-text-color);">${localize(this.hass, 'editor_show_weekday_long')}</span>
+                        <ha-switch
+                            .checked=${this._config.show_weekday_long ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_weekday_long')}
+                        ></ha-switch>
+                    </div>
+                    <div></div>
+                ` : ''}
 
-                <div class="settings-row">
-                    <span class="label">${localize(this.hass, 'editor_show_upcoming')}</span>
-                    <ha-switch
-                        .checked=${upcoming_events}
-                        @change=${this._calendarShowAllChanged}
-                    ></ha-switch>
-                </div>                
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'editor_show_add_event')}</span>
+                        <ha-switch
+                            .checked=${this._config.show_add_event ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_add_event')}
+                        ></ha-switch>
+                    </div>
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'editor_show_upcoming')}</span>
+                        <ha-switch
+                            .checked=${upcoming_events}
+                            @change=${this._calendarShowAllChanged}
+                        ></ha-switch>
+                    </div>                
+                </div>
 
             ${upcoming_events ? html`
                 <div class="settings-row full-width">
@@ -122,47 +154,62 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
 
                 <h4>${this.hass?.localize('ui.components.calendar.my_calendars') || 'Calendars'}</h4>
                 <div class="entities-list">
-                    ${this._getCalendarEntities().map(entity => {
-                        const isIncluded = !exclude_entities.includes(entity.entity_id);
-                        
-                        // Raw config color for the picker
-                        const configColor = this._config.calendar_colors?.[entity.entity_id] || '';
-                        
-                        // Resolved color for the icon rendering
-                        const renderColor = this._toCssColor(configColor || this._config.calendar_icon_color || '#fa3e3e');
-                        
+                    ${(() => {
+                        const entities = this._getCalendarEntities();
+                        const displayedEntities = this._showAllCalendars ? entities : entities.slice(0, 3);
+                        const hasMore = entities.length > 3;
+
                         return html`
-                            <div class="entity-row ${isIncluded ? '' : 'disabled'}">
-                                <div class="entity-row-top">
-                                    <div class="entity-icon dynamic" style="background: transparent;">
-                                        ${this._renderDynamicIcon(new Date(), renderColor)}
+                            ${displayedEntities.map(entity => {
+                                const isIncluded = !exclude_entities.includes(entity.entity_id);
+                                
+                                // Raw config color for the picker
+                                const configColor = this._config.calendar_colors?.[entity.entity_id] || '';
+                                
+                                // Resolved color for the icon rendering
+                                const renderColor = this._toCssColor(configColor || this._config.calendar_icon_color || '#fa3e3e');
+                                
+                                return html`
+                                    <div class="entity-row ${isIncluded ? '' : 'disabled'}">
+                                        <div class="entity-row-top">
+                                            <div class="entity-icon dynamic" style="background: transparent;">
+                                                ${this._renderDynamicIcon(new Date(), renderColor, this._config.dark_mode ?? false)}
+                                            </div>
+                                            <div class="entity-info">
+                                                <span class="entity-name">${entity.attributes.friendly_name || entity.entity_id}</span>
+                                                <span class="entity-id">${entity.entity_id}</span>
+                                            </div>
+                                            <ha-button
+                                                size="small" 
+                                                appearance="filled" 
+                                                variant="brand" 
+                                                class="${isIncluded ? 'action-hide' : 'action-show'}"
+                                                @click=${(e: Event) => this._calendarToggleEntity(e, entity.entity_id)}
+                                            >
+                                                ${isIncluded ? (this.hass?.localize('ui.common.hide') || 'Hide') : (this.hass?.localize('ui.common.show') || 'Show')}
+                                            </ha-button>
+                                        </div>
+                                        <div class="entity-row-bottom">
+                                             <ha-selector
+                                                .hass=${this.hass}
+                                                .selector=${{ ui_color: {} }}
+                                                .value=${configColor}
+                                                .label=${this.hass?.localize('ui.panel.lovelace.editor.card.tile.color') || 'Color'}
+                                                @value-changed=${(e: CustomEvent) => this._calendarColorChanged(e, entity.entity_id)}
+                                            ></ha-selector>
+                                        </div>
                                     </div>
-                                    <div class="entity-info">
-                                        <span class="entity-name">${entity.attributes.friendly_name || entity.entity_id}</span>
-                                        <span class="entity-id">${entity.entity_id}</span>
-                                    </div>
-                                    <ha-button
-                                        size="small" 
-                                        appearance="filled" 
-                                        variant="brand" 
-                                        class="${isIncluded ? 'action-hide' : 'action-show'}"
-                                        @click=${(e: Event) => this._calendarToggleEntity(e, entity.entity_id)}
-                                    >
-                                        ${isIncluded ? (this.hass?.localize('ui.common.hide') || 'Hide') : (this.hass?.localize('ui.common.show') || 'Show')}
+                                `;
+                            })}
+                            ${hasMore ? html`
+                                <div class="show-more-row">
+                                    <ha-button @click=${() => { this._showAllCalendars = !this._showAllCalendars; this.requestUpdate(); }}>
+                                        ${this._showAllCalendars ? localize(this.hass, 'editor_show_less') : localize(this.hass, 'editor_show_more')}
                                     </ha-button>
                                 </div>
-                                <div class="entity-row-bottom">
-                                     <ha-selector
-                                        .hass=${this.hass}
-                                        .selector=${{ ui_color: {} }}
-                                        .value=${configColor}
-                                        .label=${this.hass?.localize('ui.panel.lovelace.editor.card.tile.color') || 'Color'}
-                                        @value-changed=${(e: CustomEvent) => this._calendarColorChanged(e, entity.entity_id)}
-                                    ></ha-selector>
-                                </div>
-                            </div>
+                            ` : ''}
                         `;
-                    })}
+                    })()}
                 </div>
             </div>
         `;
@@ -283,6 +330,11 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                 color: var(--primary-text-color);
                 width: 50%;
             }
+            .settings-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0 16px;
+            }
             .settings-row {
                 display: flex;
                 justify-content: space-between;
@@ -311,6 +363,11 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                 flex-direction: column;
                 gap: 8px;
                 padding-bottom: 12px;
+            }
+            .show-more-row {
+                display: flex;
+                justify-content: center;
+                margin-top: 8px;
             }
             .entity-row {
                 display: flex;
@@ -381,18 +438,22 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
         return `var(--${color}-color)`;
     }
 
-    private _renderDynamicIcon(date: Date, color: string): TemplateResult {
+    private _renderDynamicIcon(date: Date, color: string, darkMode: boolean = false): TemplateResult {
         const lang = this.hass?.locale?.language || this.hass?.language || navigator.language || 'en';
         const month = date.toLocaleDateString(lang, { month: 'short' }).toUpperCase();
         const day = date.getDate();
 
+        const bgColor = darkMode ? '#222222' : 'white';
+        const dayColor = darkMode ? 'white' : '#333';
+        const monthColor = darkMode ? '#222222' : 'white';
+
         // Apple-style calendar icon SVG
         return html`
             <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
-                <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="white"></rect>
+                <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${bgColor}"></rect>
                 <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="${color}"></path>
-                <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">${month}</text>
-                <text x="50" y="82" font-family="sans-serif" font-size="52" font-weight="bold" fill="#333" text-anchor="middle">${day}</text>
+                <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="${monthColor}" text-anchor="middle">${month}</text>
+                <text x="50" y="82" font-family="sans-serif" font-size="52" font-weight="bold" fill="${dayColor}" text-anchor="middle">${day}</text>
             </svg>
         `;
     }

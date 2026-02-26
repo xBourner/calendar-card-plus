@@ -87,6 +87,12 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
             timeText += ` ${localize(hass, 'more_events', '{x}', moreCount.toString())}`;
         }
         
+        if (config?.show_weekday) {
+            const lang = hass.locale?.language || hass.language || navigator.language;
+            const weekday = start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
+            timeText += ` • ${weekday}`;
+        }
+
         if (config?.show_calendar_name && event.calendar_name) {
             timeText += ` • ${event.calendar_name}`;
         }
@@ -94,7 +100,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         const isActive = start <= now && end >= now;
         const iconDate = isActive ? now : start;
         const iconColor = _resolveColor(event.entity_id, config);
-        const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor);
+        const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
 
         return html`
             <div class="calendar-container">
@@ -108,7 +114,6 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                         <div class="event-title">${title}</div>
                         <div class="event-time">${timeText}</div>
                     </div>
-                    <ha-icon-button icon="mdi:chevron-right"></ha-icon-button>
                 </div>
             </div>
         `;
@@ -170,6 +175,12 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                     }
                 }
                 
+                if (config?.show_weekday) {
+                    const lang = hass.locale?.language || hass.language || navigator.language;
+                    const weekday = start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
+                    timeText += ` • ${weekday}`;
+                }
+
                 if (config?.show_calendar_name && event.calendar_name) {
                     timeText += ` • ${event.calendar_name}`;
                 }
@@ -178,7 +189,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 const iconDate = isActive ? now : start;
                 const iconColor = _resolveColor(event.entity_id, config);
                 // Only render dynamic icon if date is valid (checked above)
-                const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor);
+                const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
 
                 const showDivider = config?.show_divider && index > 0 && events[index - 1].entity_id !== event.entity_id;
 
@@ -248,10 +259,14 @@ function _handleCalendarClick(e: Event, entityId: string) {
 }
 
 
-export function _renderDynamicIcon(hass: HomeAssistant, date: Date, color: string): TemplateResult {
+export function _renderDynamicIcon(hass: HomeAssistant, date: Date, color: string, darkMode: boolean = false): TemplateResult {
     const lang = hass.locale?.language || hass.language || navigator.language;
     const month = date.toLocaleDateString(lang, { month: 'short' }).toUpperCase();
     const day = date.getDate();
+
+    const bgColor = darkMode ? '#222222' : 'white';
+    const dayColor = darkMode ? 'white' : '#333';
+    const monthColor = darkMode ? '#222222' : 'white';
 
     // Apple-style calendar icon SVG
     // Background: White rounded square
@@ -259,10 +274,10 @@ export function _renderDynamicIcon(hass: HomeAssistant, date: Date, color: strin
     // Body: Large day number
     return html`
         <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
-            <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="white"></rect>
+            <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${bgColor}"></rect>
             <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="${color}"></path>
-            <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">${month}</text>
-            <text x="50" y="82" font-family="sans-serif" font-size="52" font-weight="bold" fill="#333" text-anchor="middle">${day}</text>
+            <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="${monthColor}" text-anchor="middle">${month}</text>
+            <text x="50" y="82" font-family="sans-serif" font-size="52" font-weight="bold" fill="${dayColor}" text-anchor="middle">${day}</text>
         </svg>
     `;
 }

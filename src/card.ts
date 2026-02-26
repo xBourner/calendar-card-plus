@@ -1,4 +1,4 @@
-import { mdiClose } from '@mdi/js';
+import { mdiClose, mdiPlus } from '@mdi/js';
 import { fetchCalendarEvents } from './ha/data/calendar';
 import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -14,6 +14,8 @@ interface DetailPopupState {
     events: CalendarEvent[];
 }
 
+import { AddEventPopupState, openAddEventPopup, saveNewEvent, renderAddEventDialog } from './events';
+
 import { CalendarEvent } from './types';
 
 @customElement('calendar-card-plus')
@@ -21,6 +23,7 @@ export class CalendarCardPlus extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
     @state() private config!: CalendarCardPlusConfig;
     @state() private _detailPopup: DetailPopupState = { open: false, title: '', events: [] };
+    @state() private _addEventPopup: AddEventPopupState = { open: false };
     @state() private _events: CalendarEvent[] | undefined = undefined;
 
     public connectedCallback() {
@@ -121,6 +124,9 @@ export class CalendarCardPlus extends LitElement {
 
         return html`
             <ha-card>
+                <div class="add-event-btn" @click=${this._openAddEventPopup} style=${this.config.show_add_event ? '' : 'display: none;'}>
+                    <ha-icon-button .path=${mdiPlus}></ha-icon-button>
+                </div>
                 ${content}
 
                 ${this._detailPopup.open ? html`
@@ -139,12 +145,14 @@ export class CalendarCardPlus extends LitElement {
                         </div>
                     </ha-dialog>
                 ` : ''}
+
+                ${this._addEventPopup.open ? this._renderAddEventDialog() : ''}
             </ha-card>
         `;
     }
 
     private _renderGroupedEntities(events: CalendarEvent[]): TemplateResult[] {
-        return events.map(event => {
+        return events.map((event, index) => {
             const name = event.summary;
             let timeText = '';
             
@@ -186,6 +194,12 @@ export class CalendarCardPlus extends LitElement {
                  }
             }
 
+            if (this.config?.show_weekday) {
+                const lang = this.hass.locale?.language || this.hass.language || navigator.language;
+                const weekday = start.toLocaleDateString(lang, { weekday: this.config.show_weekday_long ? 'long' : 'short' });
+                timeText += ` • ${weekday}`;
+            }
+
             if (this.config?.show_calendar_name && event.calendar_name) {
                 timeText += ` • ${event.calendar_name}`;
             }
@@ -193,10 +207,13 @@ export class CalendarCardPlus extends LitElement {
             const isActive = start <= now && end >= now;
             const iconDate = isActive ? now : start;
             const iconColor = _resolveColor(event.entity_id, this.config);
-            const dynamicIcon = _renderDynamicIcon(this.hass, iconDate, iconColor);
+            const dynamicIcon = _renderDynamicIcon(this.hass, iconDate, iconColor, this.config?.dark_mode ?? false);
 
             // Simple event display (not trying to mimic tile card)
+            const showDivider = this.config?.show_divider && index > 0 && events[index - 1].entity_id !== event.entity_id;
+
             return html`
+            ${showDivider ? html`<div class="calendar-divider" style="margin: 0;"></div>` : ''}
             <div class="event-item" @click=${() => this._handleMoreInfo(event.entity_id)}>
                 <div class="event-icon dynamic" style="background: transparent;">
                      ${dynamicIcon}
@@ -219,6 +236,47 @@ export class CalendarCardPlus extends LitElement {
             detail: { entityId }
         });
         this.dispatchEvent(event);
+    }
+
+    private _openAddEventPopup() {
+        this._addEventPopup = openAddEventPopup(this.hass, this.config);
+        this.requestUpdate();
+    }
+
+    private _closeAddEventPopup() {
+        this._addEventPopup = { open: false };
+        this.requestUpdate();
+    }
+
+    private _renderAddEventDialog(): TemplateResult {
+        return renderAddEventDialog(
+            this.hass,
+            this.config,
+            this._addEventPopup,
+            (newState) => {
+                this._addEventPopup = { ...this._addEventPopup, ...newState };
+                this.requestUpdate();
+            },
+            () => this._closeAddEventPopup(),
+            () => this._saveNewEvent()
+        );
+    }
+
+    private async _saveNewEvent() {
+        await saveNewEvent(
+            this.hass, 
+            this._addEventPopup, 
+            () => {
+                this._closeAddEventPopup();
+                this._events = undefined;
+                this.requestUpdate();
+                this._fetchEvents();
+            },
+            (err) => {
+                console.error('Failed to create event', err);
+                alert(`Failed to create event: ${err.message || 'Unknown error'}`);
+            }
+        );
     }
 
     static get styles(): CSSResultGroup {
@@ -303,9 +361,20 @@ export class CalendarCardPlus extends LitElement {
 
             /* Dialog Styles */
             ha-dialog {
-                --mdc-dialog-min-width: 400px;
-                --mdc-dialog-max-width: 600px;
-                --dialog-content-padding: 12px;
+                --mdc-dialog-min-width: 500px;
+                --mdc-dialog-max-width: 700px;
+                --dialog-content-padding: 16px;
+            }
+
+            .add-event-btn {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                z-index: 2;
+                color: var(--secondary-text-color);
+            }
+            .add-event-btn:hover {
+                color: var(--primary-text-color);
             }
 
             .dialog-header {
@@ -329,6 +398,54 @@ export class CalendarCardPlus extends LitElement {
                 flex-direction: column;
                 gap: 16px;
                 padding: 16px;
+            }
+
+            .add-event-form {
+                gap: 16px;
+                padding-top: 8px;
+            }
+            .add-event-form ha-textfield,
+            .add-event-form ha-select,
+            .add-event-form ha-selector {
+                width: 100%;
+                display: block;
+            }
+            .row-label {
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--primary-text-color);
+                margin-bottom: -10px;
+                margin-top: 8px;
+            }
+            .date-row {
+                display: flex;
+                gap: 16px;
+                align-items: flex-end;
+                width: 100%;
+            }
+            .date-row ha-selector.date-selector {
+                flex: 1 1 50%;
+                min-width: 0;
+            }
+            .date-row .time-inputs-wrap {
+                flex: 1 1 50%;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .date-row ha-selector.time-selector {
+                flex: 1;
+                min-width: 0;
+            }
+            /* Hide the clear button (X) inside the time selector */
+            .time-selector {
+                --mdc-icon-button-size: 0px;
+            }
+            .dialog-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+                margin-top: 8px;
             }
 
             /* Simple Event Item Styles */
