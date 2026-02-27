@@ -366,6 +366,14 @@ export class CalendarCardPlus extends LitElement {
                 --dialog-content-padding: 16px;
             }
 
+            @media all and (max-width: 450px), all and (max-height: 500px) {
+                ha-dialog {
+                    --mdc-dialog-min-width: 100vw;
+                    --mdc-dialog-max-width: 100vw;
+                    --mdc-shape-medium: 0px;
+                }
+            }
+
             .add-event-btn {
                 position: absolute;
                 top: 8px;
@@ -383,10 +391,12 @@ export class CalendarCardPlus extends LitElement {
                 align-items: center;
                 gap: 8px;
                 position: sticky;
-                top: 0;
+                top: -16px;
+                margin: -16px;
+                padding: 16px;
                 z-index: 10;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-                background: var(--mdc-theme-surface, #fff);
+                background: var(--mdc-theme-surface, var(--ha-card-background, #fff));
             }
             h2.mdc-dialog__title {
                 margin: 0;
