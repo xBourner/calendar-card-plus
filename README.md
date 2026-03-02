@@ -25,9 +25,9 @@
 It upgrades your dashboard by providing a clean, dynamic, and intuitive view of your upcoming events, supporting multiple calendars simultaneously without the clutter.
 
 <p align="center">
-  <img width="49%" alt="Calendar Card View" src="https://github.com/user-attachments/assets/9eb43fe3-c36a-4285-973d-293757f5e9d2">
+  <img width="49%" alt="Calendar Card View" src="https://github.com/xBourner/calendar-card-plus/blob/main/.github/images/calendar-card-plus.png">
 &nbsp; 
-  <img width="49%" alt="Calendar Popup View" src="https://github.com/user-attachments/assets/e856c676-8b19-4ad2-8d5f-344d7b82feed">
+  <img width="49%" alt="Calendar Popup View" src="https://github.com/xBourner/calendar-card-plus/blob/main/.github/images/calendar-card-plus_extended.png">
 </p>
 
 ## ✨ Features
