@@ -1,79 +1,90 @@
-<h1 id="top">Calendar Card Plus</h1>
-
-[![(https://hacs.xyz)](https://img.shields.io/badge/hacs-default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/xBourner/status-card/total?style=for-the-badge)
-[![GitHub release](https://img.shields.io/github/release/xBourner/calendar-card-plus?style=for-the-badge)](https://github.com/xBourner/calendar-card-plus/releases/)
-[![stars - status-card](https://img.shields.io/github/stars/xBourner/calendar-card-plus?style=for-the-badge)](https://github.com/xBourner/calendar-card-plus)
-[![GitHub issues](https://img.shields.io/github/issues/xBourner/calendar-card-plus?style=for-the-badge)](https://github.com/xBourner/calendar-card-plus/issues)
-
-
-# Support my work
-
-If you like my work it would be nice if you support it. You don't have to but this will keep me motivated and i will appreciate it much! <br>
-You can also join my Discord Server to leave a feedback, get help or contribute with ideas :) 
-
-[![Discord](https://img.shields.io/discord/1341456711835455609?style=for-the-badge&logo=discord&logoColor=%237289da&label=Discord&color=%237289da)](https://discord.gg/RfVx7hmZD3)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?&logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://www.buymeacoffee.com/bourner)
-[![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20on%20GitHub-30363d?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/xBourner)
-[![PayPal](https://img.shields.io/badge/PayPal-003087?logo=paypal&logoColor=fff&style=for-the-badge)](https://www.paypal.me/gibgas123)
-
-
-# Overview
-
-A **Calendar Card Plus** for Home Assistant Dashboards
-
-I really liked the look of the calendar widget in Apple Car Play so i made a card that looks like it.
+<h1 id="top" align="center">Calendar Card Plus</h1>
 
 <p align="center">
-  <img width="506" height="82" alt="image" src="https://github.com/user-attachments/assets/9eb43fe3-c36a-4285-973d-293757f5e9d2" width="49%">
-&nbsp; 
-  <img width="505" height="116" alt="image" src="https://github.com/user-attachments/assets/e856c676-8b19-4ad2-8d5f-344d7b82feed" width="49%">
+  <a href="https://github.com/hacs/integration">
+    <img src="https://img.shields.io/badge/hacs-default-orange.svg?style=for-the-badge" alt="HACS">
+  </a>
+  <a href="https://github.com/xBourner/calendar-card-plus/releases">
+    <img src="https://img.shields.io/github/downloads/xBourner/calendar-card-plus/total?style=for-the-badge" alt="GitHub Downloads">
+  </a>
+  <a href="https://github.com/xBourner/calendar-card-plus/releases/">
+    <img src="https://img.shields.io/github/release/xBourner/calendar-card-plus?style=for-the-badge" alt="GitHub release">
+  </a>
+  <a href="https://github.com/xBourner/calendar-card-plus">
+    <img src="https://img.shields.io/github/stars/xBourner/calendar-card-plus?style=for-the-badge" alt="Stars">
+  </a>
+  <a href="https://github.com/xBourner/calendar-card-plus/issues">
+    <img src="https://img.shields.io/github/issues/xBourner/calendar-card-plus?style=for-the-badge" alt="Issues">
+  </a>
 </p>
 
-### How it works
- - 🤖 **Auto generating card** - Shows all calendars at once instead of only one calendar by default.
- - 📑 **Popup View** - Entities will render as Tile Cards in a new view
- - 🧠 **GUI Editor** - No code or scripts needed
- - 🔧 **Highly customizable** - almost everything customizable
- - 📱 **Optimized for desktop and phones**
- - 🌍 **Available in all HA languages**
+## Overview
 
-<br>
+**Calendar Card Plus** is a beautiful, highly customizable custom card for Home Assistant Dashboards, inspired by the elegant calendar widget from Apple CarPlay. 
 
+It upgrades your dashboard by providing a clean, dynamic, and intuitive view of your upcoming events, supporting multiple calendars simultaneously without the clutter.
 
-## Installation
+<p align="center">
+  <img width="49%" alt="Calendar Card View" src="https://github.com/user-attachments/assets/9eb43fe3-c36a-4285-973d-293757f5e9d2">
+&nbsp; 
+  <img width="49%" alt="Calendar Popup View" src="https://github.com/user-attachments/assets/e856c676-8b19-4ad2-8d5f-344d7b82feed">
+</p>
 
-###  HACS Installation (Recommended)
+## ✨ Features
 
-Click this link to add **Status Card** to your Home Assistant:
+- 🍎 **Apple CarPlay Aesthetics** - Enjoy a sleek, modern, and beautiful design with dynamic, localized calendar icons.
+- 📅 **Multi-Calendar Support** - Displays events from multiple calendars at once natively.
+- 📱 **Fully Responsive** - Perfectly optimized layouts for both desktop dashboards and mobile devices.
+- 🔍 **Interactive Popup View** - Click to reveal a detailed popup with beautifully formatted event lists.
+- 🌍 **Full Localization** - Date formats, relative times, and month abbreviations automatically match your Home Assistant language.
+- 🎨 **Highly Customizable** - Extensive styling options, dynamic icons, color routing, and feature toggles.
+- 🧠 **GUI Editor Ready** - No YAML required! Setup and customize everything directly from the visual UI editor.
+
+## 📥 Installation
+
+### Method 1: HACS (Recommended)
+
+The easiest way to install and keep **Calendar Card Plus** updated is via HACS.
 
 [![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=xBourner&repository=calendar-card-plus&category=plugin)
 
-#### Steps:
+1. Ensure [HACS](https://hacs.xyz) is installed.
+2. Open HACS in Home Assistant.
+3. Search for **Calendar Card Plus**.
+4. Download and Install.
+5. **Clear your browser cache** and refresh (F5) the page.
 
-1. Make sure **[HACS](https://hacs.xyz)** is installed.
-3. Go to **HACS**.
-4. Search for **Calendar Card Plus**.
-5. Download **Calendar Card Plus**.
-6. **Clear your browser cache** and reload (F5) Home Assistant.
+### Method 2: Manual Installation
+*Check the [Releases](https://github.com/xBourner/calendar-card-plus/releases) page for manual installation instructions.*
 
+## ⚙️ Configuration & Usage
 
-### Usage:
+Once installed, simply edit your dashboard, click **Add Card**, and search for **Calendar Card Plus**. The visual editor will guide you through all options!
 
-After adding the repository to your HA instance you need to add the card to one of your dashboards. <br>
+For advanced configuration and YAML examples, please visit the [Wiki](https://github.com/xBourner/calendar-card-plus/wiki).
 
-### Configuration:
+## ❤️ Support My Work
 
-See more in [Wiki](https://github.com/xBourner/calendar-card-plus/wiki)
+Developing and maintaining custom cards takes a lot of time and coffee. If you enjoy using Calendar Card Plus and want to support its ongoing development, I would greatly appreciate it!
 
-# Feedback
+<p align="center">
+  <a href="https://discord.gg/RfVx7hmZD3">
+    <img src="https://img.shields.io/discord/1341456711835455609?style=for-the-badge&logo=discord&logoColor=%237289da&label=Discord&color=%237289da" alt="Discord">
+  </a>
+  <a href="https://www.buymeacoffee.com/bourner">
+    <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?&logo=buy-me-a-coffee&logoColor=black&style=for-the-badge" alt="Buy Me A Coffee">
+  </a>
+  <a href="https://github.com/sponsors/xBourner">
+    <img src="https://img.shields.io/badge/Sponsor%20on%20GitHub-30363d?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Sponsors">
+  </a>
+  <a href="https://www.paypal.me/gibgas123">
+    <img src="https://img.shields.io/badge/PayPal-003087?logo=paypal&logoColor=fff&style=for-the-badge" alt="PayPal">
+  </a>
+</p>
 
-To see the latest changes please look at: [Releases](https://github.com/xBourner/calendar-card-plus/releases)
+Join the **community Discord server** to leave feedback, request features, or get help with your configuration.
 
-Thank you for using my custom cards. Please leave some feedback or a star.
-If you have any problems, suggestions for improvements or want to connect with me you can joing my discord: https://discord.gg/RfVx7hmZD3
-
-<br><hr>
+---
 
 [🔝 Back to top](#top)
 
