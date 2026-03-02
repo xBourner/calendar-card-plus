@@ -54,8 +54,6 @@ The easiest way to install and keep **Calendar Card Plus** updated is via HACS.
 4. Download and Install.
 5. **Clear your browser cache** and refresh (F5) the page.
 
-### Method 2: Manual Installation
-*Check the [Releases](https://github.com/xBourner/calendar-card-plus/releases) page for manual installation instructions.*
 
 ## ⚙️ Configuration & Usage
 
@@ -82,7 +80,7 @@ Developing and maintaining custom cards takes a lot of time and coffee. If you e
   </a>
 </p>
 
-Join the **community Discord server** to leave feedback, request features, or get help with your configuration.
+Join the <a href="https://discord.gg/RfVx7hmZD3"> **community Discord server**</a> to leave feedback, request features, or get help with your configuration.
 
 ---
 
