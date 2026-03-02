@@ -54,7 +54,18 @@ The easiest way to install and keep **Calendar Card Plus** updated is via HACS.
 4. Download and Install.
 5. **Clear your browser cache** and refresh (F5) the page.
 
+### Method 2: Manual Install
 
+1. Download calendar-card-plus.js file from the latest release.
+2. Put calendar-card-plus.js file into your config/www folder.
+3. Add reference to calendar-card-plus.js in Dashboard. There's two way to do that:
+   - Using UI: Settings → Dashboards → More Options icon → Resources → Add Resource → Set Url as /local/calendar-card-plus.js → Set Resource type as JavaScript Module. Note: If you do not see the Resources menu, you will need to enable Advanced Mode in your User Profile
+   - Using YAML: Add following code to lovelace section.
+     ```yaml
+      resources:
+      - url: /local/calendar-card-plus.js
+        type: module
+    
 ## ⚙️ Configuration & Usage
 
 Once installed, simply edit your dashboard, click **Add Card**, and search for **Calendar Card Plus**. The visual editor will guide you through all options!
