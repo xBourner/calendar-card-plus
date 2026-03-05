@@ -6,7 +6,6 @@ import { localize } from "./localize";
 export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | undefined, config?: CalendarCardPlusConfig): TemplateResult {
     const unfoldEvents = config?.unfold_events || false;
 
-    // Loading state
     if (events === undefined) {
         return html`
         <div class="calendar-container">
@@ -22,7 +21,6 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         `;
     }
 
-    // No events state
     if (events.length === 0) {
         return html`
         <div class="calendar-container">
@@ -56,7 +54,6 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         const now = new Date();
         const isAllDay = !event.start.dateTime; 
         
-        // Compact Timer Logic
         let timeText;
         if (start > now) {
             if (config?.show_date) {
@@ -119,7 +116,6 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         `;
     }
 
-    // LIST MODE (Default)
     return html`
         <div class="calendar-container">
             ${events.map((event, index) => {
@@ -159,7 +155,6 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                         timeText = _formatLocalizedDuration(hass, diffMins);
                     }
                 } else {
-                    // Event is current
                     if (isAllDay) {
                         timeText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
                     } else {
@@ -188,7 +183,6 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 const isActive = start <= now && end >= now;
                 const iconDate = isActive ? now : start;
                 const iconColor = _resolveColor(event.entity_id, config);
-                // Only render dynamic icon if date is valid (checked above)
                 const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
 
                 const showDivider = config?.show_divider && index > 0 && events[index - 1].entity_id !== event.entity_id;
@@ -268,10 +262,6 @@ export function _renderDynamicIcon(hass: HomeAssistant, date: Date, color: strin
     const dayColor = darkMode ? 'white' : '#333';
     const monthColor = darkMode ? '#222222' : 'white';
 
-    // Apple-style calendar icon SVG
-    // Background: White rounded square
-    // Header: Colored top area for month
-    // Body: Large day number
     return html`
         <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
             <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${bgColor}"></rect>
@@ -287,12 +277,12 @@ export function _formatLocalizedDuration(hass: HomeAssistant, minutes: number): 
         if (minutes === 1) return localize(hass, 'starts_in_min', '{x}', minutes.toString());
         return localize(hass, 'starts_in_mins', '{x}', minutes.toString());
     }
-    if (minutes < 1440) { // 24 hours
+    if (minutes < 1440) {
         const hours = Math.round(minutes / 60);
         if (hours === 1) return localize(hass, 'starts_in_hour', '{x}', hours.toString());
         return localize(hass, 'starts_in_hours', '{x}', hours.toString());
     }
-    if (minutes < 43200) { // 30 days
+    if (minutes < 43200) {
         const days = Math.round(minutes / 1440);
         if (days === 1) return localize(hass, 'starts_in_day', '{x}', days.toString());
         return localize(hass, 'starts_in_days', '{x}', days.toString());

@@ -24,7 +24,6 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             return html``;
         }
 
-        // Use defaults for display, but don't mutate strict config unless changed
         const upcoming_events = this._config.upcoming_events ?? false;
         const unfold_events = this._config.unfold_events ?? false;
         const days = this._config.days ?? 1;
@@ -163,10 +162,8 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                             ${displayedEntities.map(entity => {
                                 const isIncluded = !exclude_entities.includes(entity.entity_id);
                                 
-                                // Raw config color for the picker
                                 const configColor = this._config.calendar_colors?.[entity.entity_id] || '';
                                 
-                                // Resolved color for the icon rendering
                                 const renderColor = this._toCssColor(configColor || this._config.calendar_icon_color || '#fa3e3e');
                                 
                                 return html`
@@ -225,15 +222,12 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
     private _calendarToggleEntity(ev: Event, entityId: string) {
         ev.stopPropagation();
         
-        // Ensure array exists
         const exclude = [...(this._config.exclude_entities ?? [])];
         const index = exclude.indexOf(entityId);
 
         if (index === -1) {
-            // Currently visible (not in exclude list) -> Hide: Add to exclude
             exclude.push(entityId);
         } else {
-            // Currently hidden (in exclude list) -> Show: Remove from exclude
             exclude.splice(index, 1);
         }
 
@@ -447,7 +441,6 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
         const dayColor = darkMode ? 'white' : '#333';
         const monthColor = darkMode ? '#222222' : 'white';
 
-        // Apple-style calendar icon SVG
         return html`
             <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
                 <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${bgColor}"></rect>

@@ -1,5 +1,4 @@
 import { html, TemplateResult } from 'lit';
-import { mdiClose } from '@mdi/js';
 import { HomeAssistant } from './ha/types';
 import { CalendarCardPlusConfig } from './types';
 
@@ -89,7 +88,6 @@ export async function saveNewEvent(
                 'YEARLY': 'FREQ=YEARLY'
             };
             if (freqMap[popupState.recurrence]) {
-                // Correctly place rrule on the top level of the service call
                 svcData.rrule = freqMap[popupState.recurrence];
             }
         }
@@ -101,7 +99,7 @@ export async function saveNewEvent(
     }
 }
 
-export function renderAddEventDialog(
+export function renderAddEventForm(
     hass: HomeAssistant, 
     config: CalendarCardPlusConfig,
     popupState: AddEventPopupState,
@@ -113,43 +111,9 @@ export function renderAddEventDialog(
         .filter(eid => eid.startsWith('calendar.'))
         .filter(eid => !config.exclude_entities?.includes(eid));
 
-    const hideClearButtons = (e: any) => {
-        // Deep shadow DOM dive to hide the clear button
-        const dialog = e.target;
-        if (!dialog) return;
-
-        setTimeout(() => {
-            const timeSelectors = dialog.querySelectorAll('.time-selector');
-            timeSelectors.forEach((selector: any) => {
-                try {
-                    const selectorTime = selector.shadowRoot?.querySelector('ha-selector-time');
-                    const timeInput = selectorTime?.shadowRoot?.querySelector('ha-time-input');
-                    const baseTimeInput = timeInput?.shadowRoot?.querySelector('ha-base-time-input');
-                    const clearBtn = baseTimeInput?.shadowRoot?.querySelector('ha-icon-button[label="clear"], ha-icon-button[title="clear"]');
-                    if (clearBtn) {
-                        (clearBtn as HTMLElement).style.display = 'none';
-                    }
-                } catch (err) {
-                    console.warn("Could not hide clear button", err);
-                }
-            });
-        }, 100);
-    };
-
     return html`
-        <ha-dialog
-            open
-            hideActions
-            @opened=${hideClearButtons}
-            @closed=${onClose}
-            class="add-event-dialog"
-        >
-            <div class="dialog-header">
-                <ha-icon-button .path=${mdiClose} @click=${onClose}></ha-icon-button>
-                <h2 class="mdc-dialog__title">${hass.localize('ui.components.calendar.event.add') || 'Add Event'}</h2>
-            </div>
-            <div class="dialog-content add-event-form">
-                <ha-textfield
+        <div class="add-event-form">
+            <ha-textfield
                     label=${hass.localize('ui.components.calendar.event.summary') || 'Title'}
                     .value=${popupState.name || ''}
                     @input=${(e: any) => updateState({ name: e.target.value })}
@@ -291,15 +255,14 @@ export function renderAddEventDialog(
                     <mwc-list-item value="YEARLY">${hass.localize('ui.components.calendar.event.repeat.freq.yearly') || 'Yearly'}</mwc-list-item>
                 </ha-select>
 
-                <div class="dialog-actions">
-                    <ha-button @click=${onClose}>
-                        ${hass.localize('ui.common.cancel') || 'Cancel'}
-                    </ha-button>
-                    <ha-button elevated @click=${onSave} ?disabled=${!popupState.name || !popupState.calendar_id}>
-                        ${hass.localize('ui.common.save') || 'Save'}
-                    </ha-button>
-                </div>
+            <div class="dialog-actions">
+                <ha-button @click=${onClose}>
+                    ${hass.localize('ui.common.cancel') || 'Cancel'}
+                </ha-button>
+                <ha-button elevated @click=${onSave} ?disabled=${!popupState.name || !popupState.calendar_id}>
+                    ${hass.localize('ui.common.save') || 'Save'}
+                </ha-button>
             </div>
-        </ha-dialog>
+        </div>
     `;
 }
