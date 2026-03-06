@@ -18,15 +18,26 @@ export class CalendarCardPlus extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
     @state() private config!: CalendarCardPlusConfig;
     @state() private _events: CalendarEvent[] | undefined = undefined;
+    private _popup: any = null;
 
     public connectedCallback() {
         super.connectedCallback();
         this.addEventListener('calendar-card-show-detail', this._handleShowDetail as unknown as EventListener);
+        if (!this._popup) {
+            this._popup = document.createElement('calendar-card-plus-popup');
+            this._popup.addEventListener('event-saved', this._onEventSaved);
+            document.body.appendChild(this._popup);
+        }
     }
 
     public disconnectedCallback() {
         super.disconnectedCallback();
         this.removeEventListener('calendar-card-show-detail', this._handleShowDetail as unknown as EventListener);
+        if (this._popup) {
+            this._popup.removeEventListener('event-saved', this._onEventSaved);
+            this._popup.remove();
+            this._popup = null;
+        }
     }
 
     protected willUpdate(changedProps: Map<string, any>) {
@@ -89,11 +100,11 @@ export class CalendarCardPlus extends LitElement {
     }
 
     private _handleShowDetail = async (e: CustomEvent) => {
-        const popup = this.shadowRoot?.querySelector('calendar-card-plus-popup') as any;
-        if (popup) {
-            await popup.showDialog({
+        if (this._popup) {
+            await this._popup.showDialog({
                 hass: this.hass,
                 config: this.config,
+                opener: this,
                 mode: 'detail',
                 title: e.detail.title,
                 events: e.detail.entities
@@ -114,21 +125,17 @@ export class CalendarCardPlus extends LitElement {
                     <ha-icon-button .path=${mdiPlus}></ha-icon-button>
                 </div>
                 ${content}
-
-                <calendar-card-plus-popup
-                    @event-saved=${this._onEventSaved}
-                ></calendar-card-plus-popup>
             </ha-card>
         `;
     }
 
     private _openAddEventPopup = async () => {
-        const popup = this.shadowRoot?.querySelector('calendar-card-plus-popup') as any;
-        if (popup) {
+        if (this._popup) {
             const addEventState = openAddEventPopup(this.hass, this.config);
-            await popup.showDialog({
+            await this._popup.showDialog({
                 hass: this.hass,
                 config: this.config,
+                opener: this,
                 mode: 'add-event',
                 addEventState
             });

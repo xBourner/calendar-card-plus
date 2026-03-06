@@ -18,18 +18,20 @@ export class CalendarCardPlusPopup extends LitElement {
     @property({ type: Array }) public detailEvents: CalendarEvent[] = [];
     
     @state() private _addEventState: AddEventState = { open: false };
+    private _opener: HTMLElement | null = null;
 
     public async showDialog(params: {
         hass: HomeAssistant;
         config: CalendarCardPlusConfig;
+        opener: HTMLElement;
         mode: 'detail' | 'add-event';
         title?: string;
         events?: CalendarEvent[];
         addEventState?: AddEventState;
     }) {
-        console.log('[Calendar Popup] showDialog called', { mode: params.mode });
         this.hass = params.hass;
         this.config = params.config;
+        this._opener = params.opener;
         this.mode = params.mode;
         if (params.title) this.detailTitle = params.title;
         if (params.events) this.detailEvents = params.events;
@@ -42,40 +44,36 @@ export class CalendarCardPlusPopup extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        window.addEventListener('popstate', this._onPopState);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        window.removeEventListener('popstate', this._onPopState);
     }
 
-    private _onPopState = () => {
-        if (this.open) {
-            this._close();
+    // Guard: only close if event originates from ha-adaptive-dialog itself, not from child elements
+    private _onDialogClosed = (ev?: Event) => {
+        if (ev && ev.type !== 'click') {
+            const target = ev.target as HTMLElement | null;
+            if (target && target.tagName !== 'HA-ADAPTIVE-DIALOG') {
+                return;
+            }
         }
+        this._closeDialog();
     };
 
-    private _close = (ev?: Event) => {
-        if (ev) {
-            ev.stopPropagation();
-        }
-        console.log('[Calendar Popup] _close called', { open: this.open, event: ev?.type });
+    private _closeDialog = () => {
         if (!this.open) return;
-        
         this.open = false;
-        
+        this.requestUpdate();
         const detail = { dialog: this };
         this.dispatchEvent(new CustomEvent('closed', { bubbles: true, composed: true, detail }));
         this.dispatchEvent(new CustomEvent('dialog-closed', { bubbles: true, composed: true, detail }));
         this.dispatchEvent(new CustomEvent('popup-closed', { bubbles: true, composed: true, detail }));
-        
-        this.requestUpdate();
-        console.log('[Calendar Popup] _close finished');
     };
 
     private _updateAddEventState(newState: Partial<AddEventState>) {
         this._addEventState = { ...this._addEventState, ...newState };
+        this.requestUpdate();
     }
 
     private async _handleSave() {
@@ -84,7 +82,7 @@ export class CalendarCardPlusPopup extends LitElement {
             this._addEventState,
             () => {
                 this.dispatchEvent(new CustomEvent('event-saved', { bubbles: true, composed: true }));
-                this._close();
+                this._closeDialog();
             },
             (err) => {
                 alert('Error saving event: ' + err.message);
@@ -95,32 +93,30 @@ export class CalendarCardPlusPopup extends LitElement {
     protected render(): TemplateResult | typeof nothing {
         if (!this.open) return nothing;
 
-        const title = this.mode === 'detail' 
-            ? this.detailTitle 
-            : (this.hass?.localize('ui.components.calendar.event.add') || 'Add Event');
+        const isAddMode = this.mode === 'add-event';
+        const title = isAddMode
+            ? (this.hass?.localize('ui.components.calendar.event.add') || 'Add Event')
+            : this.detailTitle;
 
         return html`
             <ha-adaptive-dialog
                 .hass=${this.hass}
                 open
-                @closed=${this._close}
-                @ha-dialog-closed=${this._close}
-                @wa-dialog-closed=${this._close}
-                @wa-after-hide=${this._close}
-                flexcontent
                 .headerTitle=${title}
+                @closed=${this._onDialogClosed}
+                @ha-dialog-closed=${this._onDialogClosed}
             >
                 <div class="dialog-content">
-                    ${this.mode === 'detail' 
-                        ? this._renderDetailContent() 
-                        : renderAddEventForm(
-                            this.hass, 
-                            this.config, 
-                            this._addEventState, 
+                    ${isAddMode
+                        ? renderAddEventForm(
+                            this.hass,
+                            this.config,
+                            this._addEventState,
                             this._updateAddEventState.bind(this),
-                            this._close.bind(this),
-                            this._handleSave.bind(this)
+                            this._closeDialog.bind(this),
+                            this._handleSave.bind(this),
                           )
+                        : this._renderDetailContent()
                     }
                 </div>
             </ha-adaptive-dialog>
@@ -201,33 +197,49 @@ export class CalendarCardPlusPopup extends LitElement {
             composed: true,
             detail: { entityId }
         });
-        this.dispatchEvent(event);
+        if (this._opener) {
+            this._opener.dispatchEvent(event);
+        } else {
+            window.dispatchEvent(event);
+        }
     }
 
     static styles = css`
         :host {
             display: block;
-            z-index: 100;
-            --ha-bottom-sheet-height: calc(
-                100vh - max(var(--safe-area-inset-top), 48px)
-            );
-            --ha-bottom-sheet-height: calc(
-                100dvh - max(var(--safe-area-inset-top), 48px)
-            );
-            --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height);
         }
 
-        ha-adaptive-dialog {
-            --mdc-dialog-min-width: 500px;
-            --mdc-dialog-max-width: 500px;
-            --dialog-content-padding: 0;
-            --mdc-dialog-heading-ink-color: var(--primary-text-color);
-            --mdc-dialog-content-ink-color: var(--primary-text-color);
-            --justify-action-buttons: space-between;
+        /* On mobile, force the bottom-sheet to always be ~92dvh tall */
+        @media all and (max-width: 600px), all and (max-height: 500px) {
+            :host {
+                --ha-bottom-sheet-height: calc(92dvh - env(safe-area-inset-top, 0px));
+                --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height);
+                --ha-bottom-sheet-min-height: var(--ha-bottom-sheet-height);
+            }
+        }
+
+        .dialog-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dialog-title {
+            font-size: 1.1em;
+            font-weight: 500;
+            flex: 1;
         }
 
         .dialog-content {
-            padding: 0 24px 24px 24px;
+            padding: 0 8px 8px 8px;
+            min-width: 320px;
+        }
+
+        .dialog-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 8px 16px 16px;
         }
 
         .calendar-item {
@@ -279,13 +291,6 @@ export class CalendarCardPlusPopup extends LitElement {
             color: var(--secondary-text-color);
         }
 
-        @media (max-width: 450px), all and (max-height: 500px) {
-            ha-adaptive-dialog {
-                --mdc-dialog-min-width: 100vw;
-                --mdc-dialog-max-width: 100vw;
-            }
-        }
-
         .add-event-form {
             display: flex;
             flex-direction: column;
@@ -315,16 +320,16 @@ export class CalendarCardPlusPopup extends LitElement {
             gap: 4px;
         }
 
-        .row-label {
-            font-weight: 500;
-            margin-bottom: -8px;
-        }
-
         .dialog-actions {
             display: flex;
             justify-content: flex-end;
             gap: 8px;
-            margin-top: 16px;
+            margin-top: 8px;
+        }
+
+        .row-label {
+            font-weight: 500;
+            margin-bottom: -8px;
         }
     `;
 }

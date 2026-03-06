@@ -105,7 +105,7 @@ export function renderAddEventForm(
     popupState: AddEventPopupState,
     updateState: (newState: Partial<AddEventPopupState>) => void,
     onClose: () => void,
-    onSave: () => void
+    onSave: () => void,
 ): TemplateResult {
     const calendars = Object.keys(hass.states)
         .filter(eid => eid.startsWith('calendar.'))
@@ -132,18 +132,13 @@ export function renderAddEventForm(
                     @input=${(e: any) => updateState({ description: e.target.value })}
                 ></ha-textfield>
 
-                <ha-select
-                    label=${hass.localize('ui.components.calendar.my_calendars') || 'Calendar'}
-                    .value=${popupState.calendar_id || ''}
-                    @change=${(e: any) => updateState({ calendar_id: e.target.value })}
-                    @closed=${(e: Event) => e.stopPropagation()}
-                >
-                    ${calendars.map(c => html`
-                        <mwc-list-item value=${c}>
-                            ${hass.states[c]?.attributes?.friendly_name || c}
-                        </mwc-list-item>
-                    `)}
-                </ha-select>
+                <ha-selector
+                    .hass=${hass}
+                    .selector=${{ select: { options: calendars.map(c => ({ value: c, label: hass.states[c]?.attributes?.friendly_name || c })) } }}
+                    .value=${popupState.calendar_id}
+                    .label=${hass.localize('ui.components.calendar.my_calendars') || 'Calendar'}
+                    @value-changed=${(e: any) => updateState({ calendar_id: e.detail.value })}
+                ></ha-selector>
 
                 <div class="row-flex">
                     <ha-formfield .label=${hass.localize('ui.components.calendar.event.all_day') || 'All Day'}>
@@ -242,27 +237,35 @@ export function renderAddEventForm(
                     </div>
                 </div>
 
-                <ha-select
-                    label=${hass.localize('ui.components.calendar.event.repeat.label') || 'Repeat'}
+                <ha-selector
+                    .hass=${hass}
+                    .selector=${{ select: { 
+                        options: [
+                            { value: 'none', label: hass.localize('ui.components.calendar.event.repeat.freq.none') || 'None' },
+                            { value: 'DAILY', label: hass.localize('ui.components.calendar.event.repeat.freq.daily') || 'Daily' },
+                            { value: 'WEEKLY', label: hass.localize('ui.components.calendar.event.repeat.freq.weekly') || 'Weekly' },
+                            { value: 'MONTHLY', label: hass.localize('ui.components.calendar.event.repeat.freq.monthly') || 'Monthly' },
+                            { value: 'YEARLY', label: hass.localize('ui.components.calendar.event.repeat.freq.yearly') || 'Yearly' }
+                        ],
+                        mode: 'dropdown'
+                    } }}
                     .value=${popupState.recurrence || 'none'}
-                    @change=${(e: any) => updateState({ recurrence: e.target.value })}
-                    @closed=${(e: Event) => e.stopPropagation()}
-                >
-                    <mwc-list-item value="none">${hass.localize('ui.components.calendar.event.repeat.freq.none') || 'None'}</mwc-list-item>
-                    <mwc-list-item value="DAILY">${hass.localize('ui.components.calendar.event.repeat.freq.daily') || 'Daily'}</mwc-list-item>
-                    <mwc-list-item value="WEEKLY">${hass.localize('ui.components.calendar.event.repeat.freq.weekly') || 'Weekly'}</mwc-list-item>
-                    <mwc-list-item value="MONTHLY">${hass.localize('ui.components.calendar.event.repeat.freq.monthly') || 'Monthly'}</mwc-list-item>
-                    <mwc-list-item value="YEARLY">${hass.localize('ui.components.calendar.event.repeat.freq.yearly') || 'Yearly'}</mwc-list-item>
-                </ha-select>
+                    .label=${hass.localize('ui.components.calendar.event.repeat.label') || 'Repeat'}
+                    @value-changed=${(e: any) => updateState({ recurrence: e.detail.value })}
+                ></ha-selector>
 
-            <div class="dialog-actions">
-                <ha-button @click=${onClose}>
-                    ${hass.localize('ui.common.cancel') || 'Cancel'}
-                </ha-button>
-                <ha-button elevated @click=${onSave} ?disabled=${!popupState.name || !popupState.calendar_id}>
-                    ${hass.localize('ui.common.save') || 'Save'}
-                </ha-button>
-            </div>
+                <div class="dialog-actions">
+                    <ha-button @click=${onClose}>
+                        ${hass.localize('ui.common.cancel') || 'Cancel'}
+                    </ha-button>
+                    <ha-button
+                        unelevated
+                        @click=${onSave}
+                        ?disabled=${!popupState.name || !popupState.calendar_id}
+                    >
+                        ${hass.localize('ui.common.save') || 'Save'}
+                    </ha-button>
+                </div>
         </div>
     `;
 }
