@@ -38,37 +38,59 @@ export class CalendarCardPlusPopup extends LitElement {
         if (params.addEventState) this._addEventState = params.addEventState;
         
         this.open = true;
+        window.history.pushState({ calendarCardPlusPopup: true }, "");
         this.requestUpdate();
         await this.updateComplete;
     }
 
+    private _onPopState = (_ev: PopStateEvent) => {
+        if (this.open && !window.history.state?.calendarCardPlusPopup) {
+            this._close();
+        }
+    };
+
     connectedCallback() {
         super.connectedCallback();
+        window.addEventListener("popstate", this._onPopState);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
+        window.removeEventListener("popstate", this._onPopState);
     }
+
+    private _close = () => {
+        if (!this.open) return;
+        this.open = false;
+        this.requestUpdate();
+        
+        const detail = { dialog: this };
+        this.dispatchEvent(new CustomEvent('closed', { bubbles: true, composed: true, detail }));
+        this.dispatchEvent(new CustomEvent('dialog-closed', { bubbles: true, composed: true, detail }));
+        this.dispatchEvent(new CustomEvent('popup-closed', { bubbles: true, composed: true, detail }));
+    };
 
     // Guard: only close if event originates from ha-adaptive-dialog itself, not from child elements
     private _onDialogClosed = (ev?: Event) => {
         if (ev && ev.type !== 'click') {
             const target = ev.target as HTMLElement | null;
-            if (target && target.tagName !== 'HA-ADAPTIVE-DIALOG') {
+            if (target && (target.tagName !== 'HA-ADAPTIVE-DIALOG' && target.tagName !== 'HA-DIALOG')) {
                 return;
             }
         }
-        this._closeDialog();
+        
+        this._close();
+        if (window.history.state?.calendarCardPlusPopup) {
+            window.history.back();
+        }
     };
 
     private _closeDialog = () => {
         if (!this.open) return;
-        this.open = false;
-        this.requestUpdate();
-        const detail = { dialog: this };
-        this.dispatchEvent(new CustomEvent('closed', { bubbles: true, composed: true, detail }));
-        this.dispatchEvent(new CustomEvent('dialog-closed', { bubbles: true, composed: true, detail }));
-        this.dispatchEvent(new CustomEvent('popup-closed', { bubbles: true, composed: true, detail }));
+        this._close();
+        if (window.history.state?.calendarCardPlusPopup) {
+            window.history.back();
+        }
     };
 
     private _updateAddEventState(newState: Partial<AddEventState>) {
@@ -91,8 +113,6 @@ export class CalendarCardPlusPopup extends LitElement {
     }
 
     protected render(): TemplateResult | typeof nothing {
-        if (!this.open) return nothing;
-
         const isAddMode = this.mode === 'add-event';
         const title = isAddMode
             ? (this.hass?.localize('ui.components.calendar.event.add') || 'Add Event')
@@ -101,12 +121,13 @@ export class CalendarCardPlusPopup extends LitElement {
         return html`
             <ha-adaptive-dialog
                 .hass=${this.hass}
-                open
+                .open=${this.open}
                 .headerTitle=${title}
                 @closed=${this._onDialogClosed}
                 @ha-dialog-closed=${this._onDialogClosed}
+                flexcontent
             >
-                <div class="dialog-content">
+                <div class="dialog-content scrollable ha-scrollbar">
                     ${isAddMode
                         ? renderAddEventForm(
                             this.hass,
@@ -209,13 +230,11 @@ export class CalendarCardPlusPopup extends LitElement {
             display: block;
         }
 
-        /* On mobile, force the bottom-sheet to always be ~92dvh tall */
-        @media all and (max-width: 600px), all and (max-height: 500px) {
-            :host {
-                --ha-bottom-sheet-height: calc(92dvh - env(safe-area-inset-top, 0px));
-                --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height);
-                --ha-bottom-sheet-min-height: var(--ha-bottom-sheet-height);
-            }
+        ha-adaptive-dialog {
+            --dialog-content-padding: 0px 12px 12px;
+            --ha-dialog-max-width: 96vw !important;
+            --ha-bottom-sheet-height: calc(100dvh - max(var(--safe-area-inset-top), 48px));
+            --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height);
         }
 
         .dialog-header {

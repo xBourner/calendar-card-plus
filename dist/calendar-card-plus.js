@@ -1,6 +1,6 @@
 var Re = Object.defineProperty;
 var Ie = (a, e, t) => e in a ? Re(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
-var $ = (a, e, t) => Ie(a, typeof e != "symbol" ? e + "" : e, t);
+var y = (a, e, t) => Ie(a, typeof e != "symbol" ? e + "" : e, t);
 var Ve = "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
 async function Ke(a, e, t, i) {
   const n = encodeURI(`?start=${e.toISOString()}&end=${t.toISOString()}`), s = i.map(async (r) => {
@@ -9,8 +9,8 @@ async function Ke(a, e, t, i) {
       if (!Array.isArray(d))
         throw new Error("Response is not an array");
       return d.map((l) => {
-        var f, m, A, C, _, g;
-        const h = ((f = l.start) == null ? void 0 : f.dateTime) || ((m = l.start) == null ? void 0 : m.date) || l.start, u = ((A = l.end) == null ? void 0 : A.dateTime) || ((C = l.end) == null ? void 0 : C.date) || l.end;
+        var f, m, A, E, _, g;
+        const h = ((f = l.start) == null ? void 0 : f.dateTime) || ((m = l.start) == null ? void 0 : m.date) || l.start, u = ((A = l.end) == null ? void 0 : A.dateTime) || ((E = l.end) == null ? void 0 : E.date) || l.end;
         return {
           ...l,
           start: { dateTime: h.includes("T") ? h : void 0, date: h.includes("T") ? void 0 : h },
@@ -82,7 +82,7 @@ const We = (a) => new je(typeof a == "string" ? a : a + "", void 0, pe), fe = (a
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: qe, defineProperty: Fe, getOwnPropertyDescriptor: Ye, getOwnPropertyNames: Ge, getOwnPropertySymbols: Qe, getPrototypeOf: Je } = Object, P = globalThis, ke = P.trustedTypes, Xe = ke ? ke.emptyScript : "", ce = P.reactiveElementPolyfillSupport, F = (a, e) => a, se = { toAttribute(a, e) {
+const { is: qe, defineProperty: Fe, getOwnPropertyDescriptor: Ye, getOwnPropertyNames: Ge, getOwnPropertySymbols: Qe, getPrototypeOf: Je } = Object, D = globalThis, ke = D.trustedTypes, Xe = ke ? ke.emptyScript : "", ce = D.reactiveElementPolyfillSupport, F = (a, e) => a, se = { toAttribute(a, e) {
   switch (e) {
     case Boolean:
       a = a ? Xe : null;
@@ -111,7 +111,7 @@ const { is: qe, defineProperty: Fe, getOwnPropertyDescriptor: Ye, getOwnProperty
   }
   return t;
 } }, we = (a, e) => !qe(a, e), Ae = { attribute: !0, type: String, converter: se, reflect: !1, useDefault: !1, hasChanged: we };
-Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), P.litPropertyMetadata ?? (P.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
+Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), D.litPropertyMetadata ?? (D.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
 let I = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ?? (this.l = [])).push(e);
@@ -315,18 +315,18 @@ let I = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-I.elementStyles = [], I.shadowRootOptions = { mode: "open" }, I[F("elementProperties")] = /* @__PURE__ */ new Map(), I[F("finalized")] = /* @__PURE__ */ new Map(), ce == null || ce({ ReactiveElement: I }), (P.reactiveElementVersions ?? (P.reactiveElementVersions = [])).push("2.1.2");
+I.elementStyles = [], I.shadowRootOptions = { mode: "open" }, I[F("elementProperties")] = /* @__PURE__ */ new Map(), I[F("finalized")] = /* @__PURE__ */ new Map(), ce == null || ce({ ReactiveElement: I }), (D.reactiveElementVersions ?? (D.reactiveElementVersions = [])).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Y = globalThis, Ee = (a) => a, oe = Y.trustedTypes, Ce = oe ? oe.createPolicy("lit-html", { createHTML: (a) => a }) : void 0, Oe = "$lit$", D = `lit$${Math.random().toFixed(9).slice(2)}$`, Ne = "?" + D, et = `<${Ne}>`, B = document, G = () => B.createComment(""), Q = (a) => a === null || typeof a != "object" && typeof a != "function", ye = Array.isArray, tt = (a) => ye(a) || typeof (a == null ? void 0 : a[Symbol.iterator]) == "function", _e = `[ 	
+const Y = globalThis, Ce = (a) => a, oe = Y.trustedTypes, Ee = oe ? oe.createPolicy("lit-html", { createHTML: (a) => a }) : void 0, Oe = "$lit$", P = `lit$${Math.random().toFixed(9).slice(2)}$`, Ne = "?" + P, et = `<${Ne}>`, B = document, G = () => B.createComment(""), Q = (a) => a === null || typeof a != "object" && typeof a != "function", ye = Array.isArray, tt = (a) => ye(a) || typeof (a == null ? void 0 : a[Symbol.iterator]) == "function", _e = `[ 	
 \f\r]`, q = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ze = /-->/g, Se = />/g, j = RegExp(`>|${_e}(?:([^\\s"'>=/]+)(${_e}*=${_e}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Te = /'/g, De = /"/g, Ue = /^(?:script|style|textarea|title)$/i, it = (a) => (e, ...t) => ({ _$litType$: a, strings: e, values: t }), w = it(1), V = Symbol.for("lit-noChange"), b = Symbol.for("lit-nothing"), Pe = /* @__PURE__ */ new WeakMap(), N = B.createTreeWalker(B, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Te = /'/g, Pe = /"/g, Ue = /^(?:script|style|textarea|title)$/i, it = (a) => (e, ...t) => ({ _$litType$: a, strings: e, values: t }), w = it(1), V = Symbol.for("lit-noChange"), b = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), N = B.createTreeWalker(B, 129);
 function He(a, e) {
   if (!ye(a) || !a.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return Ce !== void 0 ? Ce.createHTML(e) : e;
+  return Ee !== void 0 ? Ee.createHTML(e) : e;
 }
 const nt = (a, e) => {
   const t = a.length - 1, i = [];
@@ -334,9 +334,9 @@ const nt = (a, e) => {
   for (let r = 0; r < t; r++) {
     const d = a[r];
     let c, l, h = -1, u = 0;
-    for (; u < d.length && (o.lastIndex = u, l = o.exec(d), l !== null); ) u = o.lastIndex, o === q ? l[1] === "!--" ? o = ze : l[1] !== void 0 ? o = Se : l[2] !== void 0 ? (Ue.test(l[2]) && (n = RegExp("</" + l[2], "g")), o = j) : l[3] !== void 0 && (o = j) : o === j ? l[0] === ">" ? (o = n ?? q, h = -1) : l[1] === void 0 ? h = -2 : (h = o.lastIndex - l[2].length, c = l[1], o = l[3] === void 0 ? j : l[3] === '"' ? De : Te) : o === De || o === Te ? o = j : o === ze || o === Se ? o = q : (o = j, n = void 0);
+    for (; u < d.length && (o.lastIndex = u, l = o.exec(d), l !== null); ) u = o.lastIndex, o === q ? l[1] === "!--" ? o = ze : l[1] !== void 0 ? o = Se : l[2] !== void 0 ? (Ue.test(l[2]) && (n = RegExp("</" + l[2], "g")), o = j) : l[3] !== void 0 && (o = j) : o === j ? l[0] === ">" ? (o = n ?? q, h = -1) : l[1] === void 0 ? h = -2 : (h = o.lastIndex - l[2].length, c = l[1], o = l[3] === void 0 ? j : l[3] === '"' ? Pe : Te) : o === Pe || o === Te ? o = j : o === ze || o === Se ? o = q : (o = j, n = void 0);
     const f = o === j && a[r + 1].startsWith("/>") ? " " : "";
-    s += o === q ? d + et : h >= 0 ? (i.push(c), d.slice(0, h) + Oe + d.slice(h) + D + f) : d + D + (h === -2 ? r : f);
+    s += o === q ? d + et : h >= 0 ? (i.push(c), d.slice(0, h) + Oe + d.slice(h) + P + f) : d + P + (h === -2 ? r : f);
   }
   return [He(a, s + (a[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
 };
@@ -353,11 +353,11 @@ class J {
     for (; (n = N.nextNode()) !== null && d.length < r; ) {
       if (n.nodeType === 1) {
         if (n.hasAttributes()) for (const h of n.getAttributeNames()) if (h.endsWith(Oe)) {
-          const u = l[o++], f = n.getAttribute(h).split(D), m = /([.?@])?(.*)/.exec(u);
+          const u = l[o++], f = n.getAttribute(h).split(P), m = /([.?@])?(.*)/.exec(u);
           d.push({ type: 1, index: s, name: m[2], strings: f, ctor: m[1] === "." ? st : m[1] === "?" ? ot : m[1] === "@" ? rt : re }), n.removeAttribute(h);
-        } else h.startsWith(D) && (d.push({ type: 6, index: s }), n.removeAttribute(h));
+        } else h.startsWith(P) && (d.push({ type: 6, index: s }), n.removeAttribute(h));
         if (Ue.test(n.tagName)) {
-          const h = n.textContent.split(D), u = h.length - 1;
+          const h = n.textContent.split(P), u = h.length - 1;
           if (u > 0) {
             n.textContent = oe ? oe.emptyScript : "";
             for (let f = 0; f < u; f++) n.append(h[f], G()), N.nextNode(), d.push({ type: 2, index: ++s });
@@ -367,7 +367,7 @@ class J {
       } else if (n.nodeType === 8) if (n.data === Ne) d.push({ type: 2, index: s });
       else {
         let h = -1;
-        for (; (h = n.data.indexOf(D, h + 1)) !== -1; ) d.push({ type: 7, index: s }), h += D.length - 1;
+        for (; (h = n.data.indexOf(P, h + 1)) !== -1; ) d.push({ type: 7, index: s }), h += P.length - 1;
       }
       s++;
     }
@@ -453,8 +453,8 @@ class ee {
     }
   }
   _$AC(e) {
-    let t = Pe.get(e.strings);
-    return t === void 0 && Pe.set(e.strings, t = new J(e)), t;
+    let t = De.get(e.strings);
+    return t === void 0 && De.set(e.strings, t = new J(e)), t;
   }
   k(e) {
     ye(this._$AH) || (this._$AH = [], this._$AR());
@@ -466,8 +466,8 @@ class ee {
   _$AR(e = this._$AA.nextSibling, t) {
     var i;
     for ((i = this._$AP) == null ? void 0 : i.call(this, !1, !0, t); e !== this._$AB; ) {
-      const n = Ee(e).nextSibling;
-      Ee(e).remove(), e = n;
+      const n = Ce(e).nextSibling;
+      Ce(e).remove(), e = n;
     }
   }
   setConnected(e) {
@@ -1177,8 +1177,8 @@ function ht(a, e, t) {
         if (f)
           m = p;
         else {
-          const y = l.toLocaleTimeString(v, { hour: "2-digit", minute: "2-digit" });
-          m = `${p}, ${y}${v.startsWith("de") ? " Uhr" : ""}`;
+          const $ = l.toLocaleTimeString(v, { hour: "2-digit", minute: "2-digit" });
+          m = `${p}, ${$}${v.startsWith("de") ? " Uhr" : ""}`;
         }
       } else {
         const v = l.getTime() - u.getTime(), p = Math.ceil(v / 6e4);
@@ -1187,7 +1187,7 @@ function ht(a, e, t) {
     else if (f)
       m = a.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
     else {
-      const v = ((s = a.locale) == null ? void 0 : s.language) || a.language || navigator.language, p = (y) => y.toLocaleTimeString(v, { hour: "2-digit", minute: "2-digit" });
+      const v = ((s = a.locale) == null ? void 0 : s.language) || a.language || navigator.language, p = ($) => $.toLocaleTimeString(v, { hour: "2-digit", minute: "2-digit" });
       m = `${p(l)} - ${p(h)}`;
     }
     if (d > 0 && (m += ` ${x(a, "more_events", "{x}", d.toString())}`), t != null && t.show_weekday) {
@@ -1195,7 +1195,7 @@ function ht(a, e, t) {
       m += ` • ${p}`;
     }
     t != null && t.show_calendar_name && r.calendar_name && (m += ` • ${r.calendar_name}`);
-    const C = l <= u && h >= u ? u : l, _ = ve(r.entity_id, t), g = me(a, C, _, (t == null ? void 0 : t.dark_mode) ?? !1);
+    const E = l <= u && h >= u ? u : l, _ = ve(r.entity_id, t), g = me(a, E, _, (t == null ? void 0 : t.dark_mode) ?? !1);
     return w`
             <div class="calendar-container">
                 <div class="calendar-item"  
@@ -1215,7 +1215,7 @@ function ht(a, e, t) {
   return w`
         <div class="calendar-container">
             ${e.map((r, d) => {
-    var y, k, ie;
+    var $, k, ie;
     const c = r.summary;
     let l, h;
     try {
@@ -1228,27 +1228,27 @@ function ht(a, e, t) {
     let m, A = -1;
     if (l > u)
       if (t != null && t.show_date) {
-        const E = ((y = a.locale) == null ? void 0 : y.language) || a.language || navigator.language, z = l.toLocaleDateString(E, { day: "2-digit", month: "2-digit", year: "numeric" });
+        const C = (($ = a.locale) == null ? void 0 : $.language) || a.language || navigator.language, z = l.toLocaleDateString(C, { day: "2-digit", month: "2-digit", year: "numeric" });
         if (f)
           m = z;
         else {
-          const L = l.toLocaleTimeString(E, { hour: "2-digit", minute: "2-digit" });
-          m = `${z}, ${L}${E.startsWith("de") ? " Uhr" : ""}`;
+          const L = l.toLocaleTimeString(C, { hour: "2-digit", minute: "2-digit" });
+          m = `${z}, ${L}${C.startsWith("de") ? " Uhr" : ""}`;
         }
       } else {
-        const E = l.getTime() - u.getTime(), z = Math.ceil(E / 6e4);
+        const C = l.getTime() - u.getTime(), z = Math.ceil(C / 6e4);
         m = Me(a, z);
       }
     else if (f)
       m = a.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
     else {
-      const E = ((k = a.locale) == null ? void 0 : k.language) || a.language || navigator.language, z = (Z) => Z.toLocaleTimeString(E, { hour: "2-digit", minute: "2-digit" });
+      const C = ((k = a.locale) == null ? void 0 : k.language) || a.language || navigator.language, z = (Z) => Z.toLocaleTimeString(C, { hour: "2-digit", minute: "2-digit" });
       m = `${z(l)} - ${z(h)}`;
       const L = h.getTime() - l.getTime(), ne = u.getTime() - l.getTime();
       L > 0 && (A = Math.max(0, Math.min(100, ne / L * 100)));
     }
     if (t != null && t.show_weekday) {
-      const E = ((ie = a.locale) == null ? void 0 : ie.language) || a.language || navigator.language, z = l.toLocaleDateString(E, { weekday: t.show_weekday_long ? "long" : "short" });
+      const C = ((ie = a.locale) == null ? void 0 : ie.language) || a.language || navigator.language, z = l.toLocaleDateString(C, { weekday: t.show_weekday_long ? "long" : "short" });
       m += ` • ${z}`;
     }
     t != null && t.show_calendar_name && r.calendar_name && (m += ` • ${r.calendar_name}`);
@@ -1258,7 +1258,7 @@ function ht(a, e, t) {
                 <div class="calendar-item"  
                      style="margin-bottom: 6px;"
                      title="${c}"
-                     @click=${(E) => mt(E, r.entity_id)}>
+                     @click=${(C) => mt(C, r.entity_id)}>
                      <div class="calendar-icon dynamic">
                         ${v}
                     </div>
@@ -1385,7 +1385,7 @@ async function pt(a, e, t, i) {
     }
 }
 function ft(a, e, t, i, n, s) {
-  var r, d, c, l, h, u, f, m, A, C;
+  var r, d, c, l, h, u, f, m, A, E;
   const o = Object.keys(a.states).filter((_) => _.startsWith("calendar.")).filter((_) => {
     var g;
     return !((g = e.exclude_entities) != null && g.includes(_));
@@ -1453,8 +1453,8 @@ function ft(a, e, t, i, n, s) {
                             .disabled=${t.all_day}
                             .value=${((c = (d = t.start) == null ? void 0 : d.split(" ")[1]) == null ? void 0 : c.substring(0, 2)) || "00"}
                             @change=${(_) => {
-    var p, y, k;
-    const g = ((p = t.start) == null ? void 0 : p.split(" ")[0]) || "", v = ((k = (y = t.start) == null ? void 0 : y.split(" ")[1]) == null ? void 0 : k.substring(3, 5)) || "00";
+    var p, $, k;
+    const g = ((p = t.start) == null ? void 0 : p.split(" ")[0]) || "", v = ((k = ($ = t.start) == null ? void 0 : $.split(" ")[1]) == null ? void 0 : k.substring(3, 5)) || "00";
     i({ start: `${g} ${_.target.value.padStart(2, "0")}:${v}:00` });
   }}
                             style="flex: 1; min-width: 0;"
@@ -1467,8 +1467,8 @@ function ft(a, e, t, i, n, s) {
                             .disabled=${t.all_day}
                             .value=${((h = (l = t.start) == null ? void 0 : l.split(" ")[1]) == null ? void 0 : h.substring(3, 5)) || "00"}
                             @change=${(_) => {
-    var p, y, k;
-    const g = ((p = t.start) == null ? void 0 : p.split(" ")[0]) || "", v = ((k = (y = t.start) == null ? void 0 : y.split(" ")[1]) == null ? void 0 : k.substring(0, 2)) || "00";
+    var p, $, k;
+    const g = ((p = t.start) == null ? void 0 : p.split(" ")[0]) || "", v = ((k = ($ = t.start) == null ? void 0 : $.split(" ")[1]) == null ? void 0 : k.substring(0, 2)) || "00";
     i({ start: `${g} ${v}:${_.target.value.padStart(2, "0")}:00` });
   }}
                             style="flex: 1; min-width: 0;"
@@ -1498,8 +1498,8 @@ function ft(a, e, t, i, n, s) {
                             .disabled=${t.all_day}
                             .value=${((m = (f = t.end) == null ? void 0 : f.split(" ")[1]) == null ? void 0 : m.substring(0, 2)) || "00"}
                             @change=${(_) => {
-    var p, y, k;
-    const g = ((p = t.end) == null ? void 0 : p.split(" ")[0]) || "", v = ((k = (y = t.end) == null ? void 0 : y.split(" ")[1]) == null ? void 0 : k.substring(3, 5)) || "00";
+    var p, $, k;
+    const g = ((p = t.end) == null ? void 0 : p.split(" ")[0]) || "", v = ((k = ($ = t.end) == null ? void 0 : $.split(" ")[1]) == null ? void 0 : k.substring(3, 5)) || "00";
     i({ end: `${g} ${_.target.value.padStart(2, "0")}:${v}:00` });
   }}
                             style="flex: 1; min-width: 0;"
@@ -1510,10 +1510,10 @@ function ft(a, e, t, i, n, s) {
                             min="0"
                             max="59"
                             .disabled=${t.all_day}
-                            .value=${((C = (A = t.end) == null ? void 0 : A.split(" ")[1]) == null ? void 0 : C.substring(3, 5)) || "00"}
+                            .value=${((E = (A = t.end) == null ? void 0 : A.split(" ")[1]) == null ? void 0 : E.substring(3, 5)) || "00"}
                             @change=${(_) => {
-    var p, y, k;
-    const g = ((p = t.end) == null ? void 0 : p.split(" ")[0]) || "", v = ((k = (y = t.end) == null ? void 0 : y.split(" ")[1]) == null ? void 0 : k.substring(0, 2)) || "00";
+    var p, $, k;
+    const g = ((p = t.end) == null ? void 0 : p.split(" ")[0]) || "", v = ((k = ($ = t.end) == null ? void 0 : $.split(" ")[1]) == null ? void 0 : k.substring(0, 2)) || "00";
     i({ end: `${g} ${v}:${_.target.value.padStart(2, "0")}:00` });
   }}
                             style="flex: 1; min-width: 0;"
@@ -1561,38 +1561,47 @@ var Be = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, yt = (a, e
 let S = class extends H {
   constructor() {
     super(...arguments);
-    $(this, "hass");
-    $(this, "config");
-    $(this, "open", !1);
-    $(this, "mode", "detail");
-    $(this, "detailTitle", "");
-    $(this, "detailEvents", []);
-    $(this, "_addEventState", { open: !1 });
-    $(this, "_opener", null);
-    // Guard: only close if event originates from ha-adaptive-dialog itself, not from child elements
-    $(this, "_onDialogClosed", (e) => {
-      if (e && e.type !== "click") {
-        const t = e.target;
-        if (t && t.tagName !== "HA-ADAPTIVE-DIALOG")
-          return;
-      }
-      this._closeDialog();
+    y(this, "hass");
+    y(this, "config");
+    y(this, "open", !1);
+    y(this, "mode", "detail");
+    y(this, "detailTitle", "");
+    y(this, "detailEvents", []);
+    y(this, "_addEventState", { open: !1 });
+    y(this, "_opener", null);
+    y(this, "_onPopState", (e) => {
+      var t;
+      this.open && !((t = window.history.state) != null && t.calendarCardPlusPopup) && this._close();
     });
-    $(this, "_closeDialog", () => {
+    y(this, "_close", () => {
       if (!this.open) return;
       this.open = !1, this.requestUpdate();
       const e = { dialog: this };
       this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0, detail: e })), this.dispatchEvent(new CustomEvent("dialog-closed", { bubbles: !0, composed: !0, detail: e })), this.dispatchEvent(new CustomEvent("popup-closed", { bubbles: !0, composed: !0, detail: e }));
     });
+    // Guard: only close if event originates from ha-adaptive-dialog itself, not from child elements
+    y(this, "_onDialogClosed", (e) => {
+      var t;
+      if (e && e.type !== "click") {
+        const i = e.target;
+        if (i && i.tagName !== "HA-ADAPTIVE-DIALOG" && i.tagName !== "HA-DIALOG")
+          return;
+      }
+      this._close(), (t = window.history.state) != null && t.calendarCardPlusPopup && window.history.back();
+    });
+    y(this, "_closeDialog", () => {
+      var e;
+      this.open && (this._close(), (e = window.history.state) != null && e.calendarCardPlusPopup && window.history.back());
+    });
   }
   async showDialog(e) {
-    this.hass = e.hass, this.config = e.config, this._opener = e.opener, this.mode = e.mode, e.title && (this.detailTitle = e.title), e.events && (this.detailEvents = e.events), e.addEventState && (this._addEventState = e.addEventState), this.open = !0, this.requestUpdate(), await this.updateComplete;
+    this.hass = e.hass, this.config = e.config, this._opener = e.opener, this.mode = e.mode, e.title && (this.detailTitle = e.title), e.events && (this.detailEvents = e.events), e.addEventState && (this._addEventState = e.addEventState), this.open = !0, window.history.pushState({ calendarCardPlusPopup: !0 }, ""), this.requestUpdate(), await this.updateComplete;
   }
   connectedCallback() {
-    super.connectedCallback();
+    super.connectedCallback(), window.addEventListener("popstate", this._onPopState);
   }
   disconnectedCallback() {
-    super.disconnectedCallback();
+    super.disconnectedCallback(), window.removeEventListener("popstate", this._onPopState);
   }
   _updateAddEventState(e) {
     this._addEventState = { ...this._addEventState, ...e }, this.requestUpdate();
@@ -1611,17 +1620,17 @@ let S = class extends H {
   }
   render() {
     var i;
-    if (!this.open) return b;
     const e = this.mode === "add-event", t = e ? ((i = this.hass) == null ? void 0 : i.localize("ui.components.calendar.event.add")) || "Add Event" : this.detailTitle;
     return w`
             <ha-adaptive-dialog
                 .hass=${this.hass}
-                open
+                .open=${this.open}
                 .headerTitle=${t}
                 @closed=${this._onDialogClosed}
                 @ha-dialog-closed=${this._onDialogClosed}
+                flexcontent
             >
-                <div class="dialog-content">
+                <div class="dialog-content scrollable ha-scrollbar">
                     ${e ? ft(
       this.hass,
       this.config,
@@ -1636,7 +1645,7 @@ let S = class extends H {
   }
   _renderDetailContent() {
     return this.detailEvents.map((e, t) => {
-      var m, A, C;
+      var m, A, E;
       const i = e.summary;
       let n = "", s, o;
       try {
@@ -1660,7 +1669,7 @@ let S = class extends H {
         n = `${g(s)} - ${g(o)}`;
       }
       if (this.config.show_weekday) {
-        const _ = ((C = this.hass.locale) == null ? void 0 : C.language) || this.hass.language || navigator.language, g = s.toLocaleDateString(_, { weekday: "short" });
+        const _ = ((E = this.hass.locale) == null ? void 0 : E.language) || this.hass.language || navigator.language, g = s.toLocaleDateString(_, { weekday: "short" });
         n += ` • ${g}`;
       }
       this.config.show_calendar_name && e.calendar_name && (n += ` • ${e.calendar_name}`);
@@ -1693,13 +1702,11 @@ $t(S, "styles", fe`
             display: block;
         }
 
-        /* On mobile, force the bottom-sheet to always be ~92dvh tall */
-        @media all and (max-width: 600px), all and (max-height: 500px) {
-            :host {
-                --ha-bottom-sheet-height: calc(92dvh - env(safe-area-inset-top, 0px));
-                --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height);
-                --ha-bottom-sheet-min-height: var(--ha-bottom-sheet-height);
-            }
+        ha-adaptive-dialog {
+            --dialog-content-padding: 0px 12px 12px;
+            --ha-dialog-max-width: 96vw !important;
+            --ha-bottom-sheet-height: calc(100dvh - max(var(--safe-area-inset-top), 48px));
+            --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height);
         }
 
         .dialog-header {
@@ -1848,11 +1855,11 @@ var xt = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, de = (a, e
 let X = class extends H {
   constructor() {
     super(...arguments);
-    $(this, "hass");
-    $(this, "config");
-    $(this, "_events");
-    $(this, "_popup", null);
-    $(this, "_handleShowDetail", async (e) => {
+    y(this, "hass");
+    y(this, "config");
+    y(this, "_events");
+    y(this, "_popup", null);
+    y(this, "_handleShowDetail", async (e) => {
       this._popup && await this._popup.showDialog({
         hass: this.hass,
         config: this.config,
@@ -1862,7 +1869,7 @@ let X = class extends H {
         events: e.detail.entities
       });
     });
-    $(this, "_openAddEventPopup", async () => {
+    y(this, "_openAddEventPopup", async () => {
       if (this._popup) {
         const e = gt(this.hass, this.config);
         await this._popup.showDialog({
@@ -1874,7 +1881,7 @@ let X = class extends H {
         });
       }
     });
-    $(this, "_onEventSaved", () => {
+    y(this, "_onEventSaved", () => {
       this._events = void 0, this.requestUpdate(), this._fetchEvents();
     });
   }
@@ -2023,7 +2030,7 @@ let X = class extends H {
     return 1;
   }
   static async getConfigElement() {
-    return await Promise.resolve().then(() => Et), document.createElement("calendar-card-plus-editor");
+    return await Promise.resolve().then(() => Ct), document.createElement("calendar-card-plus-editor");
   }
   static getStubConfig(e) {
     return {
@@ -2069,9 +2076,9 @@ var kt = Object.defineProperty, At = Object.getOwnPropertyDescriptor, le = (a, e
 let W = class extends H {
   constructor() {
     super(...arguments);
-    $(this, "hass");
-    $(this, "_config", { type: "custom:calendar-card-plus" });
-    $(this, "_showAllCalendars", !1);
+    y(this, "hass");
+    y(this, "_config", { type: "custom:calendar-card-plus" });
+    y(this, "_showAllCalendars", !1);
   }
   set config(e) {
     this.setConfig(e);
@@ -2080,7 +2087,7 @@ let W = class extends H {
     this._config = e, this.requestUpdate();
   }
   render() {
-    var r, d, c, l, h, u, f, m, A, C;
+    var r, d, c, l, h, u, f, m, A, E;
     if (!this.hass)
       return w``;
     const e = this._config.upcoming_events ?? !1, t = this._config.unfold_events ?? !1, i = this._config.days ?? 1, n = this._config.hours ?? 0, s = this._config.minutes ?? 0, o = this._config.exclude_entities ?? [];
@@ -2204,16 +2211,16 @@ let W = class extends H {
                     ></ha-selector>
                 </div>
 
-                <h4>${((C = this.hass) == null ? void 0 : C.localize("ui.components.calendar.my_calendars")) || "Calendars"}</h4>
+                <h4>${((E = this.hass) == null ? void 0 : E.localize("ui.components.calendar.my_calendars")) || "Calendars"}</h4>
                 <div class="entities-list">
                     ${(() => {
       const _ = this._getCalendarEntities(), g = this._showAllCalendars ? _ : _.slice(0, 3), v = _.length > 3;
       return w`
                             ${g.map((p) => {
-        var E, z, L, ne;
-        const y = !o.includes(p.entity_id), k = ((E = this._config.calendar_colors) == null ? void 0 : E[p.entity_id]) || "", ie = this._toCssColor(k || this._config.calendar_icon_color || "#fa3e3e");
+        var C, z, L, ne;
+        const $ = !o.includes(p.entity_id), k = ((C = this._config.calendar_colors) == null ? void 0 : C[p.entity_id]) || "", ie = this._toCssColor(k || this._config.calendar_icon_color || "#fa3e3e");
         return w`
-                                    <div class="entity-row ${y ? "" : "disabled"}">
+                                    <div class="entity-row ${$ ? "" : "disabled"}">
                                         <div class="entity-row-top">
                                             <div class="entity-icon dynamic" style="background: transparent;">
                                                 ${this._renderDynamicIcon(/* @__PURE__ */ new Date(), ie, this._config.dark_mode ?? !1)}
@@ -2226,10 +2233,10 @@ let W = class extends H {
                                                 size="small" 
                                                 appearance="filled" 
                                                 variant="brand" 
-                                                class="${y ? "action-hide" : "action-show"}"
+                                                class="${$ ? "action-hide" : "action-show"}"
                                                 @click=${(Z) => this._calendarToggleEntity(Z, p.entity_id)}
                                             >
-                                                ${y ? ((z = this.hass) == null ? void 0 : z.localize("ui.common.hide")) || "Hide" : ((L = this.hass) == null ? void 0 : L.localize("ui.common.show")) || "Show"}
+                                                ${$ ? ((z = this.hass) == null ? void 0 : z.localize("ui.common.hide")) || "Hide" : ((L = this.hass) == null ? void 0 : L.localize("ui.common.show")) || "Show"}
                                             </ha-button>
                                         </div>
                                         <div class="entity-row-bottom">
@@ -2459,7 +2466,7 @@ le([
 W = le([
   $e("calendar-card-plus-editor")
 ], W);
-const Et = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Ct = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get CalendarCardPlusEditor() {
     return W;

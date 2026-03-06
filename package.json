@@ -1,6 +1,6 @@
 {
   "name": "calendar-card-plus",
-  "version": "0.0.1",
+  "version": "0.0.8",
   "description": "Standalone Calendar Card extracted from Dynamic Grid Card",
   "scripts": {
     "dev": "vite",
