@@ -72,6 +72,12 @@ Once installed, simply edit your dashboard, click **Add Card**, and search for *
 
 For advanced configuration and YAML examples, please visit the [Wiki](https://github.com/xBourner/calendar-card-plus/wiki).
 
+### 🎥 Video Tutorial
+
+Want to see the Status Card in action? Check out this excellent showcase and tutorial video (🇩🇪 German language):
+
+[![Calendar Card Plus Tutorial](https://img.youtube.com/vi/fHPj5u0S6GU/0.jpg)](https://www.youtube.com/watch?v=fHPj5u0S6GU&t=819)
+
 ## ❤️ Support My Work
 
 Developing and maintaining custom cards takes a lot of time and coffee. If you enjoy using Calendar Card Plus and want to support its ongoing development, I would greatly appreciate it!
