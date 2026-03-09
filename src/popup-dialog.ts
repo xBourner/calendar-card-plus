@@ -41,6 +41,16 @@ export class CalendarCardPlusPopup extends LitElement {
         window.history.pushState({ calendarCardPlusPopup: true }, "");
         this.requestUpdate();
         await this.updateComplete;
+
+        // Targeted reset to clear leaked transforms from ha-bottom-sheet (swipe actions)
+        const ad = this.renderRoot.querySelector('ha-adaptive-dialog');
+        if (ad && ad.shadowRoot) {
+            const bs = ad.shadowRoot.querySelector('ha-bottom-sheet') as HTMLElement;
+            if (bs) {
+                bs.style.removeProperty('--dialog-transform');
+                bs.style.removeProperty('--dialog-transition');
+            }
+        }
     }
 
     private _onPopState = (_ev: PopStateEvent) => {
@@ -117,6 +127,7 @@ export class CalendarCardPlusPopup extends LitElement {
         const title = isAddMode
             ? (this.hass?.localize('ui.components.calendar.event.add') || 'Add Event')
             : this.detailTitle;
+
 
         return html`
             <ha-adaptive-dialog
@@ -233,8 +244,8 @@ export class CalendarCardPlusPopup extends LitElement {
         ha-adaptive-dialog {
             --dialog-content-padding: 0px 12px 12px;
             --ha-dialog-max-width: 96vw !important;
-            --ha-bottom-sheet-height: calc(100dvh - max(var(--safe-area-inset-top), 48px));
-            --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height);
+            --ha-bottom-sheet-height: calc(100dvh - max(var(--safe-area-inset-top), 48px)) !important;
+            --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height) !important;
         }
 
         .dialog-header {
