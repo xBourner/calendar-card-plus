@@ -99,9 +99,13 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         const iconColor = _resolveColor(event.entity_id, config);
         const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
 
+        const bgColor = _resolveBackgroundColor(event.entity_id, config);
+        const itemStyle = bgColor ? `background-color: ${bgColor}; border: none;` : '';
+
         return html`
             <div class="calendar-container">
                 <div class="calendar-item"  
+                     style="${itemStyle}"
                      title="${title}"
                      @click=${(e: Event) => _handleCompactClick(e, hass, events)}>
                      <div class="calendar-icon dynamic">
@@ -185,12 +189,15 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 const iconColor = _resolveColor(event.entity_id, config);
                 const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
 
+                const bgColor = _resolveBackgroundColor(event.entity_id, config);
+                const itemStyle = bgColor ? `background-color: ${bgColor}; border: none;` : '';
+
                 const showDivider = config?.show_divider && index > 0 && events[index - 1].entity_id !== event.entity_id;
 
                 return html`
                 ${showDivider ? html`<div class="calendar-divider"></div>` : ''}
                 <div class="calendar-item"  
-                     style="margin-bottom: 6px;"
+                     style="${itemStyle}"
                      title="${title}"
                      @click=${(e: Event) => _handleCalendarClick(e, event.entity_id)}>
                      <div class="calendar-icon dynamic">
@@ -215,6 +222,11 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
 export function _resolveColor(entityId: string, config?: CalendarCardPlusConfig): string {
     const color = config?.calendar_colors?.[entityId] || config?.calendar_icon_color || '#fa3e3e';
     return _toCssColor(color);
+}
+
+export function _resolveBackgroundColor(entityId: string, config?: CalendarCardPlusConfig): string {
+    const color = config?.calendar_background_colors?.[entityId] || config?.background_color || '';
+    return color ? _toCssColor(color) : '';
 }
 
 export function _toCssColor(color: string): string {

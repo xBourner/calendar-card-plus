@@ -151,6 +151,17 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                     ></ha-selector>
                 </div>
 
+                <div class="settings-row full-width">
+                    <ha-selector
+                        .hass=${this.hass}
+                        .selector=${{ ui_color: {} }}
+                        .value=${this._config.background_color || ''}
+                        .label=${localize(this.hass, 'editor_background_color')}
+                        .configValue=${'background_color'}
+                        @value-changed=${this._valueChanged}
+                    ></ha-selector>
+                </div>
+
                 <h4>${this.hass?.localize('ui.components.calendar.my_calendars') || 'Calendars'}</h4>
                 <div class="entities-list">
                     ${(() => {
@@ -193,6 +204,13 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                                                 .value=${configColor}
                                                 .label=${this.hass?.localize('ui.panel.lovelace.editor.card.tile.color') || 'Color'}
                                                 @value-changed=${(e: CustomEvent) => this._calendarColorChanged(e, entity.entity_id)}
+                                            ></ha-selector>
+                                            <ha-selector
+                                                .hass=${this.hass}
+                                                .selector=${{ ui_color: {} }}
+                                                .value=${this._config.calendar_background_colors?.[entity.entity_id] || ''}
+                                                .label=${localize(this.hass as HomeAssistant, 'editor_background_color')}
+                                                @value-changed=${(e: CustomEvent) => this._calendarBackgroundColorChanged(e, entity.entity_id)}
                                             ></ha-selector>
                                         </div>
                                     </div>
@@ -281,31 +299,72 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             return;
         }
         const target = ev.target as any;
-        const value = ev.detail?.value ?? target.value;
+        const configValue = target.configValue;
         
-        if (this._config[target.configValue] === value) {
+        if (!configValue) {
             return;
         }
-        if (target.configValue) {
-            this._config = {
-                ...this._config,
-                [target.configValue]: value,
-            };
-            fireEvent(this, 'config-changed', { config: this._config });
+
+        const value = ev.detail?.value;
+        
+        if (this._config[configValue] === value) {
+            return;
         }
+
+        const newConfig = { ...this._config };
+        if (value === undefined || value === null || value === '') {
+            delete newConfig[configValue];
+        } else {
+            newConfig[configValue] = value;
+        }
+        
+        this._config = newConfig;
+        fireEvent(this, 'config-changed', { config: this._config });
     }
 
     private _calendarColorChanged(ev: CustomEvent, entityId: string) {
         const value = ev.detail.value;
-        const currentColors = this._config.calendar_colors || {};
+        const currentColors = { ...(this._config.calendar_colors || {}) };
         
-        this._config = {
-            ...this._config,
-            calendar_colors: {
-                ...currentColors,
-                [entityId]: value
-            }
-        };
+        if (value === undefined || value === null || value === '') {
+            delete currentColors[entityId];
+        } else {
+            currentColors[entityId] = value;
+        }
+
+        if (Object.keys(currentColors).length === 0) {
+            const newConfig = { ...this._config };
+            delete newConfig.calendar_colors;
+            this._config = newConfig;
+        } else {
+            this._config = {
+                ...this._config,
+                calendar_colors: currentColors
+            };
+        }
+        fireEvent(this, 'config-changed', { config: this._config });
+    }
+
+    private _calendarBackgroundColorChanged(ev: CustomEvent, entityId: string) {
+        const value = ev.detail.value;
+        const currentColors = { ...(this._config.calendar_background_colors || {}) };
+        
+        if (value === undefined || value === null || value === '') {
+            delete currentColors[entityId];
+        } else {
+            currentColors[entityId] = value;
+        }
+
+        if (Object.keys(currentColors).length === 0) {
+            const newConfig = { ...this._config };
+            delete newConfig.calendar_background_colors;
+            this._config = newConfig;
+        } else {
+            this._config = {
+                ...this._config,
+                calendar_background_colors: currentColors
+            };
+        }
         fireEvent(this, 'config-changed', { config: this._config });
     }
 
@@ -380,6 +439,9 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             }
             .entity-row-bottom {
                 width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
             }
             .entity-row.disabled {
                 opacity: 0.6;

@@ -4,7 +4,7 @@ import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant } from './ha/types';
 import { CalendarCardPlusConfig } from './types';
-import { renderCalendar, _resolveColor, _renderDynamicIcon, _formatLocalizedDuration } from './calendar';
+import { renderCalendar, _resolveColor, _resolveBackgroundColor, _renderDynamicIcon, _formatLocalizedDuration, _toCssColor } from './calendar';
 
 
 
@@ -18,26 +18,15 @@ export class CalendarCardPlus extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
     @state() private config!: CalendarCardPlusConfig;
     @state() private _events: CalendarEvent[] | undefined = undefined;
-    private _popup: any = null;
 
     public connectedCallback() {
         super.connectedCallback();
         this.addEventListener('calendar-card-show-detail', this._handleShowDetail as unknown as EventListener);
-        if (!this._popup) {
-            this._popup = document.createElement('calendar-card-plus-popup');
-            this._popup.addEventListener('event-saved', this._onEventSaved);
-            document.body.appendChild(this._popup);
-        }
     }
 
     public disconnectedCallback() {
         super.disconnectedCallback();
         this.removeEventListener('calendar-card-show-detail', this._handleShowDetail as unknown as EventListener);
-        if (this._popup) {
-            this._popup.removeEventListener('event-saved', this._onEventSaved);
-            this._popup.remove();
-            this._popup = null;
-        }
     }
 
     protected willUpdate(changedProps: Map<string, any>) {
@@ -100,16 +89,14 @@ export class CalendarCardPlus extends LitElement {
     }
 
     private _handleShowDetail = async (e: CustomEvent) => {
-        if (this._popup) {
-            await this._popup.showDialog({
-                hass: this.hass,
-                config: this.config,
-                opener: this,
-                mode: 'detail',
-                title: e.detail.title,
-                events: e.detail.entities
-            });
-        }
+        this._showPopup('calendar-card-plus-popup', {
+            hass: this.hass,
+            config: this.config,
+            opener: this,
+            mode: 'detail',
+            title: e.detail.title,
+            events: e.detail.entities
+        });
     }
 
     protected render(): TemplateResult {
@@ -118,6 +105,7 @@ export class CalendarCardPlus extends LitElement {
         }
 
         const content = renderCalendar(this.hass, this._events, this.config);
+        
 
         return html`
             <ha-card>
@@ -130,16 +118,31 @@ export class CalendarCardPlus extends LitElement {
     }
 
     private _openAddEventPopup = async () => {
-        if (this._popup) {
-            const addEventState = openAddEventPopup(this.hass, this.config);
-            await this._popup.showDialog({
-                hass: this.hass,
-                config: this.config,
-                opener: this,
-                mode: 'add-event',
-                addEventState
-            });
-        }
+        const addEventState = openAddEventPopup(this.hass, this.config);
+        this._showPopup('calendar-card-plus-popup', {
+            hass: this.hass,
+            config: this.config,
+            opener: this,
+            mode: 'add-event',
+            addEventState
+        });
+    }
+
+    private _showPopup(dialogTag: string, dialogParams: any): void {
+        this.dispatchEvent(
+            new CustomEvent('show-dialog', {
+                detail: {
+                    dialogTag,
+                    dialogImport: () => import('./popup-dialog'),
+                    dialogParams: {
+                        ...dialogParams,
+                        onEventSaved: this._onEventSaved
+                    },
+                },
+                bubbles: true,
+                composed: true,
+            })
+        );
     }
 
     private _onEventSaved = () => {
@@ -156,7 +159,6 @@ export class CalendarCardPlus extends LitElement {
             ha-card {
                 height: 100%;
                 box-sizing: border-box;
-                padding: 12px;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
@@ -173,7 +175,14 @@ export class CalendarCardPlus extends LitElement {
                 display: flex;
                 align-items: center;
                 gap: 12px;
+                padding: 12px;
+                border-radius: var(--ha-card-border-radius, 12px);
+                margin-bottom: 8px;
                 cursor: pointer;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            .calendar-item:last-child {
+                margin-bottom: 0px;
             }
             .calendar-icon {
                 width: 40px;

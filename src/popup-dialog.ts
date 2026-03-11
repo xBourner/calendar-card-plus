@@ -5,7 +5,7 @@ import { CalendarCardPlusConfig, CalendarEvent } from './types';
 import { saveNewEvent, AddEventPopupState as AddEventState } from './events';
 import { renderAddEventForm } from './events';
 
-import { _resolveColor, _renderDynamicIcon } from './calendar';
+import { _resolveColor, _renderDynamicIcon, _toCssColor, _resolveBackgroundColor } from './calendar';
 
 @customElement('calendar-card-plus-popup')
 export class CalendarCardPlusPopup extends LitElement {
@@ -19,6 +19,7 @@ export class CalendarCardPlusPopup extends LitElement {
     
     @state() private _addEventState: AddEventState = { open: false };
     private _opener: HTMLElement | null = null;
+    private _onEventSaved: (() => void) | null = null;
 
     public async showDialog(params: {
         hass: HomeAssistant;
@@ -28,6 +29,7 @@ export class CalendarCardPlusPopup extends LitElement {
         title?: string;
         events?: CalendarEvent[];
         addEventState?: AddEventState;
+        onEventSaved?: () => void;
     }) {
         this.hass = params.hass;
         this.config = params.config;
@@ -36,6 +38,7 @@ export class CalendarCardPlusPopup extends LitElement {
         if (params.title) this.detailTitle = params.title;
         if (params.events) this.detailEvents = params.events;
         if (params.addEventState) this._addEventState = params.addEventState;
+        if (params.onEventSaved) this._onEventSaved = params.onEventSaved;
         
         this.open = true;
         window.history.pushState({ calendarCardPlusPopup: true }, "");
@@ -114,6 +117,7 @@ export class CalendarCardPlusPopup extends LitElement {
             this._addEventState,
             () => {
                 this.dispatchEvent(new CustomEvent('event-saved', { bubbles: true, composed: true }));
+                if (this._onEventSaved) this._onEventSaved();
                 this._closeDialog();
             },
             (err) => {
@@ -208,9 +212,12 @@ export class CalendarCardPlusPopup extends LitElement {
 
             const showDivider = this.config.show_divider && index > 0;
 
+            const bgColor = _resolveBackgroundColor(event.entity_id, this.config);
+            const itemStyle = bgColor ? `background-color: ${bgColor}; border: none;` : '';
+
             return html`
                 ${showDivider ? html`<div class="calendar-divider"></div>` : ''}
-                <div class="calendar-item detail" @click=${() => this._handleMoreInfo(event.entity_id)}>
+                <div class="calendar-item detail" style=${itemStyle} @click=${() => this._handleMoreInfo(event.entity_id)}>
                     <div class="calendar-icon dynamic">
                         ${dynamicIcon}
                     </div>

@@ -31,7 +31,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Cancel",
         popup_upcoming_events: "Upcoming events",
         editor_show_more: "Show More",
-        editor_show_less: "Show Less"
+        editor_show_less: "Show Less",
+        editor_background_color: "Background Color"
     },
     de: {
         starts_in_min: "Beginnt in {x} Minute",
@@ -63,7 +64,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Abbrechen",
         popup_upcoming_events: "Bevorstehende Ereignisse",
         editor_show_more: "Mehr anzeigen",
-        editor_show_less: "Weniger anzeigen"
+        editor_show_less: "Weniger anzeigen",
+        editor_background_color: "Hintergrundfarbe"
     },
     fr: {
         starts_in_min: "Commence dans {x} minute",
@@ -95,7 +97,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Annuler",
         popup_upcoming_events: "Événements à venir",
         editor_show_more: "Afficher plus",
-        editor_show_less: "Afficher moins"
+        editor_show_less: "Afficher moins",
+        editor_background_color: "Couleur de fond"
     },
     it: {
         starts_in_min: "Inizia tra {x} minuto",
@@ -127,7 +130,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Annulla",
         popup_upcoming_events: "Prossimi eventi",
         editor_show_more: "Mostra di più",
-        editor_show_less: "Mostra meno"
+        editor_show_less: "Mostra meno",
+        editor_background_color: "Colore di sfondo"
     },
     es: {
         starts_in_min: "Empieza en {x} minuto",
@@ -159,7 +163,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Cancelar",
         popup_upcoming_events: "Próximos eventos",
         editor_show_more: "Mostrar más",
-        editor_show_less: "Mostrar menos"
+        editor_show_less: "Mostrar menos",
+        editor_background_color: "Color de fondo"
     },
     nl: {
         starts_in_min: "Begint over {x} minuut",
@@ -191,7 +196,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Annuleren",
         popup_upcoming_events: "Aankomende evenementen",
         editor_show_more: "Toon meer",
-        editor_show_less: "Toon minder"
+        editor_show_less: "Toon minder",
+        editor_background_color: "Achtergrondkleur"
     },
     pt: {
         starts_in_min: "Começa em {x} minuto",
@@ -223,7 +229,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Cancelar",
         popup_upcoming_events: "Próximos eventos",
         editor_show_more: "Mostrar mais",
-        editor_show_less: "Mostrar menos"
+        editor_show_less: "Mostrar menos",
+        editor_background_color: "Cor de fundo"
     },
     ru: {
         starts_in_min: "Начнется через {x} минуту",
@@ -255,7 +262,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Отмена",
         popup_upcoming_events: "Предстоящие события",
         editor_show_more: "Показать больше",
-        editor_show_less: "Показать меньше"
+        editor_show_less: "Показать меньше",
+        editor_background_color: "Цвет фона"
     },
     pl: {
         starts_in_min: "Rozpoczyna się za {x} minutę",
@@ -287,7 +295,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Anuluj",
         popup_upcoming_events: "Nadchodzące wydarzenia",
         editor_show_more: "Pokaż więcej",
-        editor_show_less: "Pokaż mniej"
+        editor_show_less: "Pokaż mniej",
+        editor_background_color: "Kolor tła"
     },
     sv: {
         starts_in_min: "Börjar om {x} minut",
@@ -319,7 +328,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Avbryt",
         popup_upcoming_events: "Kommande händelser",
         editor_show_more: "Visa mer",
-        editor_show_less: "Visa mindre"
+        editor_show_less: "Visa mindre",
+        editor_background_color: "Bakgrundsfärg"
     },
     da: {
         starts_in_min: "Starter om {x} minut",
@@ -351,7 +361,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Annuller",
         popup_upcoming_events: "Kommende begivenheder",
         editor_show_more: "Vis mere",
-        editor_show_less: "Vis mindre"
+        editor_show_less: "Vis mindre",
+        editor_background_color: "Baggrundsfarve"
     },
     no: {
         starts_in_min: "Starter om {x} minutt",
@@ -383,7 +394,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Avbryt",
         popup_upcoming_events: "Kommende hendelser",
         editor_show_more: "Vis mer",
-        editor_show_less: "Vis mindre"
+        editor_show_less: "Vis mindre",
+        editor_background_color: "Bakgrunnsfarge"
     },
     fi: {
         starts_in_min: "Alkaa {x} minuutin kuluttua",
@@ -415,7 +427,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Peruuta",
         popup_upcoming_events: "Tulevat tapahtumat",
         editor_show_more: "Näytä enemmän",
-        editor_show_less: "Näytä vähemmän"
+        editor_show_less: "Näytä vähemmän",
+        editor_background_color: "Taustaväri"
     },
     cs: {
         starts_in_min: "Začíná za {x} minutu",
@@ -447,7 +460,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Zrušit",
         popup_upcoming_events: "Nadcházející události",
         editor_show_more: "Zobrazit více",
-        editor_show_less: "Zobrazit méně"
+        editor_show_less: "Zobrazit méně",
+        editor_background_color: "Barva pozadí"
     },
     hu: {
         starts_in_min: "Kezdés {x} perc múlva",
@@ -479,7 +493,8 @@ const languages: Record<string, Record<string, string>> = {
         add_event_cancel: "Mégse",
         popup_upcoming_events: "Közelgő események",
         editor_show_more: "Több mutatása",
-        editor_show_less: "Kevesebb mutatása"
+        editor_show_less: "Kevesebb mutatása",
+        editor_background_color: "Háttérszín"
     }
 };
 

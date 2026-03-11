@@ -29,6 +29,9 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   show_weekday?: boolean;
   show_weekday_long?: boolean;
   show_add_event?: boolean;
+  background_color?: string;
+  calendar_colors?: Record<string, string>;
+  calendar_background_colors?: Record<string, string>;
 }
 
 export interface CalendarEvent {
