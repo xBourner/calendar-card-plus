@@ -327,6 +327,11 @@ export class CalendarCardPlusPopup extends LitElement {
             font-size: 0.9em;
             color: var(--secondary-text-color);
         }
+        
+        .calendar-divider {
+            border-top: 1px solid var(--divider-color, #e0e0e0);
+            margin: 4px 12px;
+        }
 
         .add-event-form {
             display: flex;

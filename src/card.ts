@@ -170,6 +170,7 @@ export class CalendarCardPlus extends LitElement {
                 justify-content: center;
                 height: 100%;
                 width: 100%;
+                box-sizing: border-box;
             }
             .calendar-item {
                 display: flex;
@@ -177,7 +178,6 @@ export class CalendarCardPlus extends LitElement {
                 gap: 12px;
                 padding: 12px;
                 border-radius: var(--ha-card-border-radius, 12px);
-                margin-bottom: 8px;
                 cursor: pointer;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
@@ -231,9 +231,8 @@ export class CalendarCardPlus extends LitElement {
                 opacity: 0.7;
             }
             .calendar-divider {
-                width: 100%;
                 border-top: 1px solid var(--divider-color, #e0e0e0);
-                margin: 0 0 4px ;
+                margin: 4px 12px;
             }
 
             .add-event-btn {

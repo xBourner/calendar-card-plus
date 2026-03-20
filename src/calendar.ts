@@ -55,21 +55,19 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         const isAllDay = !event.start.dateTime; 
         
         let timeText;
-        if (start > now) {
-            if (config?.show_date) {
-                const lang = hass.locale?.language || hass.language || navigator.language;
-                const dateStr = start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
-                if (isAllDay) {
-                    timeText = dateStr;
-                } else {
-                    const timeStr = start.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
-                    timeText = `${dateStr}, ${timeStr}${lang.startsWith('de') ? ' Uhr' : ''}`;
-                }
+        if (config?.show_date) {
+            const lang = hass.locale?.language || hass.language || navigator.language;
+            const dateStr = start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+            if (isAllDay) {
+                timeText = dateStr;
             } else {
-                const diffMs = start.getTime() - now.getTime();
-                const diffMins = Math.ceil(diffMs / 60000);
-                timeText = _formatLocalizedDuration(hass, diffMins);
+                const timeStr = start.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+                timeText = `${dateStr}, ${timeStr}${lang.startsWith('de') ? ' Uhr' : ''}`;
             }
+        } else if (start > now) {
+            const diffMs = start.getTime() - now.getTime();
+            const diffMins = Math.ceil(diffMs / 60000);
+            timeText = _formatLocalizedDuration(hass, diffMins);
         } else {
             if (isAllDay) {
                 timeText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
@@ -143,21 +141,19 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 let timeText;
                 let progress = -1;
 
-                if (start > now) {
-                    if (config?.show_date) {
-                        const lang = hass.locale?.language || hass.language || navigator.language;
-                        const dateStr = start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
-                        if (isAllDay) {
-                            timeText = dateStr;
-                        } else {
-                            const timeStr = start.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
-                            timeText = `${dateStr}, ${timeStr}${lang.startsWith('de') ? ' Uhr' : ''}`;
-                        }
+                if (config?.show_date) {
+                    const lang = hass.locale?.language || hass.language || navigator.language;
+                    const dateStr = start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    if (isAllDay) {
+                        timeText = dateStr;
                     } else {
-                        const diffMs = start.getTime() - now.getTime();
-                        const diffMins = Math.ceil(diffMs / 60000);
-                        timeText = _formatLocalizedDuration(hass, diffMins);
+                        const timeStr = start.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+                        timeText = `${dateStr}, ${timeStr}${lang.startsWith('de') ? ' Uhr' : ''}`;
                     }
+                } else if (start > now) {
+                    const diffMs = start.getTime() - now.getTime();
+                    const diffMins = Math.ceil(diffMs / 60000);
+                    timeText = _formatLocalizedDuration(hass, diffMins);
                 } else {
                     if (isAllDay) {
                         timeText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
@@ -192,7 +188,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 const bgColor = _resolveBackgroundColor(event.entity_id, config);
                 const itemStyle = bgColor ? `background-color: ${bgColor}; border: none;` : '';
 
-                const showDivider = config?.show_divider && index > 0 && events[index - 1].entity_id !== event.entity_id;
+                const showDivider = config?.show_divider && index > 0;
 
                 return html`
                 ${showDivider ? html`<div class="calendar-divider"></div>` : ''}
