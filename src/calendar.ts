@@ -93,9 +93,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
 
         if (config?.show_duration) {
             if (timeText) {
-                // Avoid redundant info if timeText already ends with duration (e.g. for All day)
                 if (timeText.endsWith(duration)) {
-                    // Skip
                 } else {
                     timeText += ` • ${duration}`;
                 }
@@ -225,7 +223,6 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 if (config?.show_duration) {
                     if (timeText) {
                         if (timeText.endsWith(duration)) {
-                            // Skip
                         } else {
                             timeText += ` • ${duration}`;
                         }

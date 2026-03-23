@@ -45,7 +45,6 @@ export class CalendarCardPlusPopup extends LitElement {
         this.requestUpdate();
         await this.updateComplete;
 
-        // Targeted reset to clear leaked transforms from ha-bottom-sheet (swipe actions)
         const ad = this.renderRoot.querySelector('ha-adaptive-dialog');
         if (ad && ad.shadowRoot) {
             const bs = ad.shadowRoot.querySelector('ha-bottom-sheet') as HTMLElement;
@@ -83,7 +82,6 @@ export class CalendarCardPlusPopup extends LitElement {
         this.dispatchEvent(new CustomEvent('popup-closed', { bubbles: true, composed: true, detail }));
     };
 
-    // Guard: only close if event originates from ha-adaptive-dialog itself, not from child elements
     private _onDialogClosed = (ev?: Event) => {
         if (ev && ev.type !== 'click') {
             const target = ev.target as HTMLElement | null;
@@ -214,7 +212,6 @@ export class CalendarCardPlusPopup extends LitElement {
             if (this.config.show_duration) {
                 if (timeText) {
                     if (timeText.endsWith(duration)) {
-                        // Skip
                     } else {
                         timeText += ` • ${duration}`;
                     }
