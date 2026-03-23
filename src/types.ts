@@ -25,6 +25,9 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   show_divider?: boolean;
   show_calendar_name?: boolean;
   show_date?: boolean;
+  show_location?: boolean;
+  show_duration?: boolean;
+  show_time?: boolean;
   dark_mode?: boolean;
   show_weekday?: boolean;
   show_weekday_long?: boolean;
@@ -32,6 +35,7 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   background_color?: string;
   calendar_colors?: Record<string, string>;
   calendar_background_colors?: Record<string, string>;
+  max_lines?: number;
 }
 
 export interface CalendarEvent {

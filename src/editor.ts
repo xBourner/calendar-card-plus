@@ -65,6 +65,27 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                             @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_date')}
                         ></ha-switch>
                     </div>
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'editor_show_location')}</span>
+                        <ha-switch
+                            .checked=${this._config.show_location ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_location')}
+                        ></ha-switch>
+                    </div>
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'editor_show_duration')}</span>
+                        <ha-switch
+                            .checked=${this._config.show_duration ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_duration')}
+                        ></ha-switch>
+                    </div>
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'editor_show_time')}</span>
+                        <ha-switch
+                            .checked=${this._config.show_time ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_time')}
+                        ></ha-switch>
+                    </div>
 
                     <div class="settings-row">
                         <span class="label">${localize(this.hass, 'editor_show_weekday')}</span>
@@ -105,7 +126,19 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                             .checked=${upcoming_events}
                             @change=${this._calendarShowAllChanged}
                         ></ha-switch>
-                    </div>                
+                    </div>     
+                    ${unfold_events ? html`
+                        <div class="settings-row full-width" style="margin-top: 8px;">
+                            <ha-selector
+                                .hass=${this.hass}
+                                .selector=${{ number: { min: 0, max: 20, mode: 'box' } }}
+                                .value=${this._config.max_lines || 0}
+                                .label=${localize(this.hass, 'editor_max_lines')}
+                                .configValue=${'max_lines'}
+                                @value-changed=${this._valueChanged}
+                            ></ha-selector>
+                        </div>
+                    ` : ''}
                 </div>
 
             ${upcoming_events ? html`
@@ -385,14 +418,18 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             }
             .settings-grid {
                 display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0 16px;
+                grid-template-columns: 1fr;
+                gap: 32px 16px;
+            }
+            @media (min-width: 600px) {
+                .settings-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
             }
             .settings-row {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 12px 0;
                 width: 100%;
             }
             .settings-row.full-width {

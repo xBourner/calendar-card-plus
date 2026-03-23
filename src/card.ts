@@ -213,7 +213,26 @@ export class CalendarCardPlus extends LitElement {
                 text-overflow: ellipsis;
             }
             .event-time {
+                display: flex;
+                align-items: center;
+                gap: 4px;
                 font-size: 12px;
+                color: var(--secondary-text-color);
+            }
+            .event-time ha-icon {
+                --mdc-icon-size: 14px;
+                color: var(--secondary-text-color);
+            }
+            .event-location, .event-calendar {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-size: 0.9em;
+                color: var(--secondary-text-color);
+                margin-top: 1px;
+            }
+            .event-location ha-icon, .event-calendar ha-icon {
+                --mdc-icon-size: 14px;
                 color: var(--secondary-text-color);
             }
             .progress-bar {

@@ -32,7 +32,15 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Upcoming events",
         editor_show_more: "Show More",
         editor_show_less: "Show Less",
-        editor_background_color: "Background Color"
+        editor_background_color: "Background Color",
+        editor_show_location: "Show Location",
+        editor_show_duration: "Show Duration",
+        editor_show_time: "Show Time",
+        duration_min: "min",
+        duration_hour: "h",
+        duration_day: "day",
+        duration_days: "days",
+        editor_max_lines: "Max. displayed events"
     },
     de: {
         starts_in_min: "Beginnt in {x} Minute",
@@ -65,7 +73,15 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Bevorstehende Ereignisse",
         editor_show_more: "Mehr anzeigen",
         editor_show_less: "Weniger anzeigen",
-        editor_background_color: "Hintergrundfarbe"
+        editor_background_color: "Hintergrundfarbe",
+        editor_show_location: "Zeige Ort",
+        editor_show_duration: "Zeige Dauer",
+        editor_show_time: "Zeige Zeit",
+        duration_min: "Minuten",
+        duration_hour: "h",
+        duration_day: "Tag",
+        duration_days: "Tage",
+        editor_max_lines: "Max. angezeigte Termine"
     },
     fr: {
         starts_in_min: "Commence dans {x} minute",

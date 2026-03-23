@@ -5,7 +5,7 @@ import { CalendarCardPlusConfig, CalendarEvent } from './types';
 import { saveNewEvent, AddEventPopupState as AddEventState } from './events';
 import { renderAddEventForm } from './events';
 
-import { _resolveColor, _renderDynamicIcon, _toCssColor, _resolveBackgroundColor } from './calendar';
+import { _resolveColor, _renderDynamicIcon, _toCssColor, _resolveBackgroundColor, _formatDuration, _formatLocalizedDuration } from './calendar';
 
 @customElement('calendar-card-plus-popup')
 export class CalendarCardPlusPopup extends LitElement {
@@ -176,33 +176,56 @@ export class CalendarCardPlusPopup extends LitElement {
             const now = new Date();
             const isAllDay = !event.start.dateTime;
             
-            if (start > now) {
-                const lang = this.hass.locale?.language || this.hass.language || navigator.language;
-                const dateStr = start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const lang = this.hass.locale?.language || this.hass.language || navigator.language;
+            const formatTime = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+            const duration = _formatDuration(this.hass, start, end, isAllDay);
+            const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+
+            const showDate = this.config.show_date ?? false;
+            const showTime = this.config.show_time ?? false;
+            const allDayText = this.hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
+
+            if (showDate || showTime) {
                 if (isAllDay) {
-                    timeText = dateStr;
+                    const datePart = showDate ? start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+                    if (showDate && showTime) {
+                        timeText = `${datePart}, ${allDayText}`;
+                    } else {
+                        timeText = datePart || allDayText;
+                    }
                 } else {
-                    const timeStr = start.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
-                    timeText = `${dateStr}, ${timeStr}${lang.startsWith('de') ? ' Uhr' : ''}`;
+                    const parts: string[] = [];
+                    if (showDate) {
+                        parts.push(start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }));
+                    }
+                    if (showTime) {
+                        parts.push(timeRange);
+                    }
+                    timeText = parts.join(', ');
                 }
+            } else if (start > now) {
+                const diffMs = start.getTime() - now.getTime();
+                const diffMins = Math.ceil(diffMs / 60000);
+                timeText = _formatLocalizedDuration(this.hass, diffMins);
             } else {
-                if (isAllDay) {
-                    timeText = this.hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
+                timeText = isAllDay ? allDayText : formatTime(start);
+            }
+
+            if (this.config.show_duration) {
+                if (timeText) {
+                    if (timeText.endsWith(duration)) {
+                        // Skip
+                    } else {
+                        timeText += ` • ${duration}`;
+                    }
                 } else {
-                    const lang = this.hass.locale?.language || this.hass.language || navigator.language;
-                    const formatTime = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
-                    timeText = `${formatTime(start)} - ${formatTime(end)}`;
+                    timeText = duration;
                 }
             }
             
             if (this.config.show_weekday) {
-                const lang = this.hass.locale?.language || this.hass.language || navigator.language;
-                const weekday = start.toLocaleDateString(lang, { weekday: 'short' });
+                const weekday = start.toLocaleDateString(lang, { weekday: this.config.show_weekday_long ? 'long' : 'short' });
                 timeText += ` • ${weekday}`;
-            }
-
-            if (this.config.show_calendar_name && event.calendar_name) {
-                timeText += ` • ${event.calendar_name}`;
             }
 
             const isActive = start <= now && end >= now;
@@ -223,7 +246,26 @@ export class CalendarCardPlusPopup extends LitElement {
                     </div>
                     <div class="calendar-content">
                         <div class="event-title">${title}</div>
-                        <div class="event-time">${timeText}</div>
+                        <div class="event-time">
+                            ${(showDate || showTime) ? html`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ''}
+                            ${timeText}
+                        </div>
+                        ${this.config.show_location && event.location
+                            ? html`
+                                <div class="event-location">
+                                    <ha-icon icon="mdi:map-marker"></ha-icon>
+                                    ${event.location}
+                                </div>
+                            `
+                            : ''}
+                        ${this.config.show_calendar_name && event.calendar_name
+                            ? html`
+                                <div class="event-calendar">
+                                    <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
+                                    ${event.calendar_name}
+                                </div>
+                            `
+                            : ''}
                     </div>
                 </div>
             `;
@@ -324,7 +366,26 @@ export class CalendarCardPlusPopup extends LitElement {
         }
 
         .event-time {
+            display: flex;
+            align-items: center;
+            gap: 4px;
             font-size: 0.9em;
+            color: var(--secondary-text-color);
+        }
+        .event-time ha-icon {
+            --mdc-icon-size: 14px;
+            color: var(--secondary-text-color);
+        }
+        .event-location, .event-calendar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.9em;
+            color: var(--secondary-text-color);
+            margin-top: 1px;
+        }
+        .event-location ha-icon, .event-calendar ha-icon {
+            --mdc-icon-size: 14px;
             color: var(--secondary-text-color);
         }
         
