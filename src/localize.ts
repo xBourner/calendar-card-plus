@@ -40,7 +40,8 @@ const languages: Record<string, Record<string, string>> = {
         duration_hour: "h",
         duration_day: "day",
         duration_days: "days",
-        editor_max_lines: "Max. displayed events"
+        editor_max_lines: "Max. displayed events",
+        group_by_date: "Group by Day"
     },
     de: {
         starts_in_min: "Beginnt in {x} Minute",
@@ -81,7 +82,8 @@ const languages: Record<string, Record<string, string>> = {
         duration_hour: "h",
         duration_day: "Tag",
         duration_days: "Tage",
-        editor_max_lines: "Max. angezeigte Termine"
+        editor_max_lines: "Max. angezeigte Termine",
+        group_by_date: "Nach Tag gruppieren"
     },
     fr: {
         starts_in_min: "Commence dans {x} minute",
@@ -114,7 +116,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Événements à venir",
         editor_show_more: "Afficher plus",
         editor_show_less: "Afficher moins",
-        editor_background_color: "Couleur de fond"
+        editor_background_color: "Couleur de fond",
+        group_by_date: "Grouper par jour"
     },
     it: {
         starts_in_min: "Inizia tra {x} minuto",
@@ -147,7 +150,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Prossimi eventi",
         editor_show_more: "Mostra di più",
         editor_show_less: "Mostra meno",
-        editor_background_color: "Colore di sfondo"
+        editor_background_color: "Colore di sfondo",
+        group_by_date: "Raggruppa per giorno"
     },
     es: {
         starts_in_min: "Empieza en {x} minuto",
@@ -180,7 +184,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Próximos eventos",
         editor_show_more: "Mostrar más",
         editor_show_less: "Mostrar menos",
-        editor_background_color: "Color de fondo"
+        editor_background_color: "Color de fondo",
+        group_by_date: "Agrupar por día"
     },
     nl: {
         starts_in_min: "Begint over {x} minuut",
@@ -213,7 +218,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Aankomende evenementen",
         editor_show_more: "Toon meer",
         editor_show_less: "Toon minder",
-        editor_background_color: "Achtergrondkleur"
+        editor_background_color: "Achtergrondkleur",
+        group_by_date: "Groepeer per dag"
     },
     pt: {
         starts_in_min: "Começa em {x} minuto",
@@ -246,7 +252,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Próximos eventos",
         editor_show_more: "Mostrar mais",
         editor_show_less: "Mostrar menos",
-        editor_background_color: "Cor de fundo"
+        editor_background_color: "Cor de fundo",
+        group_by_date: "Agrupar por dia"
     },
     ru: {
         starts_in_min: "Начнется через {x} минуту",
@@ -279,7 +286,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Предстоящие события",
         editor_show_more: "Показать больше",
         editor_show_less: "Показать меньше",
-        editor_background_color: "Цвет фона"
+        editor_background_color: "Цвет фона",
+        group_by_date: "Группировать по дням"
     },
     pl: {
         starts_in_min: "Rozpoczyna się za {x} minutę",
@@ -312,7 +320,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Nadchodzące wydarzenia",
         editor_show_more: "Pokaż więcej",
         editor_show_less: "Pokaż mniej",
-        editor_background_color: "Kolor tła"
+        editor_background_color: "Kolor tła",
+        group_by_date: "Grupuj według dnia"
     },
     sv: {
         starts_in_min: "Börjar om {x} minut",
@@ -345,7 +354,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Kommande händelser",
         editor_show_more: "Visa mer",
         editor_show_less: "Visa mindre",
-        editor_background_color: "Bakgrundsfärg"
+        editor_background_color: "Bakgrundsfärg",
+        group_by_date: "Gruppera per dag"
     },
     da: {
         starts_in_min: "Starter om {x} minut",
@@ -378,7 +388,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Kommende begivenheder",
         editor_show_more: "Vis mere",
         editor_show_less: "Vis mindre",
-        editor_background_color: "Baggrundsfarve"
+        editor_background_color: "Baggrundsfarve",
+        group_by_date: "Gruppér efter dag"
     },
     no: {
         starts_in_min: "Starter om {x} minutt",
@@ -411,7 +422,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Kommende hendelser",
         editor_show_more: "Vis mer",
         editor_show_less: "Vis mindre",
-        editor_background_color: "Bakgrunnsfarge"
+        editor_background_color: "Bakgrunnsfarge",
+        group_by_date: "Grupper etter dag"
     },
     fi: {
         starts_in_min: "Alkaa {x} minuutin kuluttua",
@@ -444,7 +456,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Tulevat tapahtumat",
         editor_show_more: "Näytä enemmän",
         editor_show_less: "Näytä vähemmän",
-        editor_background_color: "Taustaväri"
+        editor_background_color: "Taustaväri",
+        group_by_date: "Ryhmittele päivän mukaan"
     },
     cs: {
         starts_in_min: "Začíná za {x} minutu",
@@ -477,7 +490,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Nadcházející události",
         editor_show_more: "Zobrazit více",
         editor_show_less: "Zobrazit méně",
-        editor_background_color: "Barva pozadí"
+        editor_background_color: "Barva pozadí",
+        group_by_date: "Seskupit podle dne"
     },
     hu: {
         starts_in_min: "Kezdés {x} perc múlva",
@@ -510,7 +524,8 @@ const languages: Record<string, Record<string, string>> = {
         popup_upcoming_events: "Közelgő események",
         editor_show_more: "Több mutatása",
         editor_show_less: "Kevesebb mutatása",
-        editor_background_color: "Háttérszín"
+        editor_background_color: "Háttérszín",
+        group_by_date: "Csoportosítás nap szerint"
     }
 };
 

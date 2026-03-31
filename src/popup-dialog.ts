@@ -5,7 +5,7 @@ import { CalendarCardPlusConfig, CalendarEvent } from './types';
 import { saveNewEvent, AddEventPopupState as AddEventState } from './events';
 import { renderAddEventForm } from './events';
 
-import { _resolveColor, _renderDynamicIcon, _toCssColor, _resolveBackgroundColor, _formatDuration, _formatLocalizedDuration } from './calendar';
+import { _resolveColor, _renderDynamicIcon, _toCssColor, _resolveBackgroundColor, _formatDuration, _formatLocalizedDuration, _groupEventsByDate } from './calendar';
 
 @customElement('calendar-card-plus-popup')
 export class CalendarCardPlusPopup extends LitElement {
@@ -158,6 +158,102 @@ export class CalendarCardPlusPopup extends LitElement {
     }
 
     private _renderDetailContent(): TemplateResult[] {
+        if (this.config.group_by_date) {
+            const groups = _groupEventsByDate(this.detailEvents);
+            return groups.map((group) => {
+                const iconDate = group.date;
+                const iconColor = this.config.calendar_icon_color || '#fa3e3e';
+                const dynamicIcon = _renderDynamicIcon(this.hass, iconDate, iconColor, this.config.dark_mode ?? false);
+                
+                return html`
+                    <div class="calendar-item grouped detail" style="align-items: center;">
+                        <div class="calendar-icon dynamic">
+                            ${dynamicIcon}
+                        </div>
+                        <div class="calendar-content">
+                            ${group.events.map((event) => {
+                                const title = event.summary;
+                                const start = new Date(event.start.dateTime || event.start.date!);
+                                const end = new Date(event.end.dateTime || event.end.date!);
+                                const isAllDay = !event.start.dateTime;
+                                const duration = _formatDuration(this.hass, start, end, isAllDay);
+                                const lang = this.hass.locale?.language || this.hass.language || navigator.language;
+                                const formatTime = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+                                const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+                                
+                                const showDate = this.config.show_date ?? false;
+                                const showTime = this.config.show_time ?? false;
+                                const allDayText = this.hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
+
+                                let timeText = '';
+                                if (showDate || showTime) {
+                                    if (isAllDay) {
+                                        const datePart = showDate ? start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+                                        if (showDate && showTime) {
+                                            timeText = `${datePart}, ${allDayText}`;
+                                        } else {
+                                            timeText = datePart || allDayText;
+                                        }
+                                    } else {
+                                        const parts: string[] = [];
+                                        if (showDate) {
+                                            parts.push(start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }));
+                                        }
+                                        if (showTime) {
+                                            parts.push(timeRange);
+                                        }
+                                        timeText = parts.join(', ');
+                                    }
+                                } else {
+                                    timeText = isAllDay ? allDayText : formatTime(start);
+                                }
+
+                                if (this.config.show_duration) {
+                                    if (!timeText.endsWith(duration)) {
+                                        timeText += ` • ${duration}`;
+                                    }
+                                }
+                                
+                                if (this.config.show_weekday) {
+                                    const weekday = start.toLocaleDateString(lang, { weekday: this.config.show_weekday_long ? 'long' : 'short' });
+                                    if (!timeText.includes(weekday)) {
+                                        timeText += ` • ${weekday}`;
+                                    }
+                                }
+
+                                return html`
+                                    <div class="event-entry" @click=${() => this._handleMoreInfo(event.entity_id)} style="margin-bottom: 4px;">
+                                        <div class="event-title">${title}</div>
+                                        <div class="event-time" style="display: flex; align-items: center; gap: 4px;">
+                                            ${(showDate || showTime) ? html`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ''}
+                                            ${timeText}
+                                        </div>
+                                        ${this.config.show_location && event.location
+                                            ? html`
+                                                <div class="event-location">
+                                                    <ha-icon icon="mdi:map-marker" style="--mdc-icon-size: 14px;"></ha-icon>
+                                                    ${event.location}
+                                                </div>
+                                            `
+                                            : ''}
+                                        ${this.config.show_calendar_name && event.calendar_name
+                                            ? html`
+                                                <div class="event-calendar">
+                                                    <ha-icon icon="mdi:calendar-blank-multiple" style="--mdc-icon-size: 14px;"></ha-icon>
+                                                    ${event.calendar_name}
+                                                </div>
+                                            `
+                                            : ''}
+                                    </div>
+                                `;
+                            })}
+                        </div>
+                    </div>
+                    ${this.config.show_divider ? html`<div class="calendar-divider"></div>` : ''}
+                `;
+            });
+        }
+
         return this.detailEvents.map((event, index) => {
             const title = event.summary;
             let timeText = '';
@@ -427,9 +523,17 @@ export class CalendarCardPlusPopup extends LitElement {
             margin-top: 8px;
         }
 
-        .row-label {
-            font-weight: 500;
-            margin-bottom: -8px;
+        .calendar-item.grouped .calendar-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .calendar-item.grouped .event-entry {
+            display: flex;
+            flex-direction: column;
+        }
+        .calendar-item.grouped .calendar-icon {
+            align-self: center;
         }
     `;
 }

@@ -157,6 +157,106 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         `;
     }
 
+    if (config?.group_by_date && unfoldEvents) {
+        const groups = _groupEventsByDate(events);
+        return html`
+            <div class="calendar-container">
+                ${groups.map((group) => {
+                    const iconDate = group.date;
+                    const iconColor = config.calendar_icon_color || '#fa3e3e';
+                    const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
+                    
+                    return html`
+                        <div class="calendar-item grouped" style="align-items: center;">
+                            <div class="calendar-icon dynamic">
+                                ${dynamicIcon}
+                            </div>
+                            <div class="calendar-content">
+                                ${group.events.map((event) => {
+                                    const title = event.summary;
+                                    const start = new Date(event.start.dateTime || event.start.date!);
+                                    const end = new Date(event.end.dateTime || event.end.date!);
+                                    const isAllDay = !event.start.dateTime;
+                                    const duration = _formatDuration(hass, start, end, isAllDay);
+                                    const lang = hass.locale?.language || hass.language || navigator.language;
+                                    const formatTime = (d: Date) => d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+                                    const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+                                    
+                                    const showDate = config?.show_date ?? false;
+                                    const showTime = config?.show_time ?? false;
+                                    const allDayText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
+
+                                    let timeText = '';
+                                    if (showDate || showTime) {
+                                        if (isAllDay) {
+                                            const datePart = showDate ? start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+                                            if (showDate && showTime) {
+                                                timeText = `${datePart}, ${allDayText}`;
+                                            } else {
+                                                timeText = datePart || allDayText;
+                                            }
+                                        } else {
+                                            const parts: string[] = [];
+                                            if (showDate) {
+                                                parts.push(start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }));
+                                            }
+                                            if (showTime) {
+                                                parts.push(timeRange);
+                                            }
+                                            timeText = parts.join(', ');
+                                        }
+                                    } else {
+                                        timeText = isAllDay ? allDayText : formatTime(start);
+                                    }
+
+                                    if (config?.show_duration) {
+                                        if (!timeText.endsWith(duration)) {
+                                            timeText += ` • ${duration}`;
+                                        }
+                                    }
+                                    
+                                    if (config?.show_weekday) {
+                                        const weekday = start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
+                                        if (!timeText.includes(weekday)) {
+                                            timeText += ` • ${weekday}`;
+                                        }
+                                    }
+
+                                    return html`
+                                        <div class="event-entry" @click=${(e: Event) => _handleCalendarClick(e, event.entity_id)} style="margin-bottom: 4px;">
+                                            <div class="event-title">${title}</div>
+                                            <div class="event-time" style="display: flex; align-items: center; gap: 4px;">
+                                                ${(showDate || showTime) ? html`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ''}
+                                                ${timeText}
+                                            </div>
+                                            ${config?.show_location && event.location
+                                                ? html`
+                                                    <div class="event-location" style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);">
+                                                        <ha-icon icon="mdi:map-marker" style="--mdc-icon-size: 14px;"></ha-icon>
+                                                        ${event.location}
+                                                    </div>
+                                                `
+                                                : ''}
+                                            ${config?.show_calendar_name && event.calendar_name
+                                                ? html`
+                                                    <div class="event-calendar" style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);">
+                                                        <ha-icon icon="mdi:calendar-blank-multiple" style="--mdc-icon-size: 14px;"></ha-icon>
+                                                        ${event.calendar_name}
+                                                    </div>
+                                                `
+                                                : ''}
+                                        </div>
+                                    `;
+                                })}
+                            </div>
+                        </div>
+                        ${config?.show_divider ? html`<div class="calendar-divider"></div>` : ''}
+                    `;
+                })}
+            </div>
+        `;
+    }
+
     const maxLines = config?.max_lines || 0;
     const displayEvents = maxLines > 0 ? events.slice(0, maxLines) : events;
     const remainingCount = events.length - displayEvents.length;
@@ -351,6 +451,25 @@ function _handleCalendarClick(e: Event, entityId: string) {
     });
     const target = e.target as HTMLElement;
     target.dispatchEvent(event);
+}
+
+export function _groupEventsByDate(events: CalendarEvent[]): { date: Date, events: CalendarEvent[] }[] {
+    const groups: { [key: string]: { date: Date, events: CalendarEvent[] } } = {};
+    
+    events.forEach(event => {
+        const startDate = new Date(event.start.dateTime || event.start.date!);
+        const dateKey = startDate.toISOString().split('T')[0];
+        
+        if (!groups[dateKey]) {
+            groups[dateKey] = {
+                date: startDate,
+                events: []
+            };
+        }
+        groups[dateKey].events.push(event);
+    });
+    
+    return Object.values(groups).sort((a, b) => a.date.getTime() - b.date.getTime());
 }
 
 

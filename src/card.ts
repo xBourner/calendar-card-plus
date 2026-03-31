@@ -264,6 +264,18 @@ export class CalendarCardPlus extends LitElement {
             .add-event-btn:hover {
                 color: var(--primary-text-color);
             }
+            .calendar-item.grouped .calendar-content {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .calendar-item.grouped .event-entry {
+                display: flex;
+                flex-direction: column;
+            }
+            .calendar-item.grouped .calendar-icon {
+                align-self: center;
+            }
         `;
     }
 

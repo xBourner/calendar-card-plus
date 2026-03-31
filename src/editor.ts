@@ -139,6 +139,13 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                             ></ha-selector>
                         </div>
                     ` : ''}
+                    <div class="settings-row">
+                        <span class="label">${localize(this.hass, 'group_by_date')}</span>
+                        <ha-switch
+                            .checked=${this._config.group_by_date ?? false}
+                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'group_by_date')}
+                        ></ha-switch>
+                    </div>
                 </div>
 
             ${upcoming_events ? html`
