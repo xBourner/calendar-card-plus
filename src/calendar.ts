@@ -108,14 +108,16 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         
         if (config?.show_weekday) {
             const lang = hass.locale?.language || hass.language || navigator.language;
-            const weekday = start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
-            timeText += ` • ${weekday}`;
+            const appendedText = config?.icon_show_weekday 
+                ? start.toLocaleDateString(lang, { month: config.show_weekday_long ? 'long' : 'short' })
+                : start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
+            timeText += ` • ${appendedText}`;
         }
 
         const isActive = start <= now && end >= now;
         const iconDate = isActive ? now : start;
         const iconColor = _resolveColor(event.entity_id, config);
-        const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
+        const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false, config?.icon_show_weekday ?? false);
 
         const bgColor = _resolveBackgroundColor(event.entity_id, config);
         const itemStyle = bgColor ? `background-color: ${bgColor}; border: none;` : '';
@@ -163,8 +165,8 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
             <div class="calendar-container">
                 ${groups.map((group) => {
                     const iconDate = group.date;
-                    const iconColor = config.calendar_icon_color || '#fa3e3e';
-                    const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
+                    const iconColor = _toCssColor(config.calendar_icon_color || '#fa3e3e');
+                    const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false, config?.icon_show_weekday ?? false);
                     
                     return html`
                         <div class="calendar-item grouped" style="align-items: center;">
@@ -216,9 +218,11 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                                     }
                                     
                                     if (config?.show_weekday) {
-                                        const weekday = start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
-                                        if (!timeText.includes(weekday)) {
-                                            timeText += ` • ${weekday}`;
+                                        const appendedText = config?.icon_show_weekday
+                                            ? start.toLocaleDateString(lang, { month: config.show_weekday_long ? 'long' : 'short' })
+                                            : start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
+                                        if (!timeText.includes(appendedText)) {
+                                            timeText += ` • ${appendedText}`;
                                         }
                                     }
 
@@ -341,14 +345,16 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 
                 if (config?.show_weekday) {
                     const lang = hass.locale?.language || hass.language || navigator.language;
-                    const weekday = start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
-                    timeText += ` • ${weekday}`;
+                    const appendedText = config?.icon_show_weekday
+                        ? start.toLocaleDateString(lang, { month: config.show_weekday_long ? 'long' : 'short' })
+                        : start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
+                    timeText += ` • ${appendedText}`;
                 }
 
                 const isActive = start <= now && end >= now;
                 const iconDate = isActive ? now : start;
                 const iconColor = _resolveColor(event.entity_id, config);
-                const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false);
+                const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false, config?.icon_show_weekday ?? false);
 
                 const bgColor = _resolveBackgroundColor(event.entity_id, config);
                 const itemStyle = bgColor ? `background-color: ${bgColor}; border: none;` : '';
@@ -473,9 +479,14 @@ export function _groupEventsByDate(events: CalendarEvent[]): { date: Date, event
 }
 
 
-export function _renderDynamicIcon(hass: HomeAssistant, date: Date, color: string, darkMode: boolean = false): TemplateResult {
+export function _renderDynamicIcon(hass: HomeAssistant, date: Date, color: string, darkMode: boolean = false, iconShowWeekday: boolean = false): TemplateResult {
     const lang = hass.locale?.language || hass.language || navigator.language;
-    const month = date.toLocaleDateString(lang, { month: 'short' }).toUpperCase();
+    let topText: string;
+    if (iconShowWeekday) {
+        topText = date.toLocaleDateString(lang, { weekday: 'short' }).toUpperCase();
+    } else {
+        topText = date.toLocaleDateString(lang, { month: 'short' }).toUpperCase();
+    }
     const day = date.getDate();
 
     const bgColor = darkMode ? '#222222' : 'white';
@@ -486,7 +497,7 @@ export function _renderDynamicIcon(hass: HomeAssistant, date: Date, color: strin
         <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
             <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${bgColor}"></rect>
             <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="${color}"></path>
-            <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="${monthColor}" text-anchor="middle">${month}</text>
+            <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="${monthColor}" text-anchor="middle">${topText}</text>
             <text x="50" y="82" font-family="sans-serif" font-size="52" font-weight="bold" fill="${dayColor}" text-anchor="middle">${day}</text>
         </svg>
     `;

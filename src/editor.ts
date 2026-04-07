@@ -35,100 +35,58 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             <div class="card-config">
 
 
-                <div class="settings-grid">
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'editor_unfold_events')}</span>
-                        <ha-switch
-                            .checked=${unfold_events}
-                            @change=${this._compactModeChanged}
-                        ></ha-switch>
+                <ha-expansion-panel outlined>
+                    <div slot="header" role="heading" aria-level="3" style="display: flex; align-items: center; gap: 8px;">
+                        <ha-icon icon="mdi:cog" style="color: var(--secondary-text-color);"></ha-icon>
+                        ${localize(this.hass, 'editor_configuration')}
                     </div>
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'editor_show_divider')}</span>
-                        <ha-switch
-                            .checked=${this._config.show_divider ?? false}
-                            @change=${this._calendarDividerChanged}
-                        ></ha-switch>
-                    </div>
-
-                    <div class="settings-row">
-                        <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('component.calendar.entity_component._.name')} ${this.hass?.localize('ui.common.name')}</span>
-                        <ha-switch
-                            .checked=${this._config.show_calendar_name ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_calendar_name')}
-                        ></ha-switch>
-                    </div>
-                    <div class="settings-row">
-                        <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('ui.dialogs.helper_settings.input_datetime.date') || 'Date'}</span>
-                        <ha-switch
-                            .checked=${this._config.show_date ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_date')}
-                        ></ha-switch>
-                    </div>
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'editor_show_location')}</span>
-                        <ha-switch
-                            .checked=${this._config.show_location ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_location')}
-                        ></ha-switch>
-                    </div>
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'editor_show_duration')}</span>
-                        <ha-switch
-                            .checked=${this._config.show_duration ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_duration')}
-                        ></ha-switch>
-                    </div>
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'editor_show_time')}</span>
-                        <ha-switch
-                            .checked=${this._config.show_time ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_time')}
-                        ></ha-switch>
+                    <div class="settings-grid" style="margin-top: 16px; margin-bottom: 16px;">
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_unfold_events')}</span>
+                            <ha-switch
+                                .checked=${unfold_events}
+                                @change=${this._compactModeChanged}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_show_divider')}</span>
+                            <ha-switch
+                                .checked=${this._config.show_divider ?? false}
+                                @change=${this._calendarDividerChanged}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_show_add_event')}</span>
+                            <ha-switch
+                                .checked=${this._config.show_add_event ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_add_event')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'group_by_date')}</span>
+                            <ha-switch
+                                .checked=${this._config.group_by_date ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'group_by_date')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">Dark Mode</span>
+                            <ha-switch
+                                .checked=${this._config.dark_mode ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'dark_mode')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_show_upcoming')}</span>
+                            <ha-switch
+                                .checked=${upcoming_events}
+                                @change=${this._calendarShowAllChanged}
+                            ></ha-switch>
+                        </div>     
                     </div>
 
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'editor_show_weekday')}</span>
-                        <ha-switch
-                            .checked=${this._config.show_weekday ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_weekday')}
-                        ></ha-switch>
-                    </div>
-                    <div class="settings-row">
-                        <span class="label">Dark Mode</span>
-                        <ha-switch
-                            .checked=${this._config.dark_mode ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'dark_mode')}
-                        ></ha-switch>
-                    </div>
-
-                ${this._config.show_weekday ? html`
-                    <div class="settings-row">
-                        <span class="label" style="color: var(--secondary-text-color);">${localize(this.hass, 'editor_show_weekday_long')}</span>
-                        <ha-switch
-                            .checked=${this._config.show_weekday_long ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_weekday_long')}
-                        ></ha-switch>
-                    </div>
-                    <div></div>
-                ` : ''}
-
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'editor_show_add_event')}</span>
-                        <ha-switch
-                            .checked=${this._config.show_add_event ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_add_event')}
-                        ></ha-switch>
-                    </div>
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'editor_show_upcoming')}</span>
-                        <ha-switch
-                            .checked=${upcoming_events}
-                            @change=${this._calendarShowAllChanged}
-                        ></ha-switch>
-                    </div>     
                     ${unfold_events ? html`
-                        <div class="settings-row full-width" style="margin-top: 8px;">
+                        <div class="settings-row full-width" style="margin-bottom: 16px;">
                             <ha-selector
                                 .hass=${this.hass}
                                 .selector=${{ number: { min: 0, max: 20, mode: 'box' } }}
@@ -139,68 +97,131 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                             ></ha-selector>
                         </div>
                     ` : ''}
-                    <div class="settings-row">
-                        <span class="label">${localize(this.hass, 'group_by_date')}</span>
-                        <ha-switch
-                            .checked=${this._config.group_by_date ?? false}
-                            @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'group_by_date')}
-                        ></ha-switch>
+
+                    ${upcoming_events ? html`
+                        <div class="settings-row full-width" style="margin-bottom: 8px;">
+                             <span class="label" style="margin-bottom: 8px;">${this.hass?.localize('ui.panel.lovelace.editor.card.statistic.period') || 'Period'}</span>
+                             <div class="period-selectors">
+                                <ha-selector
+                                    .hass=${this.hass}
+                                    .selector=${{ number: { min: 0, max: 365, mode: 'box' } }}
+                                    .value=${days}
+                                    .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.day.name') || 'Days'}
+                                    .configValue=${'days'}
+                                    @value-changed=${this._valueChanged}
+                                ></ha-selector>
+                                <ha-selector
+                                    .hass=${this.hass}
+                                    .selector=${{ number: { min: 0, max: 23, mode: 'box' } }}
+                                    .value=${hours}
+                                    .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.hour.name') || 'Hours'}
+                                    .configValue=${'hours'}
+                                    @value-changed=${this._valueChanged}
+                                ></ha-selector>
+                                <ha-selector
+                                    .hass=${this.hass}
+                                    .selector=${{ number: { min: 0, max: 59, mode: 'box' } }}
+                                    .value=${minutes}
+                                    .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.minute.name') || 'Minutes'}
+                                    .configValue=${'minutes'}
+                                    @value-changed=${this._valueChanged}
+                                ></ha-selector>
+                             </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="settings-row full-width" style="margin-bottom: 16px;">
+                        <ha-selector
+                            .hass=${this.hass}
+                            .selector=${{ ui_color: {} }}
+                            .value=${this._config.calendar_icon_color || ''}
+                            .label="Global ${this.hass.localize('ui.panel.lovelace.editor.card.tile.color') || 'Color'}"
+                            .configValue=${'calendar_icon_color'}
+                            @value-changed=${this._valueChanged}
+                        ></ha-selector>
                     </div>
-                </div>
 
-            ${upcoming_events ? html`
-                <div class="settings-row full-width">
-                     <span class="label" style="margin-bottom: 8px;">${this.hass?.localize('ui.panel.lovelace.editor.card.statistic.period') || 'Period'}</span>
-                     <div class="period-selectors">
+                    <div class="settings-row full-width" style="margin-bottom: 16px;">
                         <ha-selector
                             .hass=${this.hass}
-                            .selector=${{ number: { min: 0, max: 365, mode: 'box' } }}
-                            .value=${days}
-                            .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.day.name') || 'Days'}
-                            .configValue=${'days'}
+                            .selector=${{ ui_color: {} }}
+                            .value=${this._config.background_color || ''}
+                            .label=${localize(this.hass, 'editor_background_color')}
+                            .configValue=${'background_color'}
                             @value-changed=${this._valueChanged}
                         ></ha-selector>
-                        <ha-selector
-                            .hass=${this.hass}
-                            .selector=${{ number: { min: 0, max: 23, mode: 'box' } }}
-                            .value=${hours}
-                            .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.hour.name') || 'Hours'}
-                            .configValue=${'hours'}
-                            @value-changed=${this._valueChanged}
-                        ></ha-selector>
-                        <ha-selector
-                            .hass=${this.hass}
-                            .selector=${{ number: { min: 0, max: 59, mode: 'box' } }}
-                            .value=${minutes}
-                            .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.minute.name') || 'Minutes'}
-                            .configValue=${'minutes'}
-                            @value-changed=${this._valueChanged}
-                        ></ha-selector>
-                     </div>
-                </div>
-            ` : ''}
+                    </div>
+                </ha-expansion-panel>
 
-                <div class="settings-row full-width">
-                    <ha-selector
-                        .hass=${this.hass}
-                        .selector=${{ ui_color: {} }}
-                        .value=${this._config.calendar_icon_color || ''}
-                        .label="Global ${this.hass.localize('ui.panel.lovelace.editor.card.tile.color') || 'Color'}"
-                        .configValue=${'calendar_icon_color'}
-                        @value-changed=${this._valueChanged}
-                    ></ha-selector>
-                </div>
+                <ha-expansion-panel outlined>
+                    <div slot="header" role="heading" aria-level="3" style="display: flex; align-items: center; gap: 8px;">
+                        <ha-icon icon="mdi:card-text" style="color: var(--secondary-text-color);"></ha-icon>
+                        ${localize(this.hass, 'editor_text_visibility')}
+                    </div>
+                    <div class="settings-grid" style="margin-top: 16px; margin-bottom: 16px;">
+                        <div class="settings-row">
+                            <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('component.calendar.entity_component._.name')} ${this.hass?.localize('ui.common.name')}</span>
+                            <ha-switch
+                                .checked=${this._config.show_calendar_name ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_calendar_name')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('ui.dialogs.helper_settings.input_datetime.date') || 'Date'}</span>
+                            <ha-switch
+                                .checked=${this._config.show_date ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_date')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_show_location')}</span>
+                            <ha-switch
+                                .checked=${this._config.show_location ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_location')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_show_duration')}</span>
+                            <ha-switch
+                                .checked=${this._config.show_duration ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_duration')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_show_time')}</span>
+                            <ha-switch
+                                .checked=${this._config.show_time ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_time')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_icon_show_weekday')}</span>
+                            <ha-switch
+                                .checked=${this._config.icon_show_weekday ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'icon_show_weekday')}
+                            ></ha-switch>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${this._config.icon_show_weekday ? localize(this.hass, 'editor_show_month') : localize(this.hass, 'editor_show_weekday')}</span>
+                            <ha-switch
+                                .checked=${this._config.show_weekday ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_weekday')}
+                            ></ha-switch>
+                        </div>
+                        ${this._config.show_weekday ? html`
+                            <div class="settings-row">
+                                <span class="label" style="color: var(--secondary-text-color);">${this._config.icon_show_weekday ? localize(this.hass, 'editor_show_month_long') : localize(this.hass, 'editor_show_weekday_long')}</span>
+                                <ha-switch
+                                    .checked=${this._config.show_weekday_long ?? false}
+                                    @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_weekday_long')}
+                                ></ha-switch>
+                            </div>
+                            <div></div>
+                        ` : ''}
+                    </div>
+                </ha-expansion-panel>
 
-                <div class="settings-row full-width">
-                    <ha-selector
-                        .hass=${this.hass}
-                        .selector=${{ ui_color: {} }}
-                        .value=${this._config.background_color || ''}
-                        .label=${localize(this.hass, 'editor_background_color')}
-                        .configValue=${'background_color'}
-                        @value-changed=${this._valueChanged}
-                    ></ha-selector>
-                </div>
+
 
                 <h4>${this.hass?.localize('ui.components.calendar.my_calendars') || 'Calendars'}</h4>
                 <div class="entities-list">
@@ -221,7 +242,7 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                                     <div class="entity-row ${isIncluded ? '' : 'disabled'}">
                                         <div class="entity-row-top">
                                             <div class="entity-icon dynamic" style="background: transparent;">
-                                                ${this._renderDynamicIcon(new Date(), renderColor, this._config.dark_mode ?? false)}
+                                                ${this._renderDynamicIcon(new Date(), renderColor, this._config.dark_mode ?? false, this._config.icon_show_weekday ?? false)}
                                             </div>
                                             <div class="entity-info">
                                                 <span class="entity-name">${entity.attributes.friendly_name || entity.entity_id}</span>
@@ -538,9 +559,14 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
         return `var(--${color}-color)`;
     }
 
-    private _renderDynamicIcon(date: Date, color: string, darkMode: boolean = false): TemplateResult {
+    private _renderDynamicIcon(date: Date, color: string, darkMode: boolean = false, iconShowWeekday: boolean = false): TemplateResult {
         const lang = this.hass?.locale?.language || this.hass?.language || navigator.language || 'en';
-        const month = date.toLocaleDateString(lang, { month: 'short' }).toUpperCase();
+        let topText: string;
+        if (iconShowWeekday) {
+            topText = date.toLocaleDateString(lang, { weekday: 'short' }).toUpperCase();
+        } else {
+            topText = date.toLocaleDateString(lang, { month: 'short' }).toUpperCase();
+        }
         const day = date.getDate();
 
         const bgColor = darkMode ? '#222222' : 'white';
@@ -551,7 +577,7 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
             <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
                 <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${bgColor}"></rect>
                 <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="${color}"></path>
-                <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="${monthColor}" text-anchor="middle">${month}</text>
+                <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="${monthColor}" text-anchor="middle">${topText}</text>
                 <text x="50" y="82" font-family="sans-serif" font-size="52" font-weight="bold" fill="${dayColor}" text-anchor="middle">${day}</text>
             </svg>
         `;
