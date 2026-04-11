@@ -78,14 +78,50 @@ export class CalendarCardPlus extends LitElement {
 
         const allEvents = await fetchCalendarEvents(this.hass, now, end, calendars);
 
-        allEvents.sort((a: CalendarEvent, b: CalendarEvent) => {
+        if (this.config.show_empty_days) {
+            this._events = this._injectEmptyDays(allEvents, now, end);
+        } else {
+            this._events = allEvents;
+        }
+        this.requestUpdate();
+    }
+
+    private _injectEmptyDays(events: CalendarEvent[], start: Date, end: Date): CalendarEvent[] {
+        const result: CalendarEvent[] = [...events];
+        const dayMap = new Set<string>();
+        events.forEach(e => {
+            const dStr = e.start.date || e.start.dateTime;
+            if (dStr) {
+                const d = new Date(dStr);
+                dayMap.add(d.toISOString().split('T')[0]);
+            }
+        });
+
+        const current = new Date(start);
+        current.setHours(0, 0, 0, 0);
+        const last = new Date(end);
+        last.setHours(0, 0, 0, 0);
+
+        while (current <= last) {
+            const key = current.toISOString().split('T')[0];
+            if (!dayMap.has(key)) {
+                result.push({
+                    start: { date: key },
+                    end: { date: key },
+                    summary: 'empty',
+                    is_empty: true,
+                    entity_id: 'empty',
+                    calendar_name: ''
+                });
+            }
+            current.setDate(current.getDate() + 1);
+        }
+
+        return result.sort((a: CalendarEvent, b: CalendarEvent) => {
             const dateA = new Date(a.start.dateTime || a.start.date!).getTime();
             const dateB = new Date(b.start.dateTime || b.start.date!).getTime();
             return dateA - dateB;
         });
-
-        this._events = allEvents;
-        this.requestUpdate();
     }
 
     private _handleShowDetail = async (e: CustomEvent) => {

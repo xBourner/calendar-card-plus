@@ -82,7 +82,14 @@ export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEd
                                 .checked=${upcoming_events}
                                 @change=${this._calendarShowAllChanged}
                             ></ha-switch>
-                        </div>     
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${localize(this.hass, 'editor_show_empty_days')}</span>
+                            <ha-switch
+                                .checked=${this._config.show_empty_days ?? false}
+                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_empty_days')}
+                            ></ha-switch>
+                        </div>
                     </div>
 
                     ${unfold_events ? html`

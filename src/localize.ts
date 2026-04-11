@@ -46,7 +46,9 @@ const languages: Record<string, Record<string, string>> = {
         duration_day: "day",
         duration_days: "days",
         editor_max_lines: "Max. displayed events",
-        group_by_date: "Group by Day"
+        group_by_date: "Group by Day",
+        empty: "Empty",
+        editor_show_empty_days: "Show Empty Days"
     },
     de: {
         starts_in_min: "Beginnt in {x} Minute",
@@ -93,7 +95,9 @@ const languages: Record<string, Record<string, string>> = {
         duration_day: "Tag",
         duration_days: "Tage",
         editor_max_lines: "Max. angezeigte Termine",
-        group_by_date: "Nach Tag gruppieren"
+        group_by_date: "Nach Tag gruppieren",
+        empty: "Leer",
+        editor_show_empty_days: "Zeige leere Tage"
     },
     fr: {
         starts_in_min: "Commence dans {x} minute",

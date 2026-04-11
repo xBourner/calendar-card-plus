@@ -38,6 +38,7 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   calendar_background_colors?: Record<string, string>;
   max_lines?: number;
   group_by_date?: boolean;
+  show_empty_days?: boolean;
 }
 
 export interface CalendarEvent {
@@ -52,4 +53,5 @@ export interface CalendarEvent {
     
     entity_id: string;
     calendar_name: string;
+    is_empty?: boolean;
 }

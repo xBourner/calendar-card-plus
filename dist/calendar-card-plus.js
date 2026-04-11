@@ -1,27 +1,27 @@
 var tt = Object.defineProperty;
-var at = (n, e, t) => e in n ? tt(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t;
-var E = (n, e, t) => at(n, typeof e != "symbol" ? e + "" : e, t);
+var at = (s, e, t) => e in s ? tt(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
+var z = (s, e, t) => at(s, typeof e != "symbol" ? e + "" : e, t);
 var it = "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
-async function nt(n, e, t, a) {
-  const i = encodeURI(`?start=${e.toISOString()}&end=${t.toISOString()}`), s = a.map(async (l) => {
+async function st(s, e, t, a) {
+  const i = encodeURI(`?start=${e.toISOString()}&end=${t.toISOString()}`), n = a.map(async (l) => {
     try {
-      const d = await n.callApi("GET", `calendars/${l}${i}`);
+      const d = await s.callApi("GET", `calendars/${l}${i}`);
       if (!Array.isArray(d))
         throw new Error("Response is not an array");
-      return d.map((h) => {
-        var g, p, k, b, c, y;
-        const u = ((g = h.start) == null ? void 0 : g.dateTime) || ((p = h.start) == null ? void 0 : p.date) || h.start, _ = ((k = h.end) == null ? void 0 : k.dateTime) || ((b = h.end) == null ? void 0 : b.date) || h.end;
+      return d.map((_) => {
+        var g, f, C, $, c, y;
+        const u = ((g = _.start) == null ? void 0 : g.dateTime) || ((f = _.start) == null ? void 0 : f.date) || _.start, h = ((C = _.end) == null ? void 0 : C.dateTime) || (($ = _.end) == null ? void 0 : $.date) || _.end;
         return {
-          ...h,
+          ..._,
           start: { dateTime: u.includes("T") ? u : void 0, date: u.includes("T") ? void 0 : u },
-          end: { dateTime: _.includes("T") ? _ : void 0, date: _.includes("T") ? void 0 : _ },
-          summary: h.summary || h.title || "Unknown Event",
+          end: { dateTime: h.includes("T") ? h : void 0, date: h.includes("T") ? void 0 : h },
+          summary: _.summary || _.title || "Unknown Event",
           entity_id: l,
-          calendar_name: ((y = (c = n.states[l]) == null ? void 0 : c.attributes) == null ? void 0 : y.friendly_name) || l
+          calendar_name: ((y = (c = s.states[l]) == null ? void 0 : c.attributes) == null ? void 0 : y.friendly_name) || l
         };
       });
     } catch {
-      const r = n.states[l];
+      const r = s.states[l];
       return r && r.attributes.start_time && r.attributes.end_time ? [{
         start: { dateTime: r.attributes.start_time.replace(" ", "T") },
         end: { dateTime: r.attributes.end_time.replace(" ", "T") },
@@ -33,15 +33,15 @@ async function nt(n, e, t, a) {
       }] : [];
     }
   });
-  return (await Promise.all(s)).flat();
+  return (await Promise.all(n)).flat();
 }
 /**
  * @license
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const _e = globalThis, Ce = _e.ShadowRoot && (_e.ShadyCSS === void 0 || _e.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ae = Symbol(), Le = /* @__PURE__ */ new WeakMap();
-let Fe = class {
+const ue = globalThis, Ce = ue.ShadowRoot && (ue.ShadyCSS === void 0 || ue.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ae = Symbol(), Me = /* @__PURE__ */ new WeakMap();
+let qe = class {
   constructor(e, t, a) {
     if (this._$cssResult$ = !0, a !== Ae) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = t;
@@ -51,7 +51,7 @@ let Fe = class {
     const t = this.t;
     if (Ce && e === void 0) {
       const a = t !== void 0 && t.length === 1;
-      a && (e = Le.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && Le.set(t, e));
+      a && (e = Me.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && Me.set(t, e));
     }
     return e;
   }
@@ -59,94 +59,94 @@ let Fe = class {
     return this.cssText;
   }
 };
-const st = (n) => new Fe(typeof n == "string" ? n : n + "", void 0, Ae), Ee = (n, ...e) => {
-  const t = n.length === 1 ? n[0] : e.reduce((a, i, s) => a + ((o) => {
+const nt = (s) => new qe(typeof s == "string" ? s : s + "", void 0, Ae), Ee = (s, ...e) => {
+  const t = s.length === 1 ? s[0] : e.reduce((a, i, n) => a + ((o) => {
     if (o._$cssResult$ === !0) return o.cssText;
     if (typeof o == "number") return o;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + o + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
-  })(i) + n[s + 1], n[0]);
-  return new Fe(t, n, Ae);
-}, ot = (n, e) => {
-  if (Ce) n.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
+  })(i) + s[n + 1], s[0]);
+  return new qe(t, s, Ae);
+}, ot = (s, e) => {
+  if (Ce) s.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
   else for (const t of e) {
-    const a = document.createElement("style"), i = _e.litNonce;
-    i !== void 0 && a.setAttribute("nonce", i), a.textContent = t.cssText, n.appendChild(a);
+    const a = document.createElement("style"), i = ue.litNonce;
+    i !== void 0 && a.setAttribute("nonce", i), a.textContent = t.cssText, s.appendChild(a);
   }
-}, je = Ce ? (n) => n : (n) => n instanceof CSSStyleSheet ? ((e) => {
+}, Le = Ce ? (s) => s : (s) => s instanceof CSSStyleSheet ? ((e) => {
   let t = "";
   for (const a of e.cssRules) t += a.cssText;
-  return st(t);
-})(n) : n;
+  return nt(t);
+})(s) : s;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: rt, defineProperty: dt, getOwnPropertyDescriptor: lt, getOwnPropertyNames: ct, getOwnPropertySymbols: _t, getPrototypeOf: ht } = Object, H = globalThis, Oe = H.trustedTypes, ut = Oe ? Oe.emptyScript : "", ye = H.reactiveElementPolyfillSupport, te = (n, e) => n, he = { toAttribute(n, e) {
+const { is: rt, defineProperty: dt, getOwnPropertyDescriptor: lt, getOwnPropertyNames: ct, getOwnPropertySymbols: _t, getPrototypeOf: ht } = Object, U = globalThis, je = U.trustedTypes, ut = je ? je.emptyScript : "", fe = U.reactiveElementPolyfillSupport, ae = (s, e) => s, me = { toAttribute(s, e) {
   switch (e) {
     case Boolean:
-      n = n ? ut : null;
+      s = s ? ut : null;
       break;
     case Object:
     case Array:
-      n = n == null ? n : JSON.stringify(n);
+      s = s == null ? s : JSON.stringify(s);
   }
-  return n;
-}, fromAttribute(n, e) {
-  let t = n;
+  return s;
+}, fromAttribute(s, e) {
+  let t = s;
   switch (e) {
     case Boolean:
-      t = n !== null;
+      t = s !== null;
       break;
     case Number:
-      t = n === null ? null : Number(n);
+      t = s === null ? null : Number(s);
       break;
     case Object:
     case Array:
       try {
-        t = JSON.parse(n);
+        t = JSON.parse(s);
       } catch {
         t = null;
       }
   }
   return t;
-} }, ze = (n, e) => !rt(n, e), Be = { attribute: !0, type: String, converter: he, reflect: !1, useDefault: !1, hasChanged: ze };
-Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), H.litPropertyMetadata ?? (H.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
-let F = class extends HTMLElement {
+} }, ze = (s, e) => !rt(s, e), Oe = { attribute: !0, type: String, converter: me, reflect: !1, useDefault: !1, hasChanged: ze };
+Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), U.litPropertyMetadata ?? (U.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
+let Y = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ?? (this.l = [])).push(e);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, t = Be) {
+  static createProperty(e, t = Oe) {
     if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
       const a = Symbol(), i = this.getPropertyDescriptor(e, a, t);
       i !== void 0 && dt(this.prototype, e, i);
     }
   }
   static getPropertyDescriptor(e, t, a) {
-    const { get: i, set: s } = lt(this.prototype, e) ?? { get() {
+    const { get: i, set: n } = lt(this.prototype, e) ?? { get() {
       return this[t];
     }, set(o) {
       this[t] = o;
     } };
     return { get: i, set(o) {
       const l = i == null ? void 0 : i.call(this);
-      s == null || s.call(this, o), this.requestUpdate(e, l, a);
+      n == null || n.call(this, o), this.requestUpdate(e, l, a);
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? Be;
+    return this.elementProperties.get(e) ?? Oe;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(te("elementProperties"))) return;
+    if (this.hasOwnProperty(ae("elementProperties"))) return;
     const e = ht(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(te("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(te("properties"))) {
+    if (this.hasOwnProperty(ae("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(ae("properties"))) {
       const t = this.properties, a = [...ct(t), ..._t(t)];
       for (const i of a) this.createProperty(i, t[i]);
     }
@@ -166,8 +166,8 @@ let F = class extends HTMLElement {
     const t = [];
     if (Array.isArray(e)) {
       const a = new Set(e.flat(1 / 0).reverse());
-      for (const i of a) t.unshift(je(i));
-    } else e !== void 0 && t.push(je(e));
+      for (const i of a) t.unshift(Le(i));
+    } else e !== void 0 && t.push(Le(e));
     return t;
   }
   static _$Eu(e, t) {
@@ -218,34 +218,34 @@ let F = class extends HTMLElement {
     this._$AK(e, a);
   }
   _$ET(e, t) {
-    var s;
+    var n;
     const a = this.constructor.elementProperties.get(e), i = this.constructor._$Eu(e, a);
     if (i !== void 0 && a.reflect === !0) {
-      const o = (((s = a.converter) == null ? void 0 : s.toAttribute) !== void 0 ? a.converter : he).toAttribute(t, a.type);
+      const o = (((n = a.converter) == null ? void 0 : n.toAttribute) !== void 0 ? a.converter : me).toAttribute(t, a.type);
       this._$Em = e, o == null ? this.removeAttribute(i) : this.setAttribute(i, o), this._$Em = null;
     }
   }
   _$AK(e, t) {
-    var s, o;
+    var n, o;
     const a = this.constructor, i = a._$Eh.get(e);
     if (i !== void 0 && this._$Em !== i) {
-      const l = a.getPropertyOptions(i), d = typeof l.converter == "function" ? { fromAttribute: l.converter } : ((s = l.converter) == null ? void 0 : s.fromAttribute) !== void 0 ? l.converter : he;
+      const l = a.getPropertyOptions(i), d = typeof l.converter == "function" ? { fromAttribute: l.converter } : ((n = l.converter) == null ? void 0 : n.fromAttribute) !== void 0 ? l.converter : me;
       this._$Em = i;
       const r = d.fromAttribute(t, l.type);
       this[i] = r ?? ((o = this._$Ej) == null ? void 0 : o.get(i)) ?? r, this._$Em = null;
     }
   }
-  requestUpdate(e, t, a, i = !1, s) {
+  requestUpdate(e, t, a, i = !1, n) {
     var o;
     if (e !== void 0) {
       const l = this.constructor;
-      if (i === !1 && (s = this[e]), a ?? (a = l.getPropertyOptions(e)), !((a.hasChanged ?? ze)(s, t) || a.useDefault && a.reflect && s === ((o = this._$Ej) == null ? void 0 : o.get(e)) && !this.hasAttribute(l._$Eu(e, a)))) return;
+      if (i === !1 && (n = this[e]), a ?? (a = l.getPropertyOptions(e)), !((a.hasChanged ?? ze)(n, t) || a.useDefault && a.reflect && n === ((o = this._$Ej) == null ? void 0 : o.get(e)) && !this.hasAttribute(l._$Eu(e, a)))) return;
       this.C(e, t, a);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
   }
-  C(e, t, { useDefault: a, reflect: i, wrapped: s }, o) {
-    a && !(this._$Ej ?? (this._$Ej = /* @__PURE__ */ new Map())).has(e) && (this._$Ej.set(e, o ?? t ?? this[e]), s !== !0 || o !== void 0) || (this._$AL.has(e) || (this.hasUpdated || a || (t = void 0), this._$AL.set(e, t)), i === !0 && this._$Em !== e && (this._$Eq ?? (this._$Eq = /* @__PURE__ */ new Set())).add(e));
+  C(e, t, { useDefault: a, reflect: i, wrapped: n }, o) {
+    a && !(this._$Ej ?? (this._$Ej = /* @__PURE__ */ new Map())).has(e) && (this._$Ej.set(e, o ?? t ?? this[e]), n !== !0 || o !== void 0) || (this._$AL.has(e) || (this.hasUpdated || a || (t = void 0), this._$AL.set(e, t)), i === !0 && this._$Em !== e && (this._$Eq ?? (this._$Eq = /* @__PURE__ */ new Set())).add(e));
   }
   async _$EP() {
     this.isUpdatePending = !0;
@@ -265,21 +265,21 @@ let F = class extends HTMLElement {
     if (!this.isUpdatePending) return;
     if (!this.hasUpdated) {
       if (this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this._$Ep) {
-        for (const [s, o] of this._$Ep) this[s] = o;
+        for (const [n, o] of this._$Ep) this[n] = o;
         this._$Ep = void 0;
       }
       const i = this.constructor.elementProperties;
-      if (i.size > 0) for (const [s, o] of i) {
-        const { wrapped: l } = o, d = this[s];
-        l !== !0 || this._$AL.has(s) || d === void 0 || this.C(s, void 0, o, d);
+      if (i.size > 0) for (const [n, o] of i) {
+        const { wrapped: l } = o, d = this[n];
+        l !== !0 || this._$AL.has(n) || d === void 0 || this.C(n, void 0, o, d);
       }
     }
     let e = !1;
     const t = this._$AL;
     try {
       e = this.shouldUpdate(t), e ? (this.willUpdate(t), (a = this._$EO) == null || a.forEach((i) => {
-        var s;
-        return (s = i.hostUpdate) == null ? void 0 : s.call(i);
+        var n;
+        return (n = i.hostUpdate) == null ? void 0 : n.call(i);
       }), this.update(t)) : this._$EM();
     } catch (i) {
       throw e = !1, this._$EM(), i;
@@ -315,74 +315,74 @@ let F = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-F.elementStyles = [], F.shadowRootOptions = { mode: "open" }, F[te("elementProperties")] = /* @__PURE__ */ new Map(), F[te("finalized")] = /* @__PURE__ */ new Map(), ye == null || ye({ ReactiveElement: F }), (H.reactiveElementVersions ?? (H.reactiveElementVersions = [])).push("2.1.2");
+Y.elementStyles = [], Y.shadowRootOptions = { mode: "open" }, Y[ae("elementProperties")] = /* @__PURE__ */ new Map(), Y[ae("finalized")] = /* @__PURE__ */ new Map(), fe == null || fe({ ReactiveElement: Y }), (U.reactiveElementVersions ?? (U.reactiveElementVersions = [])).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ae = globalThis, Ne = (n) => n, ue = ae.trustedTypes, Ue = ue ? ue.createPolicy("lit-html", { createHTML: (n) => n }) : void 0, Ye = "$lit$", U = `lit$${Math.random().toFixed(9).slice(2)}$`, Ge = "?" + U, mt = `<${Ge}>`, Z = document, se = () => Z.createComment(""), oe = (n) => n === null || typeof n != "object" && typeof n != "function", Se = Array.isArray, vt = (n) => Se(n) || typeof (n == null ? void 0 : n[Symbol.iterator]) == "function", we = `[ 	
-\f\r]`, ee = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, He = /-->/g, Re = />/g, I = RegExp(`>|${we}(?:([^\\s"'>=/]+)(${we}*=${we}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Ie = /'/g, Ve = /"/g, Qe = /^(?:script|style|textarea|title)$/i, pt = (n) => (e, ...t) => ({ _$litType$: n, strings: e, values: t }), v = pt(1), Y = Symbol.for("lit-noChange"), D = Symbol.for("lit-nothing"), Ke = /* @__PURE__ */ new WeakMap(), V = Z.createTreeWalker(Z, 129);
-function Je(n, e) {
-  if (!Se(n) || !n.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return Ue !== void 0 ? Ue.createHTML(e) : e;
+const ie = globalThis, Be = (s) => s, pe = ie.trustedTypes, Ne = pe ? pe.createPolicy("lit-html", { createHTML: (s) => s }) : void 0, Fe = "$lit$", H = `lit$${Math.random().toFixed(9).slice(2)}$`, Ye = "?" + H, mt = `<${Ye}>`, q = document, re = () => q.createComment(""), de = (s) => s === null || typeof s != "object" && typeof s != "function", Se = Array.isArray, pt = (s) => Se(s) || typeof (s == null ? void 0 : s[Symbol.iterator]) == "function", $e = `[ 	
+\f\r]`, te = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, He = /-->/g, Ue = />/g, I = RegExp(`>|${$e}(?:([^\\s"'>=/]+)(${$e}*=${$e}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Re = /'/g, Ie = /"/g, Ge = /^(?:script|style|textarea|title)$/i, vt = (s) => (e, ...t) => ({ _$litType$: s, strings: e, values: t }), p = vt(1), G = Symbol.for("lit-noChange"), D = Symbol.for("lit-nothing"), Ve = /* @__PURE__ */ new WeakMap(), K = q.createTreeWalker(q, 129);
+function Qe(s, e) {
+  if (!Se(s) || !s.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return Ne !== void 0 ? Ne.createHTML(e) : e;
 }
-const gt = (n, e) => {
-  const t = n.length - 1, a = [];
-  let i, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", o = ee;
+const gt = (s, e) => {
+  const t = s.length - 1, a = [];
+  let i, n = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", o = te;
   for (let l = 0; l < t; l++) {
-    const d = n[l];
-    let r, h, u = -1, _ = 0;
-    for (; _ < d.length && (o.lastIndex = _, h = o.exec(d), h !== null); ) _ = o.lastIndex, o === ee ? h[1] === "!--" ? o = He : h[1] !== void 0 ? o = Re : h[2] !== void 0 ? (Qe.test(h[2]) && (i = RegExp("</" + h[2], "g")), o = I) : h[3] !== void 0 && (o = I) : o === I ? h[0] === ">" ? (o = i ?? ee, u = -1) : h[1] === void 0 ? u = -2 : (u = o.lastIndex - h[2].length, r = h[1], o = h[3] === void 0 ? I : h[3] === '"' ? Ve : Ie) : o === Ve || o === Ie ? o = I : o === He || o === Re ? o = ee : (o = I, i = void 0);
-    const g = o === I && n[l + 1].startsWith("/>") ? " " : "";
-    s += o === ee ? d + mt : u >= 0 ? (a.push(r), d.slice(0, u) + Ye + d.slice(u) + U + g) : d + U + (u === -2 ? l : g);
+    const d = s[l];
+    let r, _, u = -1, h = 0;
+    for (; h < d.length && (o.lastIndex = h, _ = o.exec(d), _ !== null); ) h = o.lastIndex, o === te ? _[1] === "!--" ? o = He : _[1] !== void 0 ? o = Ue : _[2] !== void 0 ? (Ge.test(_[2]) && (i = RegExp("</" + _[2], "g")), o = I) : _[3] !== void 0 && (o = I) : o === I ? _[0] === ">" ? (o = i ?? te, u = -1) : _[1] === void 0 ? u = -2 : (u = o.lastIndex - _[2].length, r = _[1], o = _[3] === void 0 ? I : _[3] === '"' ? Ie : Re) : o === Ie || o === Re ? o = I : o === He || o === Ue ? o = te : (o = I, i = void 0);
+    const g = o === I && s[l + 1].startsWith("/>") ? " " : "";
+    n += o === te ? d + mt : u >= 0 ? (a.push(r), d.slice(0, u) + Fe + d.slice(u) + H + g) : d + H + (u === -2 ? l : g);
   }
-  return [Je(n, s + (n[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
+  return [Qe(s, n + (s[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
 };
-class re {
+class le {
   constructor({ strings: e, _$litType$: t }, a) {
     let i;
     this.parts = [];
-    let s = 0, o = 0;
-    const l = e.length - 1, d = this.parts, [r, h] = gt(e, t);
-    if (this.el = re.createElement(r, a), V.currentNode = this.el.content, t === 2 || t === 3) {
+    let n = 0, o = 0;
+    const l = e.length - 1, d = this.parts, [r, _] = gt(e, t);
+    if (this.el = le.createElement(r, a), K.currentNode = this.el.content, t === 2 || t === 3) {
       const u = this.el.content.firstChild;
       u.replaceWith(...u.childNodes);
     }
-    for (; (i = V.nextNode()) !== null && d.length < l; ) {
+    for (; (i = K.nextNode()) !== null && d.length < l; ) {
       if (i.nodeType === 1) {
-        if (i.hasAttributes()) for (const u of i.getAttributeNames()) if (u.endsWith(Ye)) {
-          const _ = h[o++], g = i.getAttribute(u).split(U), p = /([.?@])?(.*)/.exec(_);
-          d.push({ type: 1, index: s, name: p[2], strings: g, ctor: p[1] === "." ? wt : p[1] === "?" ? ft : p[1] === "@" ? $t : me }), i.removeAttribute(u);
-        } else u.startsWith(U) && (d.push({ type: 6, index: s }), i.removeAttribute(u));
-        if (Qe.test(i.tagName)) {
-          const u = i.textContent.split(U), _ = u.length - 1;
-          if (_ > 0) {
-            i.textContent = ue ? ue.emptyScript : "";
-            for (let g = 0; g < _; g++) i.append(u[g], se()), V.nextNode(), d.push({ type: 2, index: ++s });
-            i.append(u[_], se());
+        if (i.hasAttributes()) for (const u of i.getAttributeNames()) if (u.endsWith(Fe)) {
+          const h = _[o++], g = i.getAttribute(u).split(H), f = /([.?@])?(.*)/.exec(h);
+          d.push({ type: 1, index: n, name: f[2], strings: g, ctor: f[1] === "." ? wt : f[1] === "?" ? ft : f[1] === "@" ? $t : ve }), i.removeAttribute(u);
+        } else u.startsWith(H) && (d.push({ type: 6, index: n }), i.removeAttribute(u));
+        if (Ge.test(i.tagName)) {
+          const u = i.textContent.split(H), h = u.length - 1;
+          if (h > 0) {
+            i.textContent = pe ? pe.emptyScript : "";
+            for (let g = 0; g < h; g++) i.append(u[g], re()), K.nextNode(), d.push({ type: 2, index: ++n });
+            i.append(u[h], re());
           }
         }
-      } else if (i.nodeType === 8) if (i.data === Ge) d.push({ type: 2, index: s });
+      } else if (i.nodeType === 8) if (i.data === Ye) d.push({ type: 2, index: n });
       else {
         let u = -1;
-        for (; (u = i.data.indexOf(U, u + 1)) !== -1; ) d.push({ type: 7, index: s }), u += U.length - 1;
+        for (; (u = i.data.indexOf(H, u + 1)) !== -1; ) d.push({ type: 7, index: n }), u += H.length - 1;
       }
-      s++;
+      n++;
     }
   }
   static createElement(e, t) {
-    const a = Z.createElement("template");
+    const a = q.createElement("template");
     return a.innerHTML = e, a;
   }
 }
-function G(n, e, t = n, a) {
+function Q(s, e, t = s, a) {
   var o, l;
-  if (e === Y) return e;
+  if (e === G) return e;
   let i = a !== void 0 ? (o = t._$Co) == null ? void 0 : o[a] : t._$Cl;
-  const s = oe(e) ? void 0 : e._$litDirective$;
-  return (i == null ? void 0 : i.constructor) !== s && ((l = i == null ? void 0 : i._$AO) == null || l.call(i, !1), s === void 0 ? i = void 0 : (i = new s(n), i._$AT(n, t, a)), a !== void 0 ? (t._$Co ?? (t._$Co = []))[a] = i : t._$Cl = i), i !== void 0 && (e = G(n, i._$AS(n, e.values), i, a)), e;
+  const n = de(e) ? void 0 : e._$litDirective$;
+  return (i == null ? void 0 : i.constructor) !== n && ((l = i == null ? void 0 : i._$AO) == null || l.call(i, !1), n === void 0 ? i = void 0 : (i = new n(s), i._$AT(s, t, a)), a !== void 0 ? (t._$Co ?? (t._$Co = []))[a] = i : t._$Cl = i), i !== void 0 && (e = Q(s, i._$AS(s, e.values), i, a)), e;
 }
 class yt {
   constructor(e, t) {
@@ -395,24 +395,24 @@ class yt {
     return this._$AM._$AU;
   }
   u(e) {
-    const { el: { content: t }, parts: a } = this._$AD, i = ((e == null ? void 0 : e.creationScope) ?? Z).importNode(t, !0);
-    V.currentNode = i;
-    let s = V.nextNode(), o = 0, l = 0, d = a[0];
+    const { el: { content: t }, parts: a } = this._$AD, i = ((e == null ? void 0 : e.creationScope) ?? q).importNode(t, !0);
+    K.currentNode = i;
+    let n = K.nextNode(), o = 0, l = 0, d = a[0];
     for (; d !== void 0; ) {
       if (o === d.index) {
         let r;
-        d.type === 2 ? r = new le(s, s.nextSibling, this, e) : d.type === 1 ? r = new d.ctor(s, d.name, d.strings, this, e) : d.type === 6 && (r = new xt(s, this, e)), this._$AV.push(r), d = a[++l];
+        d.type === 2 ? r = new _e(n, n.nextSibling, this, e) : d.type === 1 ? r = new d.ctor(n, d.name, d.strings, this, e) : d.type === 6 && (r = new xt(n, this, e)), this._$AV.push(r), d = a[++l];
       }
-      o !== (d == null ? void 0 : d.index) && (s = V.nextNode(), o++);
+      o !== (d == null ? void 0 : d.index) && (n = K.nextNode(), o++);
     }
-    return V.currentNode = Z, i;
+    return K.currentNode = q, i;
   }
   p(e) {
     let t = 0;
     for (const a of this._$AV) a !== void 0 && (a.strings !== void 0 ? (a._$AI(e, a, t), t += a.strings.length - 2) : a._$AI(e[t])), t++;
   }
 }
-class le {
+class _e {
   get _$AU() {
     var e;
     return ((e = this._$AM) == null ? void 0 : e._$AU) ?? this._$Cv;
@@ -432,7 +432,7 @@ class le {
     return this._$AB;
   }
   _$AI(e, t = this) {
-    e = G(this, e, t), oe(e) ? e === D || e == null || e === "" ? (this._$AH !== D && this._$AR(), this._$AH = D) : e !== this._$AH && e !== Y && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : vt(e) ? this.k(e) : this._(e);
+    e = Q(this, e, t), de(e) ? e === D || e == null || e === "" ? (this._$AH !== D && this._$AR(), this._$AH = D) : e !== this._$AH && e !== G && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : pt(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -441,33 +441,33 @@ class le {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== D && oe(this._$AH) ? this._$AA.nextSibling.data = e : this.T(Z.createTextNode(e)), this._$AH = e;
+    this._$AH !== D && de(this._$AH) ? this._$AA.nextSibling.data = e : this.T(q.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    var s;
-    const { values: t, _$litType$: a } = e, i = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = re.createElement(Je(a.h, a.h[0]), this.options)), a);
-    if (((s = this._$AH) == null ? void 0 : s._$AD) === i) this._$AH.p(t);
+    var n;
+    const { values: t, _$litType$: a } = e, i = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = le.createElement(Qe(a.h, a.h[0]), this.options)), a);
+    if (((n = this._$AH) == null ? void 0 : n._$AD) === i) this._$AH.p(t);
     else {
       const o = new yt(i, this), l = o.u(this.options);
       o.p(t), this.T(l), this._$AH = o;
     }
   }
   _$AC(e) {
-    let t = Ke.get(e.strings);
-    return t === void 0 && Ke.set(e.strings, t = new re(e)), t;
+    let t = Ve.get(e.strings);
+    return t === void 0 && Ve.set(e.strings, t = new le(e)), t;
   }
   k(e) {
     Se(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let a, i = 0;
-    for (const s of e) i === t.length ? t.push(a = new le(this.O(se()), this.O(se()), this, this.options)) : a = t[i], a._$AI(s), i++;
+    for (const n of e) i === t.length ? t.push(a = new _e(this.O(re()), this.O(re()), this, this.options)) : a = t[i], a._$AI(n), i++;
     i < t.length && (this._$AR(a && a._$AB.nextSibling, i), t.length = i);
   }
   _$AR(e = this._$AA.nextSibling, t) {
     var a;
     for ((a = this._$AP) == null ? void 0 : a.call(this, !1, !0, t); e !== this._$AB; ) {
-      const i = Ne(e).nextSibling;
-      Ne(e).remove(), e = i;
+      const i = Be(e).nextSibling;
+      Be(e).remove(), e = i;
     }
   }
   setConnected(e) {
@@ -475,24 +475,24 @@ class le {
     this._$AM === void 0 && (this._$Cv = e, (t = this._$AP) == null || t.call(this, e));
   }
 }
-class me {
+class ve {
   get tagName() {
     return this.element.tagName;
   }
   get _$AU() {
     return this._$AM._$AU;
   }
-  constructor(e, t, a, i, s) {
-    this.type = 1, this._$AH = D, this._$AN = void 0, this.element = e, this.name = t, this._$AM = i, this.options = s, a.length > 2 || a[0] !== "" || a[1] !== "" ? (this._$AH = Array(a.length - 1).fill(new String()), this.strings = a) : this._$AH = D;
+  constructor(e, t, a, i, n) {
+    this.type = 1, this._$AH = D, this._$AN = void 0, this.element = e, this.name = t, this._$AM = i, this.options = n, a.length > 2 || a[0] !== "" || a[1] !== "" ? (this._$AH = Array(a.length - 1).fill(new String()), this.strings = a) : this._$AH = D;
   }
   _$AI(e, t = this, a, i) {
-    const s = this.strings;
+    const n = this.strings;
     let o = !1;
-    if (s === void 0) e = G(this, e, t, 0), o = !oe(e) || e !== this._$AH && e !== Y, o && (this._$AH = e);
+    if (n === void 0) e = Q(this, e, t, 0), o = !de(e) || e !== this._$AH && e !== G, o && (this._$AH = e);
     else {
       const l = e;
       let d, r;
-      for (e = s[0], d = 0; d < s.length - 1; d++) r = G(this, l[a + d], t, d), r === Y && (r = this._$AH[d]), o || (o = !oe(r) || r !== this._$AH[d]), r === D ? e = D : e !== D && (e += (r ?? "") + s[d + 1]), this._$AH[d] = r;
+      for (e = n[0], d = 0; d < n.length - 1; d++) r = Q(this, l[a + d], t, d), r === G && (r = this._$AH[d]), o || (o = !de(r) || r !== this._$AH[d]), r === D ? e = D : e !== D && (e += (r ?? "") + n[d + 1]), this._$AH[d] = r;
     }
     o && !i && this.j(e);
   }
@@ -500,7 +500,7 @@ class me {
     e === D ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 }
-class wt extends me {
+class wt extends ve {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -508,7 +508,7 @@ class wt extends me {
     this.element[this.name] = e === D ? void 0 : e;
   }
 }
-class ft extends me {
+class ft extends ve {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -516,14 +516,14 @@ class ft extends me {
     this.element.toggleAttribute(this.name, !!e && e !== D);
   }
 }
-class $t extends me {
-  constructor(e, t, a, i, s) {
-    super(e, t, a, i, s), this.type = 5;
+class $t extends ve {
+  constructor(e, t, a, i, n) {
+    super(e, t, a, i, n), this.type = 5;
   }
   _$AI(e, t = this) {
-    if ((e = G(this, e, t, 0) ?? D) === Y) return;
-    const a = this._$AH, i = e === D && a !== D || e.capture !== a.capture || e.once !== a.once || e.passive !== a.passive, s = e !== D && (a === D || i);
-    i && this.element.removeEventListener(this.name, this, a), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
+    if ((e = Q(this, e, t, 0) ?? D) === G) return;
+    const a = this._$AH, i = e === D && a !== D || e.capture !== a.capture || e.once !== a.once || e.passive !== a.passive, n = e !== D && (a === D || i);
+    i && this.element.removeEventListener(this.name, this, a), n && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
   handleEvent(e) {
     var t;
@@ -538,27 +538,27 @@ class xt {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    G(this, e);
+    Q(this, e);
   }
 }
-const fe = ae.litHtmlPolyfillSupport;
-fe == null || fe(re, le), (ae.litHtmlVersions ?? (ae.litHtmlVersions = [])).push("3.3.2");
-const bt = (n, e, t) => {
+const xe = ie.litHtmlPolyfillSupport;
+xe == null || xe(le, _e), (ie.litHtmlVersions ?? (ie.litHtmlVersions = [])).push("3.3.2");
+const bt = (s, e, t) => {
   const a = (t == null ? void 0 : t.renderBefore) ?? e;
   let i = a._$litPart$;
   if (i === void 0) {
-    const s = (t == null ? void 0 : t.renderBefore) ?? null;
-    a._$litPart$ = i = new le(e.insertBefore(se(), s), s, void 0, t ?? {});
+    const n = (t == null ? void 0 : t.renderBefore) ?? null;
+    a._$litPart$ = i = new _e(e.insertBefore(re(), n), n, void 0, t ?? {});
   }
-  return i._$AI(n), i;
+  return i._$AI(s), i;
 };
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const K = globalThis;
-class W extends F {
+const W = globalThis;
+class Z extends Y {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -580,65 +580,65 @@ class W extends F {
     super.disconnectedCallback(), (e = this._$Do) == null || e.setConnected(!1);
   }
   render() {
-    return Y;
+    return G;
   }
 }
-var qe;
-W._$litElement$ = !0, W.finalized = !0, (qe = K.litElementHydrateSupport) == null || qe.call(K, { LitElement: W });
-const $e = K.litElementPolyfillSupport;
-$e == null || $e({ LitElement: W });
-(K.litElementVersions ?? (K.litElementVersions = [])).push("4.2.2");
+var Ze;
+Z._$litElement$ = !0, Z.finalized = !0, (Ze = W.litElementHydrateSupport) == null || Ze.call(W, { LitElement: Z });
+const be = W.litElementPolyfillSupport;
+be == null || be({ LitElement: Z });
+(W.litElementVersions ?? (W.litElementVersions = [])).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Te = (n) => (e, t) => {
+const Te = (s) => (e, t) => {
   t !== void 0 ? t.addInitializer(() => {
-    customElements.define(n, e);
-  }) : customElements.define(n, e);
+    customElements.define(s, e);
+  }) : customElements.define(s, e);
 };
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const kt = { attribute: !0, type: String, converter: he, reflect: !1, hasChanged: ze }, Ct = (n = kt, e, t) => {
+const kt = { attribute: !0, type: String, converter: me, reflect: !1, hasChanged: ze }, Ct = (s = kt, e, t) => {
   const { kind: a, metadata: i } = t;
-  let s = globalThis.litPropertyMetadata.get(i);
-  if (s === void 0 && globalThis.litPropertyMetadata.set(i, s = /* @__PURE__ */ new Map()), a === "setter" && ((n = Object.create(n)).wrapped = !0), s.set(t.name, n), a === "accessor") {
+  let n = globalThis.litPropertyMetadata.get(i);
+  if (n === void 0 && globalThis.litPropertyMetadata.set(i, n = /* @__PURE__ */ new Map()), a === "setter" && ((s = Object.create(s)).wrapped = !0), n.set(t.name, s), a === "accessor") {
     const { name: o } = t;
     return { set(l) {
       const d = e.get.call(this);
-      e.set.call(this, l), this.requestUpdate(o, d, n, !0, l);
+      e.set.call(this, l), this.requestUpdate(o, d, s, !0, l);
     }, init(l) {
-      return l !== void 0 && this.C(o, void 0, n, l), l;
+      return l !== void 0 && this.C(o, void 0, s, l), l;
     } };
   }
   if (a === "setter") {
     const { name: o } = t;
     return function(l) {
       const d = this[o];
-      e.call(this, l), this.requestUpdate(o, d, n, !0, l);
+      e.call(this, l), this.requestUpdate(o, d, s, !0, l);
     };
   }
   throw Error("Unsupported decorator location: " + a);
 };
-function B(n) {
-  return (e, t) => typeof t == "object" ? Ct(n, e, t) : ((a, i, s) => {
-    const o = i.hasOwnProperty(s);
-    return i.constructor.createProperty(s, a), o ? Object.getOwnPropertyDescriptor(i, s) : void 0;
-  })(n, e, t);
+function B(s) {
+  return (e, t) => typeof t == "object" ? Ct(s, e, t) : ((a, i, n) => {
+    const o = i.hasOwnProperty(n);
+    return i.constructor.createProperty(n, a), o ? Object.getOwnPropertyDescriptor(i, n) : void 0;
+  })(s, e, t);
 }
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function ce(n) {
-  return B({ ...n, state: !0, attribute: !1 });
+function he(s) {
+  return B({ ...s, state: !0, attribute: !1 });
 }
-const q = {
+const F = {
   en: {
     starts_in_min: "Starts in {x} minute",
     starts_in_mins: "Starts in {x} minutes",
@@ -684,7 +684,9 @@ const q = {
     duration_day: "day",
     duration_days: "days",
     editor_max_lines: "Max. displayed events",
-    group_by_date: "Group by Day"
+    group_by_date: "Group by Day",
+    empty: "Empty",
+    editor_show_empty_days: "Show Empty Days"
   },
   de: {
     starts_in_min: "Beginnt in {x} Minute",
@@ -731,7 +733,9 @@ const q = {
     duration_day: "Tag",
     duration_days: "Tage",
     editor_max_lines: "Max. angezeigte Termine",
-    group_by_date: "Nach Tag gruppieren"
+    group_by_date: "Nach Tag gruppieren",
+    empty: "Leer",
+    editor_show_empty_days: "Zeige leere Tage"
   },
   fr: {
     starts_in_min: "Commence dans {x} minute",
@@ -1176,98 +1180,100 @@ const q = {
     group_by_date: "Csoportosítás nap szerint"
   }
 };
-function w(n, e, t, a) {
+function w(s, e, t, a) {
   var o;
-  const i = ((o = n.locale) == null ? void 0 : o.language) || n.language || "en";
-  let s;
-  if (q[i] && q[i][e])
-    s = q[i][e];
-  else if (q.en && q.en[e])
-    s = q.en[e];
+  const i = ((o = s.locale) == null ? void 0 : o.language) || s.language || "en";
+  let n;
+  if (F[i] && F[i][e])
+    n = F[i][e];
+  else if (F.en && F.en[e])
+    n = F.en[e];
   else
     return e;
-  return t && a && (s = s.replace(t, a)), s;
+  return t && a && (n = n.replace(t, a)), n;
 }
-function At(n, e, t) {
+function At(s, e, t) {
   var l, d;
   const a = (t == null ? void 0 : t.unfold_events) || !1;
   if (e === void 0)
-    return v`
+    return p`
         <div class="calendar-container">
             <div class="calendar-item" style="cursor: default;">
                  <div class="calendar-icon" style="background-color: var(--primary-color, #03a9f4);">
                     <ha-icon icon="mdi:calendar-clock"></ha-icon>
                 </div>
                 <div class="calendar-content">
-                    <div class="event-title">${w(n, "loading")}</div>
+                    <div class="event-title">${w(s, "loading")}</div>
                 </div>
             </div>
         </div>
         `;
   if (e.length === 0)
-    return v`
+    return p`
         <div class="calendar-container">
             <div class="calendar-item" style="cursor: default;">
                  <div class="calendar-icon" style="background-color: var(--disabled-text-color, #bdbdbb);">
                     <ha-icon icon="mdi:calendar-remove"></ha-icon>
                 </div>
                 <div class="calendar-content">
-                    <div class="event-title">${w(n, "no_events")}</div>
+                    <div class="event-title">${w(s, "no_events")}</div>
                 </div>
             </div>
         </div>
         `;
   if (!a) {
-    const r = e[0], h = e.length - 1, u = r.summary;
-    let _, g;
+    const r = e[0], _ = e.length - 1, u = r.is_empty ? w(s, "empty") : r.summary;
+    let h, g;
     try {
-      if (_ = new Date(r.start.dateTime || r.start.date), g = new Date(r.end.dateTime || r.end.date), isNaN(_.getTime()) || isNaN(g.getTime())) throw new Error("Invalid Date");
+      if (h = new Date(r.start.dateTime || r.start.date), g = new Date(r.end.dateTime || r.end.date), isNaN(h.getTime()) || isNaN(g.getTime())) throw new Error("Invalid Date");
     } catch {
-      return v`<div class="error">Date Error</div>`;
+      return p`<div class="error">Date Error</div>`;
     }
-    const p = /* @__PURE__ */ new Date(), k = !r.start.dateTime, b = ne(n, _, g, k), c = ((l = n.locale) == null ? void 0 : l.language) || n.language || navigator.language, y = (T) => T.toLocaleTimeString(c, { hour: "2-digit", minute: "2-digit" }), x = `${y(_)} - ${y(g)}`, m = (t == null ? void 0 : t.show_date) ?? !1, $ = (t == null ? void 0 : t.show_time) ?? !1;
-    let f = "";
-    const C = n.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
-    if (m || $)
-      if (k) {
-        const T = m ? _.toLocaleDateString(c, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
-        m && $ ? f = `${T}, ${C}` : f = T || C;
+    const f = /* @__PURE__ */ new Date(), C = !r.start.dateTime, $ = oe(s, h, g, C), c = ((l = s.locale) == null ? void 0 : l.language) || s.language || navigator.language, y = (k) => k.toLocaleTimeString(c, { hour: "2-digit", minute: "2-digit" }), b = `${y(h)} - ${y(g)}`, v = (t == null ? void 0 : t.show_date) ?? !1, x = (t == null ? void 0 : t.show_time) ?? !1;
+    let m = "";
+    const A = s.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
+    if (r.is_empty)
+      m = "";
+    else if (v || x)
+      if (C) {
+        const k = v ? h.toLocaleDateString(c, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+        v && x ? m = `${k}, ${A}` : m = k || A;
       } else {
-        const T = [];
-        m && T.push(_.toLocaleDateString(c, { day: "2-digit", month: "2-digit", year: "numeric" })), $ && T.push(x), f = T.join(", ");
+        const k = [];
+        v && k.push(h.toLocaleDateString(c, { day: "2-digit", month: "2-digit", year: "numeric" })), x && k.push(b), m = k.join(", ");
       }
-    else if (_ > p) {
-      const T = _.getTime() - p.getTime(), J = Math.ceil(T / 6e4);
-      f = ke(n, J);
+    else if (h > f) {
+      const k = h.getTime() - f.getTime(), X = Math.ceil(k / 6e4);
+      m = ke(s, X);
     } else
-      f = k ? C : y(_);
-    if (t != null && t.show_duration && (f ? f.endsWith(b) || (f += ` • ${b}`) : f = b), h > 0 && (f += ` ${w(n, "more_events", "{x}", h.toString())}`), t != null && t.show_weekday) {
-      const T = ((d = n.locale) == null ? void 0 : d.language) || n.language || navigator.language, J = t != null && t.icon_show_weekday ? _.toLocaleDateString(T, { month: t.show_weekday_long ? "long" : "short" }) : _.toLocaleDateString(T, { weekday: t.show_weekday_long ? "long" : "short" });
-      f += ` • ${J}`;
+      m = C ? A : y(h);
+    if (!r.is_empty && (t != null && t.show_duration) && (m ? m.endsWith($) || (m += ` • ${$}`) : m = $), _ > 0 && (m += ` ${w(s, "more_events", "{x}", _.toString())}`), !r.is_empty && (t != null && t.show_weekday)) {
+      const k = ((d = s.locale) == null ? void 0 : d.language) || s.language || navigator.language, X = t != null && t.icon_show_weekday ? h.toLocaleDateString(k, { month: t.show_weekday_long ? "long" : "short" }) : h.toLocaleDateString(k, { weekday: t.show_weekday_long ? "long" : "short" });
+      m += ` • ${X}`;
     }
-    const M = _ <= p && g >= p ? p : _, P = xe(r.entity_id, t), O = ie(n, M, P, (t == null ? void 0 : t.dark_mode) ?? !1, (t == null ? void 0 : t.icon_show_weekday) ?? !1), z = be(r.entity_id, t), j = z ? `background-color: ${z}; border: none;` : "";
-    return v`
+    const P = h <= f && g >= f ? f : h, L = r.is_empty ? V(r.entity_id, t) || "var(--disabled-text-color, #bdbdbb)" : V(r.entity_id, t), O = ne(s, P, L, (t == null ? void 0 : t.dark_mode) ?? !1, (t == null ? void 0 : t.icon_show_weekday) ?? !1), T = se(r.entity_id, t), M = T ? `background-color: ${T}; border: none;` : "";
+    return p`
             <div class="calendar-container">
                 <div class="calendar-item"  
-                     style="${j}"
+                     style="${M} ${r.is_empty ? "cursor: default; opacity: 0.7;" : ""}"
                      title="${u}"
-                     @click=${(T) => We(T, n, e)}>
+                     @click=${(k) => r.is_empty ? null : Ke(k, s, e)}>
                      <div class="calendar-icon dynamic">
                         ${O}
                     </div>
                     <div class="calendar-content">
                         <div class="event-title">${u}</div>
                         <div class="event-time">
-                            ${m || $ ? v`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
-                            ${f}
+                            ${!r.is_empty && (v || x) ? p`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
+                            ${m}
                         </div>
-                        ${t != null && t.show_location && r.location ? v`
+                        ${!r.is_empty && (t != null && t.show_location) && r.location ? p`
                                 <div class="event-location">
                                     <ha-icon icon="mdi:map-marker"></ha-icon>
                                     ${r.location}
                                 </div>
                             ` : ""}
-                        ${t != null && t.show_calendar_name && r.calendar_name ? v`
+                        ${t != null && t.show_calendar_name && r.calendar_name ? p`
                                 <div class="event-calendar">
                                     <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
                                     ${r.calendar_name}
@@ -1280,51 +1286,55 @@ function At(n, e, t) {
   }
   if (t != null && t.group_by_date && a) {
     const r = Xe(e);
-    return v`
+    return p`
             <div class="calendar-container">
-                ${r.map((h) => {
-      const u = h.date, _ = De(t.calendar_icon_color || "#fa3e3e"), g = ie(n, u, _, (t == null ? void 0 : t.dark_mode) ?? !1, (t == null ? void 0 : t.icon_show_weekday) ?? !1);
-      return v`
-                        <div class="calendar-item grouped" style="align-items: center;">
+                ${r.map((_) => {
+      const u = _.date, h = V(_.events[0].entity_id, t), g = ne(s, u, h, (t == null ? void 0 : t.dark_mode) ?? !1, (t == null ? void 0 : t.icon_show_weekday) ?? !1), f = se(_.events[0].entity_id, t), C = f ? `background-color: ${f}; border: none;` : "";
+      return p`
+                        <div class="calendar-item grouped" style="align-items: center; ${C}">
                             <div class="calendar-icon dynamic">
                                 ${g}
                             </div>
                             <div class="calendar-content">
-                                ${h.events.map((p) => {
-        var O;
-        const k = p.summary, b = new Date(p.start.dateTime || p.start.date), c = new Date(p.end.dateTime || p.end.date), y = !p.start.dateTime, x = ne(n, b, c, y), m = ((O = n.locale) == null ? void 0 : O.language) || n.language || navigator.language, $ = (z) => z.toLocaleTimeString(m, { hour: "2-digit", minute: "2-digit" }), f = `${$(b)} - ${$(c)}`, C = (t == null ? void 0 : t.show_date) ?? !1, A = (t == null ? void 0 : t.show_time) ?? !1, M = n.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
-        let P = "";
-        if (C || A)
-          if (y) {
-            const z = C ? b.toLocaleDateString(m, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
-            C && A ? P = `${z}, ${M}` : P = z || M;
+                                ${_.events.map(($) => {
+        var M;
+        const c = $.is_empty ? w(s, "empty") : $.summary, y = new Date($.start.dateTime || $.start.date), b = new Date($.end.dateTime || $.end.date), v = !$.start.dateTime, x = oe(s, y, b, v), m = ((M = s.locale) == null ? void 0 : M.language) || s.language || navigator.language, A = (k) => k.toLocaleTimeString(m, { hour: "2-digit", minute: "2-digit" }), E = `${A(y)} - ${A(b)}`, P = (t == null ? void 0 : t.show_date) ?? !1, L = (t == null ? void 0 : t.show_time) ?? !1, O = s.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
+        let T = "";
+        if ($.is_empty)
+          T = "";
+        else if (P || L)
+          if (v) {
+            const k = P ? y.toLocaleDateString(m, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+            P && L ? T = `${k}, ${O}` : T = k || O;
           } else {
-            const z = [];
-            C && z.push(b.toLocaleDateString(m, { day: "2-digit", month: "2-digit", year: "numeric" })), A && z.push(f), P = z.join(", ");
+            const k = [];
+            P && k.push(y.toLocaleDateString(m, { day: "2-digit", month: "2-digit", year: "numeric" })), L && k.push(E), T = k.join(", ");
           }
         else
-          P = y ? M : $(b);
-        if (t != null && t.show_duration && (P.endsWith(x) || (P += ` • ${x}`)), t != null && t.show_weekday) {
-          const z = t != null && t.icon_show_weekday ? b.toLocaleDateString(m, { month: t.show_weekday_long ? "long" : "short" }) : b.toLocaleDateString(m, { weekday: t.show_weekday_long ? "long" : "short" });
-          P.includes(z) || (P += ` • ${z}`);
+          T = v ? O : A(y);
+        if (!$.is_empty && (t != null && t.show_duration) && (T.endsWith(x) || (T += ` • ${x}`)), !$.is_empty && (t != null && t.show_weekday)) {
+          const k = t != null && t.icon_show_weekday ? y.toLocaleDateString(m, { month: t.show_weekday_long ? "long" : "short" }) : y.toLocaleDateString(m, { weekday: t.show_weekday_long ? "long" : "short" });
+          T.includes(k) || (T += ` • ${k}`);
         }
-        return v`
-                                        <div class="event-entry" @click=${(z) => Ze(z, p.entity_id)} style="margin-bottom: 4px;">
-                                            <div class="event-title">${k}</div>
-                                            <div class="event-time" style="display: flex; align-items: center; gap: 4px;">
-                                                ${C || A ? v`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ""}
-                                                ${P}
+        return p`
+                                        <div class="event-entry" @click=${(k) => $.is_empty ? null : We(k, $.entity_id)} style="margin-bottom: 4px; ${$.is_empty ? "opacity: 0.7; cursor: default;" : ""}">
+                                            <div class="event-title">
+                                                ${c}
                                             </div>
-                                            ${t != null && t.show_location && p.location ? v`
+                                            <div class="event-time" style="display: flex; align-items: center; gap: 4px;">
+                                                ${!$.is_empty && (P || L) ? p`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ""}
+                                                ${T}
+                                            </div>
+                                            ${!$.is_empty && (t != null && t.show_location) && $.location ? p`
                                                     <div class="event-location" style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);">
                                                         <ha-icon icon="mdi:map-marker" style="--mdc-icon-size: 14px;"></ha-icon>
-                                                        ${p.location}
+                                                        ${$.location}
                                                     </div>
                                                 ` : ""}
-                                            ${t != null && t.show_calendar_name && p.calendar_name ? v`
+                                            ${t != null && t.show_calendar_name && $.calendar_name ? p`
                                                     <div class="event-calendar" style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);">
                                                         <ha-icon icon="mdi:calendar-blank-multiple" style="--mdc-icon-size: 14px;"></ha-icon>
-                                                        ${p.calendar_name}
+                                                        ${$.calendar_name}
                                                     </div>
                                                 ` : ""}
                                         </div>
@@ -1332,65 +1342,67 @@ function At(n, e, t) {
       })}
                             </div>
                         </div>
-                        ${t != null && t.show_divider ? v`<div class="calendar-divider"></div>` : ""}
+                        ${t != null && t.show_divider ? p`<div class="calendar-divider"></div>` : ""}
                     `;
     })}
             </div>
         `;
   }
-  const i = (t == null ? void 0 : t.max_lines) || 0, s = i > 0 ? e.slice(0, i) : e, o = e.length - s.length;
-  return v`
+  const i = (t == null ? void 0 : t.max_lines) || 0, n = i > 0 ? e.slice(0, i) : e, o = e.length - n.length;
+  return p`
         <div class="calendar-container">
-            ${s.map((r, h) => {
-    var Pe, Me;
-    const u = r.summary;
-    let _, g;
+            ${n.map((r, _) => {
+    var De, Pe;
+    const u = r.is_empty ? w(s, "empty") : r.summary;
+    let h, g;
     try {
-      if (_ = new Date(r.start.dateTime || r.start.date), g = new Date(r.end.dateTime || r.end.date), isNaN(_.getTime())) throw new Error("Invalid start date");
+      if (h = new Date(r.start.dateTime || r.start.date), g = new Date(r.end.dateTime || r.end.date), isNaN(h.getTime())) throw new Error("Invalid start date");
       if (isNaN(g.getTime())) throw new Error("Invalid end date");
     } catch {
-      return v`<div class="error">Date Error for ${u}</div>`;
+      return p`<div class="error">Date Error for ${u}</div>`;
     }
-    const p = /* @__PURE__ */ new Date(), k = !r.start.dateTime;
-    let b = -1;
-    const c = ne(n, _, g, k), y = ((Pe = n.locale) == null ? void 0 : Pe.language) || n.language || navigator.language, x = (S) => S.toLocaleTimeString(y, { hour: "2-digit", minute: "2-digit" }), m = `${x(_)} - ${x(g)}`, $ = (t == null ? void 0 : t.show_date) ?? !1, f = (t == null ? void 0 : t.show_time) ?? !1;
-    let C = "";
-    const A = n.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
-    if ($ || f)
-      if (k) {
-        const S = $ ? _.toLocaleDateString(y, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
-        $ && f ? C = `${S}, ${A}` : C = S || A;
+    const f = /* @__PURE__ */ new Date(), C = !r.start.dateTime;
+    let $ = -1;
+    const c = oe(s, h, g, C), y = ((De = s.locale) == null ? void 0 : De.language) || s.language || navigator.language, b = (S) => S.toLocaleTimeString(y, { hour: "2-digit", minute: "2-digit" }), v = `${b(h)} - ${b(g)}`, x = (t == null ? void 0 : t.show_date) ?? !1, m = (t == null ? void 0 : t.show_time) ?? !1;
+    let A = "";
+    const E = s.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
+    if (r.is_empty)
+      A = "";
+    else if (x || m)
+      if (C) {
+        const S = x ? h.toLocaleDateString(y, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+        x && m ? A = `${S}, ${E}` : A = S || E;
       } else {
         const S = [];
-        $ && S.push(_.toLocaleDateString(y, { day: "2-digit", month: "2-digit", year: "numeric" })), f && S.push(m), C = S.join(", ");
+        x && S.push(h.toLocaleDateString(y, { day: "2-digit", month: "2-digit", year: "numeric" })), m && S.push(v), A = S.join(", ");
       }
-    else if (_ > p) {
-      const S = _.getTime() - p.getTime(), X = Math.ceil(S / 6e4);
-      C = ke(n, X);
+    else if (h > f) {
+      const S = h.getTime() - f.getTime(), ee = Math.ceil(S / 6e4);
+      A = ke(s, ee);
     } else
-      C = k ? A : x(_);
-    if (t != null && t.show_duration && (C ? C.endsWith(c) || (C += ` • ${c}`) : C = c), !k && _ <= p && g >= p) {
-      const S = g.getTime() - _.getTime(), X = p.getTime() - _.getTime();
-      S > 0 && (b = Math.max(0, Math.min(100, X / S * 100)));
+      A = C ? E : b(h);
+    if (!r.is_empty && (t != null && t.show_duration) && (A ? A.endsWith(c) || (A += ` • ${c}`) : A = c), !r.is_empty && !C && h <= f && g >= f) {
+      const S = g.getTime() - h.getTime(), ee = f.getTime() - h.getTime();
+      S > 0 && ($ = Math.max(0, Math.min(100, ee / S * 100)));
     }
-    if (t != null && t.show_weekday) {
-      const S = ((Me = n.locale) == null ? void 0 : Me.language) || n.language || navigator.language, X = t != null && t.icon_show_weekday ? _.toLocaleDateString(S, { month: t.show_weekday_long ? "long" : "short" }) : _.toLocaleDateString(S, { weekday: t.show_weekday_long ? "long" : "short" });
-      C += ` • ${X}`;
+    if (!r.is_empty && (t != null && t.show_weekday)) {
+      const S = ((Pe = s.locale) == null ? void 0 : Pe.language) || s.language || navigator.language, ee = t != null && t.icon_show_weekday ? h.toLocaleDateString(S, { month: t.show_weekday_long ? "long" : "short" }) : h.toLocaleDateString(S, { weekday: t.show_weekday_long ? "long" : "short" });
+      A += ` • ${ee}`;
     }
-    const P = _ <= p && g >= p ? p : _, O = xe(r.entity_id, t), z = ie(n, P, O, (t == null ? void 0 : t.dark_mode) ?? !1, (t == null ? void 0 : t.icon_show_weekday) ?? !1), j = be(r.entity_id, t), T = j ? `background-color: ${j}; border: none;` : "", J = (t == null ? void 0 : t.show_divider) && h > 0, ge = i > 0 && h === i - 1 && o > 0;
-    return v`
-                ${J ? v`<div class="calendar-divider"></div>` : ""}
+    const L = h <= f && g >= f ? f : h, O = r.is_empty ? V(r.entity_id, t) || "var(--disabled-text-color, #bdbdbb)" : V(r.entity_id, t), T = ne(s, L, O, (t == null ? void 0 : t.dark_mode) ?? !1, (t == null ? void 0 : t.icon_show_weekday) ?? !1), M = se(r.entity_id, t), k = M ? `background-color: ${M}; border: none;` : "", X = (t == null ? void 0 : t.show_divider) && _ > 0, we = i > 0 && _ === i - 1 && o > 0;
+    return p`
+                ${X ? p`<div class="calendar-divider"></div>` : ""}
                 <div class="calendar-item"  
-                     style="${T}"
-                     title="${ge ? w(n, "popup_upcoming_events") : u}"
-                     @click=${(S) => ge ? We(S, n, e) : Ze(S, r.entity_id)}>
+                     style="${k} ${r.is_empty ? "cursor: default; opacity: 0.7;" : ""}"
+                     title="${we ? w(s, "popup_upcoming_events") : u}"
+                     @click=${(S) => r.is_empty ? null : we ? Ke(S, s, e) : We(S, r.entity_id)}>
                      <div class="calendar-icon dynamic">
-                        ${z}
+                        ${T}
                     </div>
-                    <div class="calendar-content">
+                    <div class="calendar-content" style="${r.is_empty ? "opacity: 0.8;" : ""}">
                         <div class="event-title" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">${u}</span>
-                            ${ge ? v`
+                            ${we ? p`
                                 <span class="more-indicator" style="display: flex; align-items: center; gap: 4px; color: var(--secondary-text-color); font-size: 0.85em; font-style: italic; flex-shrink: 0;">
                                     <ha-icon icon="mdi:dots-horizontal" style="--mdc-icon-size: 16px; color: var(--secondary-text-color);"></ha-icon>
                                     (${o})
@@ -1398,24 +1410,24 @@ function At(n, e, t) {
                             ` : ""}
                         </div>
                         <div class="event-time">
-                            ${$ || f ? v`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
-                            ${C}
+                            ${!r.is_empty && (x || m) ? p`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
+                            ${A}
                         </div>
-                        ${t != null && t.show_location && r.location ? v`
+                        ${!r.is_empty && (t != null && t.show_location) && r.location ? p`
                                 <div class="event-location">
                                     <ha-icon icon="mdi:map-marker"></ha-icon>
                                     ${r.location}
                                 </div>
                             ` : ""}
-                        ${t != null && t.show_calendar_name && r.calendar_name ? v`
+                        ${t != null && t.show_calendar_name && r.calendar_name ? p`
                                 <div class="event-calendar">
                                     <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
                                     ${r.calendar_name}
                                 </div>
                             ` : ""}
-                        ${b >= 0 ? v`
+                        ${$ >= 0 ? p`
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${b}%"></div>
+                                <div class="progress-fill" style="width: ${$}%"></div>
                             </div>
                         ` : ""}
                     </div>
@@ -1425,20 +1437,20 @@ function At(n, e, t) {
         </div>
     `;
 }
-function xe(n, e) {
+function V(s, e) {
   var a;
-  const t = ((a = e == null ? void 0 : e.calendar_colors) == null ? void 0 : a[n]) || (e == null ? void 0 : e.calendar_icon_color) || "#fa3e3e";
-  return De(t);
+  const t = ((a = e == null ? void 0 : e.calendar_colors) == null ? void 0 : a[s]) || (e == null ? void 0 : e.calendar_icon_color) || "#fa3e3e";
+  return Je(t);
 }
-function be(n, e) {
+function se(s, e) {
   var a;
-  const t = ((a = e == null ? void 0 : e.calendar_background_colors) == null ? void 0 : a[n]) || (e == null ? void 0 : e.background_color) || "";
-  return t ? De(t) : "";
+  const t = ((a = e == null ? void 0 : e.calendar_background_colors) == null ? void 0 : a[s]) || (e == null ? void 0 : e.background_color) || "";
+  return t ? Je(t) : "";
 }
-function De(n) {
-  return n.startsWith("#") || n.startsWith("rgb") || n.startsWith("hsl") || n.startsWith("var") ? n : `var(--${n}-color)`;
+function Je(s) {
+  return s.startsWith("#") || s.startsWith("rgb") || s.startsWith("hsl") || s.startsWith("var") ? s : `var(--${s}-color)`;
 }
-function We(n, e, t) {
+function Ke(s, e, t) {
   const a = new CustomEvent("calendar-card-show-detail", {
     bubbles: !0,
     composed: !0,
@@ -1447,19 +1459,19 @@ function We(n, e, t) {
       entities: t
     }
   });
-  n.target.dispatchEvent(a);
+  s.target.dispatchEvent(a);
 }
-function Ze(n, e) {
+function We(s, e) {
   const t = new CustomEvent("hass-more-info", {
     bubbles: !0,
     composed: !0,
     detail: { entityId: e }
   });
-  n.target.dispatchEvent(t);
+  s.target.dispatchEvent(t);
 }
-function Xe(n) {
+function Xe(s) {
   const e = {};
-  return n.forEach((t) => {
+  return s.forEach((t) => {
     const a = new Date(t.start.dateTime || t.start.date), i = a.toISOString().split("T")[0];
     e[i] || (e[i] = {
       date: a,
@@ -1467,13 +1479,13 @@ function Xe(n) {
     }), e[i].events.push(t);
   }), Object.values(e).sort((t, a) => t.date.getTime() - a.date.getTime());
 }
-function ie(n, e, t, a = !1, i = !1) {
+function ne(s, e, t, a = !1, i = !1) {
   var u;
-  const s = ((u = n.locale) == null ? void 0 : u.language) || n.language || navigator.language;
+  const n = ((u = s.locale) == null ? void 0 : u.language) || s.language || navigator.language;
   let o;
-  i ? o = e.toLocaleDateString(s, { weekday: "short" }).toUpperCase() : o = e.toLocaleDateString(s, { month: "short" }).toUpperCase();
+  i ? o = e.toLocaleDateString(n, { weekday: "short" }).toUpperCase() : o = e.toLocaleDateString(n, { month: "short" }).toUpperCase();
   const l = e.getDate();
-  return v`
+  return p`
         <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
             <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${a ? "#222222" : "white"}"></rect>
             <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="${t}"></path>
@@ -1482,43 +1494,43 @@ function ie(n, e, t, a = !1, i = !1) {
         </svg>
     `;
 }
-function ne(n, e, t, a) {
-  const i = t.getTime() - e.getTime(), s = Math.round(i / 6e4);
-  if (a && s === 1440)
-    return n.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
-  if (s < 60)
-    return `${s} ${w(n, "duration_min")}`;
-  const o = Math.floor(s / 1440), l = s % 1440, d = Math.floor(l / 60), r = l % 60, h = [];
-  return o >= 1 && h.push(`${o} ${w(n, o === 1 ? "duration_day" : "duration_days")}`), d > 0 && h.push(`${d} ${w(n, "duration_hour")}`), r > 0 && h.push(`${r} ${w(n, "duration_min")}`), h.join(" ");
+function oe(s, e, t, a) {
+  const i = t.getTime() - e.getTime(), n = Math.round(i / 6e4);
+  if (a && n === 1440)
+    return s.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
+  if (n < 60)
+    return `${n} ${w(s, "duration_min")}`;
+  const o = Math.floor(n / 1440), l = n % 1440, d = Math.floor(l / 60), r = l % 60, _ = [];
+  return o >= 1 && _.push(`${o} ${w(s, o === 1 ? "duration_day" : "duration_days")}`), d > 0 && _.push(`${d} ${w(s, "duration_hour")}`), r > 0 && _.push(`${r} ${w(s, "duration_min")}`), _.join(" ");
 }
-function ke(n, e) {
+function ke(s, e) {
   if (e < 60)
-    return e === 1 ? w(n, "starts_in_min", "{x}", e.toString()) : w(n, "starts_in_mins", "{x}", e.toString());
+    return e === 1 ? w(s, "starts_in_min", "{x}", e.toString()) : w(s, "starts_in_mins", "{x}", e.toString());
   if (e < 1440) {
     const a = Math.round(e / 60);
-    return a === 1 ? w(n, "starts_in_hour", "{x}", a.toString()) : w(n, "starts_in_hours", "{x}", a.toString());
+    return a === 1 ? w(s, "starts_in_hour", "{x}", a.toString()) : w(s, "starts_in_hours", "{x}", a.toString());
   }
   if (e < 43200) {
     const a = Math.round(e / 1440);
-    return a === 1 ? w(n, "starts_in_day", "{x}", a.toString()) : w(n, "starts_in_days", "{x}", a.toString());
+    return a === 1 ? w(s, "starts_in_day", "{x}", a.toString()) : w(s, "starts_in_days", "{x}", a.toString());
   }
   const t = Math.round(e / 10080);
-  return t === 1 ? w(n, "starts_in_week", "{x}", t.toString()) : w(n, "starts_in_weeks", "{x}", t.toString());
+  return t === 1 ? w(s, "starts_in_week", "{x}", t.toString()) : w(s, "starts_in_weeks", "{x}", t.toString());
 }
-function Et(n, e) {
-  const t = Object.keys(n.states).filter((r) => r.startsWith("calendar.")).filter((r) => {
-    var h;
-    return !((h = e.exclude_entities) != null && h.includes(r));
-  }), a = t.length > 0 ? t[0] : void 0, i = /* @__PURE__ */ new Date(), s = new Date(i);
-  s.setHours(s.getHours() + 1, 0, 0, 0);
-  const o = new Date(s);
+function Et(s, e) {
+  const t = Object.keys(s.states).filter((r) => r.startsWith("calendar.")).filter((r) => {
+    var _;
+    return !((_ = e.exclude_entities) != null && _.includes(r));
+  }), a = t.length > 0 ? t[0] : void 0, i = /* @__PURE__ */ new Date(), n = new Date(i);
+  n.setHours(n.getHours() + 1, 0, 0, 0);
+  const o = new Date(n);
   o.setHours(o.getHours() + 1, 0, 0, 0);
   const l = (r) => r.toString().padStart(2, "0"), d = (r) => `${r.getFullYear()}-${l(r.getMonth() + 1)}-${l(r.getDate())} ${l(r.getHours())}:${l(r.getMinutes())}:00`;
   return {
     open: !0,
     calendar_id: a,
     name: "",
-    start: d(s),
+    start: d(n),
     end: d(o),
     location: "",
     description: "",
@@ -1526,7 +1538,7 @@ function Et(n, e) {
     all_day: !1
   };
 }
-async function zt(n, e, t, a) {
+async function zt(s, e, t, a) {
   if (!(!e.calendar_id || !e.name || !e.start || !e.end))
     try {
       const i = {
@@ -1534,71 +1546,71 @@ async function zt(n, e, t, a) {
         summary: e.name
       };
       if (e.all_day) {
-        const s = e.start.split(" ")[0];
+        const n = e.start.split(" ")[0];
         let o = e.end.split(" ")[0];
-        if (s === o) {
+        if (n === o) {
           const l = o.split("-"), d = new Date(Number(l[0]), Number(l[1]) - 1, Number(l[2]));
           d.setDate(d.getDate() + 1);
-          const r = (h) => h.toString().padStart(2, "0");
+          const r = (_) => _.toString().padStart(2, "0");
           o = `${d.getFullYear()}-${r(d.getMonth() + 1)}-${r(d.getDate())}`;
         }
-        i.start_date = s, i.end_date = o;
+        i.start_date = n, i.end_date = o;
       } else
         i.start_date_time = e.start, i.end_date_time = e.end, e.location && (i.location = e.location), e.description && (i.description = e.description);
       if (e.recurrence && e.recurrence !== "none") {
-        const s = {
+        const n = {
           DAILY: "FREQ=DAILY",
           WEEKLY: "FREQ=WEEKLY",
           MONTHLY: "FREQ=MONTHLY",
           YEARLY: "FREQ=YEARLY"
         };
-        s[e.recurrence] && (i.rrule = s[e.recurrence]);
+        n[e.recurrence] && (i.rrule = n[e.recurrence]);
       }
-      await n.callService("calendar", "create_event", i), t();
+      await s.callService("calendar", "create_event", i), t();
     } catch (i) {
       a(i);
     }
 }
-function St(n, e, t, a, i, s) {
-  var l, d, r, h, u, _, g, p, k, b;
-  const o = Object.keys(n.states).filter((c) => c.startsWith("calendar.")).filter((c) => {
+function St(s, e, t, a, i, n) {
+  var l, d, r, _, u, h, g, f, C, $;
+  const o = Object.keys(s.states).filter((c) => c.startsWith("calendar.")).filter((c) => {
     var y;
     return !((y = e.exclude_entities) != null && y.includes(c));
   });
-  return v`
+  return p`
         <div class="add-event-form">
             <ha-textfield
-                    label=${n.localize("ui.components.calendar.event.summary") || "Title"}
+                    label=${s.localize("ui.components.calendar.event.summary") || "Title"}
                     .value=${t.name || ""}
                     @input=${(c) => a({ name: c.target.value })}
                     dialogInitialFocus
                 ></ha-textfield>
 
                 <ha-textfield
-                    label=${n.localize("ui.components.calendar.event.location") || "Location"}
+                    label=${s.localize("ui.components.calendar.event.location") || "Location"}
                     .value=${t.location || ""}
                     @input=${(c) => a({ location: c.target.value })}
                 ></ha-textfield>
 
                 <ha-textfield
-                    label=${n.localize("ui.components.calendar.event.description") || "Description"}
+                    label=${s.localize("ui.components.calendar.event.description") || "Description"}
                     .value=${t.description || ""}
                     @input=${(c) => a({ description: c.target.value })}
                 ></ha-textfield>
 
                 <ha-selector
-                    .hass=${n}
+                    .hass=${s}
                     .selector=${{ select: { options: o.map((c) => {
-    var y, x;
-    return { value: c, label: ((x = (y = n.states[c]) == null ? void 0 : y.attributes) == null ? void 0 : x.friendly_name) || c };
+    var y, b;
+    return { value: c, label: ((b = (y = s.states[c]) == null ? void 0 : y.attributes) == null ? void 0 : b.friendly_name) || c };
   }) } }}
                     .value=${t.calendar_id}
-                    .label=${n.localize("ui.components.calendar.my_calendars") || "Calendar"}
+                    .label=${s.localize("ui.components.calendar.my_calendars") || "Calendar"}
                     @value-changed=${(c) => a({ calendar_id: c.detail.value })}
                 ></ha-selector>
 
                 <div class="row-flex">
-                    <ha-formfield .label=${n.localize("ui.components.calendar.event.all_day") || "All Day"}>
+                    <ha-formfield .label=${s.localize("ui.components.calendar.event.all_day") || "All Day"}>
                         <ha-switch
                             .checked=${t.all_day || !1}
                             @change=${(c) => a({ all_day: c.target.checked })}
@@ -1606,17 +1618,17 @@ function St(n, e, t, a, i, s) {
                     </ha-formfield>
                 </div>
 
-                <div class="row-label">${n.localize("ui.components.calendar.event.start") || "Start"}:</div>
+                <div class="row-label">${s.localize("ui.components.calendar.event.start") || "Start"}:</div>
                 <div class="date-row">
                     <ha-selector
                         class="date-selector"
-                        .hass=${n}
+                        .hass=${s}
                         .selector=${{ date: {} }}
                         .required=${!1}
                         .value=${((l = t.start) == null ? void 0 : l.split(" ")[0]) || ""}
                         @value-changed=${(c) => {
-    var x;
-    const y = ((x = t.start) == null ? void 0 : x.split(" ")[1]) || "00:00:00";
+    var b;
+    const y = ((b = t.start) == null ? void 0 : b.split(" ")[1]) || "00:00:00";
     a({ start: `${c.detail.value} ${y}` });
   }}
                     ></ha-selector>
@@ -1628,9 +1640,9 @@ function St(n, e, t, a, i, s) {
                             .disabled=${t.all_day}
                             .value=${((r = (d = t.start) == null ? void 0 : d.split(" ")[1]) == null ? void 0 : r.substring(0, 2)) || "00"}
                             @change=${(c) => {
-    var m, $, f;
-    const y = ((m = t.start) == null ? void 0 : m.split(" ")[0]) || "", x = ((f = ($ = t.start) == null ? void 0 : $.split(" ")[1]) == null ? void 0 : f.substring(3, 5)) || "00";
-    a({ start: `${y} ${c.target.value.padStart(2, "0")}:${x}:00` });
+    var v, x, m;
+    const y = ((v = t.start) == null ? void 0 : v.split(" ")[0]) || "", b = ((m = (x = t.start) == null ? void 0 : x.split(" ")[1]) == null ? void 0 : m.substring(3, 5)) || "00";
+    a({ start: `${y} ${c.target.value.padStart(2, "0")}:${b}:00` });
   }}
                             style="flex: 1; min-width: 0;"
                         ></ha-textfield>
@@ -1640,28 +1652,28 @@ function St(n, e, t, a, i, s) {
                             min="0"
                             max="59"
                             .disabled=${t.all_day}
-                            .value=${((u = (h = t.start) == null ? void 0 : h.split(" ")[1]) == null ? void 0 : u.substring(3, 5)) || "00"}
+                            .value=${((u = (_ = t.start) == null ? void 0 : _.split(" ")[1]) == null ? void 0 : u.substring(3, 5)) || "00"}
                             @change=${(c) => {
-    var m, $, f;
-    const y = ((m = t.start) == null ? void 0 : m.split(" ")[0]) || "", x = ((f = ($ = t.start) == null ? void 0 : $.split(" ")[1]) == null ? void 0 : f.substring(0, 2)) || "00";
-    a({ start: `${y} ${x}:${c.target.value.padStart(2, "0")}:00` });
+    var v, x, m;
+    const y = ((v = t.start) == null ? void 0 : v.split(" ")[0]) || "", b = ((m = (x = t.start) == null ? void 0 : x.split(" ")[1]) == null ? void 0 : m.substring(0, 2)) || "00";
+    a({ start: `${y} ${b}:${c.target.value.padStart(2, "0")}:00` });
   }}
                             style="flex: 1; min-width: 0;"
                         ></ha-textfield>
                     </div>
                 </div>
                 
-                <div class="row-label">${n.localize("ui.components.calendar.event.end") || "End"}:</div>
+                <div class="row-label">${s.localize("ui.components.calendar.event.end") || "End"}:</div>
                 <div class="date-row">
                     <ha-selector
                         class="date-selector"
-                        .hass=${n}
+                        .hass=${s}
                         .selector=${{ date: {} }}
                         .required=${!1}
-                        .value=${((_ = t.end) == null ? void 0 : _.split(" ")[0]) || ""}
+                        .value=${((h = t.end) == null ? void 0 : h.split(" ")[0]) || ""}
                         @value-changed=${(c) => {
-    var x;
-    const y = ((x = t.end) == null ? void 0 : x.split(" ")[1]) || "00:00:00";
+    var b;
+    const y = ((b = t.end) == null ? void 0 : b.split(" ")[1]) || "00:00:00";
     a({ end: `${c.detail.value} ${y}` });
   }}
                     ></ha-selector>
@@ -1671,11 +1683,11 @@ function St(n, e, t, a, i, s) {
                             min="0"
                             max="23"
                             .disabled=${t.all_day}
-                            .value=${((p = (g = t.end) == null ? void 0 : g.split(" ")[1]) == null ? void 0 : p.substring(0, 2)) || "00"}
+                            .value=${((f = (g = t.end) == null ? void 0 : g.split(" ")[1]) == null ? void 0 : f.substring(0, 2)) || "00"}
                             @change=${(c) => {
-    var m, $, f;
-    const y = ((m = t.end) == null ? void 0 : m.split(" ")[0]) || "", x = ((f = ($ = t.end) == null ? void 0 : $.split(" ")[1]) == null ? void 0 : f.substring(3, 5)) || "00";
-    a({ end: `${y} ${c.target.value.padStart(2, "0")}:${x}:00` });
+    var v, x, m;
+    const y = ((v = t.end) == null ? void 0 : v.split(" ")[0]) || "", b = ((m = (x = t.end) == null ? void 0 : x.split(" ")[1]) == null ? void 0 : m.substring(3, 5)) || "00";
+    a({ end: `${y} ${c.target.value.padStart(2, "0")}:${b}:00` });
   }}
                             style="flex: 1; min-width: 0;"
                         ></ha-textfield>
@@ -1685,11 +1697,11 @@ function St(n, e, t, a, i, s) {
                             min="0"
                             max="59"
                             .disabled=${t.all_day}
-                            .value=${((b = (k = t.end) == null ? void 0 : k.split(" ")[1]) == null ? void 0 : b.substring(3, 5)) || "00"}
+                            .value=${(($ = (C = t.end) == null ? void 0 : C.split(" ")[1]) == null ? void 0 : $.substring(3, 5)) || "00"}
                             @change=${(c) => {
-    var m, $, f;
-    const y = ((m = t.end) == null ? void 0 : m.split(" ")[0]) || "", x = ((f = ($ = t.end) == null ? void 0 : $.split(" ")[1]) == null ? void 0 : f.substring(0, 2)) || "00";
-    a({ end: `${y} ${x}:${c.target.value.padStart(2, "0")}:00` });
+    var v, x, m;
+    const y = ((v = t.end) == null ? void 0 : v.split(" ")[0]) || "", b = ((m = (x = t.end) == null ? void 0 : x.split(" ")[1]) == null ? void 0 : m.substring(0, 2)) || "00";
+    a({ end: `${y} ${b}:${c.target.value.padStart(2, "0")}:00` });
   }}
                             style="flex: 1; min-width: 0;"
                         ></ha-textfield>
@@ -1697,65 +1709,65 @@ function St(n, e, t, a, i, s) {
                 </div>
 
                 <ha-selector
-                    .hass=${n}
+                    .hass=${s}
                     .selector=${{ select: {
     options: [
-      { value: "none", label: n.localize("ui.components.calendar.event.repeat.freq.none") || "None" },
-      { value: "DAILY", label: n.localize("ui.components.calendar.event.repeat.freq.daily") || "Daily" },
-      { value: "WEEKLY", label: n.localize("ui.components.calendar.event.repeat.freq.weekly") || "Weekly" },
-      { value: "MONTHLY", label: n.localize("ui.components.calendar.event.repeat.freq.monthly") || "Monthly" },
-      { value: "YEARLY", label: n.localize("ui.components.calendar.event.repeat.freq.yearly") || "Yearly" }
+      { value: "none", label: s.localize("ui.components.calendar.event.repeat.freq.none") || "None" },
+      { value: "DAILY", label: s.localize("ui.components.calendar.event.repeat.freq.daily") || "Daily" },
+      { value: "WEEKLY", label: s.localize("ui.components.calendar.event.repeat.freq.weekly") || "Weekly" },
+      { value: "MONTHLY", label: s.localize("ui.components.calendar.event.repeat.freq.monthly") || "Monthly" },
+      { value: "YEARLY", label: s.localize("ui.components.calendar.event.repeat.freq.yearly") || "Yearly" }
     ],
     mode: "dropdown"
   } }}
                     .value=${t.recurrence || "none"}
-                    .label=${n.localize("ui.components.calendar.event.repeat.label") || "Repeat"}
+                    .label=${s.localize("ui.components.calendar.event.repeat.label") || "Repeat"}
                     @value-changed=${(c) => a({ recurrence: c.detail.value })}
                 ></ha-selector>
 
                 <div class="dialog-actions">
                     <ha-button @click=${i}>
-                        ${n.localize("ui.common.cancel") || "Cancel"}
+                        ${s.localize("ui.common.cancel") || "Cancel"}
                     </ha-button>
                     <ha-button
                         unelevated
-                        @click=${s}
+                        @click=${n}
                         ?disabled=${!t.name || !t.calendar_id}
                     >
-                        ${n.localize("ui.common.save") || "Save"}
+                        ${s.localize("ui.common.save") || "Save"}
                     </ha-button>
                 </div>
         </div>
     `;
 }
-var et = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, Dt = (n, e, t) => e in n ? et(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t, R = (n, e, t, a) => {
-  for (var i = a > 1 ? void 0 : a ? Tt(e, t) : e, s = n.length - 1, o; s >= 0; s--)
-    (o = n[s]) && (i = (a ? o(e, t, i) : o(i)) || i);
+var et = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, Dt = (s, e, t) => e in s ? et(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t, R = (s, e, t, a) => {
+  for (var i = a > 1 ? void 0 : a ? Tt(e, t) : e, n = s.length - 1, o; n >= 0; n--)
+    (o = s[n]) && (i = (a ? o(e, t, i) : o(i)) || i);
   return a && i && et(e, t, i), i;
-}, Pt = (n, e, t) => Dt(n, e + "", t);
-let L = class extends W {
+}, Pt = (s, e, t) => Dt(s, e + "", t);
+let j = class extends Z {
   constructor() {
     super(...arguments);
-    E(this, "hass");
-    E(this, "config");
-    E(this, "open", !1);
-    E(this, "mode", "detail");
-    E(this, "detailTitle", "");
-    E(this, "detailEvents", []);
-    E(this, "_addEventState", { open: !1 });
-    E(this, "_opener", null);
-    E(this, "_onEventSaved", null);
-    E(this, "_onPopState", (e) => {
+    z(this, "hass");
+    z(this, "config");
+    z(this, "open", !1);
+    z(this, "mode", "detail");
+    z(this, "detailTitle", "");
+    z(this, "detailEvents", []);
+    z(this, "_addEventState", { open: !1 });
+    z(this, "_opener", null);
+    z(this, "_onEventSaved", null);
+    z(this, "_onPopState", (e) => {
       var t;
       this.open && !((t = window.history.state) != null && t.calendarCardPlusPopup) && this._close();
     });
-    E(this, "_close", () => {
+    z(this, "_close", () => {
       if (!this.open) return;
       this.open = !1, this.requestUpdate();
       const e = { dialog: this };
       this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0, detail: e })), this.dispatchEvent(new CustomEvent("dialog-closed", { bubbles: !0, composed: !0, detail: e })), this.dispatchEvent(new CustomEvent("popup-closed", { bubbles: !0, composed: !0, detail: e }));
     });
-    E(this, "_onDialogClosed", (e) => {
+    z(this, "_onDialogClosed", (e) => {
       var t;
       if (e && e.type !== "click") {
         const a = e.target;
@@ -1764,7 +1776,7 @@ let L = class extends W {
       }
       this._close(), (t = window.history.state) != null && t.calendarCardPlusPopup && window.history.back();
     });
-    E(this, "_closeDialog", () => {
+    z(this, "_closeDialog", () => {
       var e;
       this.open && (this._close(), (e = window.history.state) != null && e.calendarCardPlusPopup && window.history.back());
     });
@@ -1801,7 +1813,7 @@ let L = class extends W {
   render() {
     var a;
     const e = this.mode === "add-event", t = e ? ((a = this.hass) == null ? void 0 : a.localize("ui.components.calendar.event.add")) || "Add Event" : this.detailTitle;
-    return v`
+    return p`
             <ha-adaptive-dialog
                 .hass=${this.hass}
                 .open=${this.open}
@@ -1825,48 +1837,52 @@ let L = class extends W {
   }
   _renderDetailContent() {
     return this.config.group_by_date ? Xe(this.detailEvents).map((t) => {
-      const a = t.date, i = this.config.calendar_icon_color || "#fa3e3e", s = ie(this.hass, a, i, this.config.dark_mode ?? !1);
-      return v`
-                    <div class="calendar-item grouped detail" style="align-items: center;">
+      const a = t.date, i = V(t.events[0].entity_id, this.config), n = ne(this.hass, a, i, this.config.dark_mode ?? !1), o = se(t.events[0].entity_id, this.config), l = o ? `background-color: ${o}; border: none;` : "";
+      return p`
+                    <div class="calendar-item grouped detail" style="align-items: center; ${l}">
                         <div class="calendar-icon dynamic">
-                            ${s}
+                            ${n}
                         </div>
                         <div class="calendar-content">
-                            ${t.events.map((o) => {
+                            ${t.events.map((d) => {
         var x;
-        const l = o.summary, d = new Date(o.start.dateTime || o.start.date), r = new Date(o.end.dateTime || o.end.date), h = !o.start.dateTime, u = ne(this.hass, d, r, h), _ = ((x = this.hass.locale) == null ? void 0 : x.language) || this.hass.language || navigator.language, g = (m) => m.toLocaleTimeString(_, { hour: "2-digit", minute: "2-digit" }), p = `${g(d)} - ${g(r)}`, k = this.config.show_date ?? !1, b = this.config.show_time ?? !1, c = this.hass.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
-        let y = "";
-        if (k || b)
+        const r = d.is_empty ? w(this.hass, "empty") : d.summary, _ = new Date(d.start.dateTime || d.start.date), u = new Date(d.end.dateTime || d.end.date), h = !d.start.dateTime, g = oe(this.hass, _, u, h), f = ((x = this.hass.locale) == null ? void 0 : x.language) || this.hass.language || navigator.language, C = (m) => m.toLocaleTimeString(f, { hour: "2-digit", minute: "2-digit" }), $ = `${C(_)} - ${C(u)}`, c = this.config.show_date ?? !1, y = this.config.show_time ?? !1, b = this.hass.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
+        let v = "";
+        if (d.is_empty)
+          v = "";
+        else if (c || y)
           if (h) {
-            const m = k ? d.toLocaleDateString(_, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
-            k && b ? y = `${m}, ${c}` : y = m || c;
+            const m = c ? _.toLocaleDateString(f, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+            c && y ? v = `${m}, ${b}` : v = m || b;
           } else {
             const m = [];
-            k && m.push(d.toLocaleDateString(_, { day: "2-digit", month: "2-digit", year: "numeric" })), b && m.push(p), y = m.join(", ");
+            c && m.push(_.toLocaleDateString(f, { day: "2-digit", month: "2-digit", year: "numeric" })), y && m.push($), v = m.join(", ");
           }
         else
-          y = h ? c : g(d);
-        if (this.config.show_duration && (y.endsWith(u) || (y += ` • ${u}`)), this.config.show_weekday) {
-          const m = d.toLocaleDateString(_, { weekday: this.config.show_weekday_long ? "long" : "short" });
-          y.includes(m) || (y += ` • ${m}`);
+          v = h ? b : C(_);
+        if (!d.is_empty && this.config.show_duration && (v.endsWith(g) || (v += ` • ${g}`)), !d.is_empty && this.config.show_weekday) {
+          const m = _.toLocaleDateString(f, { weekday: this.config.show_weekday_long ? "long" : "short" });
+          v.includes(m) || (v += ` • ${m}`);
         }
-        return v`
-                                    <div class="event-entry" @click=${() => this._handleMoreInfo(o.entity_id)} style="margin-bottom: 4px;">
-                                        <div class="event-title">${l}</div>
-                                        <div class="event-time" style="display: flex; align-items: center; gap: 4px;">
-                                            ${k || b ? v`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ""}
-                                            ${y}
+        return p`
+                                    <div class="event-entry" @click=${() => d.is_empty ? null : this._handleMoreInfo(d.entity_id)} style="margin-bottom: 4px; ${d.is_empty ? "opacity: 0.7; cursor: default;" : ""}">
+                                        <div class="event-title">
+                                            ${r}
                                         </div>
-                                        ${this.config.show_location && o.location ? v`
+                                        <div class="event-time" style="display: flex; align-items: center; gap: 4px;">
+                                            ${!d.is_empty && (c || y) ? p`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ""}
+                                            ${v}
+                                        </div>
+                                        ${!d.is_empty && this.config.show_location && d.location ? p`
                                                 <div class="event-location">
                                                     <ha-icon icon="mdi:map-marker" style="--mdc-icon-size: 14px;"></ha-icon>
-                                                    ${o.location}
+                                                    ${d.location}
                                                 </div>
                                             ` : ""}
-                                        ${this.config.show_calendar_name && o.calendar_name ? v`
+                                        ${this.config.show_calendar_name && d.calendar_name ? p`
                                                 <div class="event-calendar">
                                                     <ha-icon icon="mdi:calendar-blank-multiple" style="--mdc-icon-size: 14px;"></ha-icon>
-                                                    ${o.calendar_name}
+                                                    ${d.calendar_name}
                                                 </div>
                                             ` : ""}
                                     </div>
@@ -1874,55 +1890,57 @@ let L = class extends W {
       })}
                         </div>
                     </div>
-                    ${this.config.show_divider ? v`<div class="calendar-divider"></div>` : ""}
+                    ${this.config.show_divider ? p`<div class="calendar-divider"></div>` : ""}
                 `;
     }) : this.detailEvents.map((e, t) => {
-      var C;
-      const a = e.summary;
-      let i = "", s, o;
+      var A;
+      const a = e.is_empty ? w(this.hass, "empty") : e.summary;
+      let i = "", n, o;
       try {
-        s = new Date(e.start.dateTime || e.start.date), o = new Date(e.end.dateTime || e.end.date);
+        n = new Date(e.start.dateTime || e.start.date), o = new Date(e.end.dateTime || e.end.date);
       } catch {
-        return v`<div class="error">Date Error</div>`;
+        return p`<div class="error">Date Error</div>`;
       }
-      const l = /* @__PURE__ */ new Date(), d = !e.start.dateTime, r = ((C = this.hass.locale) == null ? void 0 : C.language) || this.hass.language || navigator.language, h = (A) => A.toLocaleTimeString(r, { hour: "2-digit", minute: "2-digit" }), u = ne(this.hass, s, o, d), _ = `${h(s)} - ${h(o)}`, g = this.config.show_date ?? !1, p = this.config.show_time ?? !1, k = this.hass.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
-      if (g || p)
+      const l = /* @__PURE__ */ new Date(), d = !e.start.dateTime, r = ((A = this.hass.locale) == null ? void 0 : A.language) || this.hass.language || navigator.language, _ = (E) => E.toLocaleTimeString(r, { hour: "2-digit", minute: "2-digit" }), u = oe(this.hass, n, o, d), h = `${_(n)} - ${_(o)}`, g = this.config.show_date ?? !1, f = this.config.show_time ?? !1, C = this.hass.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day";
+      if (e.is_empty)
+        i = "";
+      else if (g || f)
         if (d) {
-          const A = g ? s.toLocaleDateString(r, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
-          g && p ? i = `${A}, ${k}` : i = A || k;
+          const E = g ? n.toLocaleDateString(r, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+          g && f ? i = `${E}, ${C}` : i = E || C;
         } else {
-          const A = [];
-          g && A.push(s.toLocaleDateString(r, { day: "2-digit", month: "2-digit", year: "numeric" })), p && A.push(_), i = A.join(", ");
+          const E = [];
+          g && E.push(n.toLocaleDateString(r, { day: "2-digit", month: "2-digit", year: "numeric" })), f && E.push(h), i = E.join(", ");
         }
-      else if (s > l) {
-        const A = s.getTime() - l.getTime(), M = Math.ceil(A / 6e4);
-        i = ke(this.hass, M);
+      else if (n > l) {
+        const E = n.getTime() - l.getTime(), P = Math.ceil(E / 6e4);
+        i = ke(this.hass, P);
       } else
-        i = d ? k : h(s);
-      if (this.config.show_duration && (i ? i.endsWith(u) || (i += ` • ${u}`) : i = u), this.config.show_weekday) {
-        const A = s.toLocaleDateString(r, { weekday: this.config.show_weekday_long ? "long" : "short" });
-        i += ` • ${A}`;
+        i = d ? C : _(n);
+      if (!e.is_empty && this.config.show_duration && (i ? i.endsWith(u) || (i += ` • ${u}`) : i = u), !e.is_empty && this.config.show_weekday) {
+        const E = n.toLocaleDateString(r, { weekday: this.config.show_weekday_long ? "long" : "short" });
+        i += ` • ${E}`;
       }
-      const c = s <= l && o >= l ? l : s, y = xe(e.entity_id, this.config), x = ie(this.hass, c, y, this.config.dark_mode ?? !1), m = this.config.show_divider && t > 0, $ = be(e.entity_id, this.config), f = $ ? `background-color: ${$}; border: none;` : "";
-      return v`
-                ${m ? v`<div class="calendar-divider"></div>` : ""}
-                <div class="calendar-item detail" style=${f} @click=${() => this._handleMoreInfo(e.entity_id)}>
+      const c = !e.is_empty && n <= l && o >= l ? l : n, y = e.is_empty ? "var(--disabled-text-color, #bdbdbb)" : V(e.entity_id, this.config), b = ne(this.hass, c, y, this.config.dark_mode ?? !1), v = this.config.show_divider && t > 0, x = se(e.entity_id, this.config), m = x ? `background-color: ${x}; border: none;` : "";
+      return p`
+                ${v ? p`<div class="calendar-divider"></div>` : ""}
+                <div class="calendar-item detail" style="${m} ${e.is_empty ? "cursor: default; opacity: 0.7;" : ""}" @click=${() => e.is_empty ? null : this._handleMoreInfo(e.entity_id)}>
                     <div class="calendar-icon dynamic">
-                        ${x}
+                        ${b}
                     </div>
                     <div class="calendar-content">
                         <div class="event-title">${a}</div>
                         <div class="event-time">
-                            ${g || p ? v`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
+                            ${!e.is_empty && (g || f) ? p`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
                             ${i}
                         </div>
-                        ${this.config.show_location && e.location ? v`
+                        ${!e.is_empty && this.config.show_location && e.location ? p`
                                 <div class="event-location">
                                     <ha-icon icon="mdi:map-marker"></ha-icon>
                                     ${e.location}
                                 </div>
                             ` : ""}
-                        ${this.config.show_calendar_name && e.calendar_name ? v`
+                        ${this.config.show_calendar_name && e.calendar_name ? p`
                                 <div class="event-calendar">
                                     <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
                                     ${e.calendar_name}
@@ -1942,7 +1960,7 @@ let L = class extends W {
     this._opener ? this._opener.dispatchEvent(t) : window.dispatchEvent(t);
   }
 };
-Pt(L, "styles", Ee`
+Pt(j, "styles", Ee`
         :host {
             display: block;
         }
@@ -2102,46 +2120,46 @@ Pt(L, "styles", Ee`
     `);
 R([
   B({ attribute: !1 })
-], L.prototype, "hass", 2);
+], j.prototype, "hass", 2);
 R([
   B({ attribute: !1 })
-], L.prototype, "config", 2);
+], j.prototype, "config", 2);
 R([
   B({ type: Boolean })
-], L.prototype, "open", 2);
+], j.prototype, "open", 2);
 R([
   B({ type: String })
-], L.prototype, "mode", 2);
+], j.prototype, "mode", 2);
 R([
   B({ type: String })
-], L.prototype, "detailTitle", 2);
+], j.prototype, "detailTitle", 2);
 R([
   B({ type: Array })
-], L.prototype, "detailEvents", 2);
+], j.prototype, "detailEvents", 2);
 R([
-  ce()
-], L.prototype, "_addEventState", 2);
-L = R([
+  he()
+], j.prototype, "_addEventState", 2);
+j = R([
   Te("calendar-card-plus-popup")
-], L);
+], j);
 const Mt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get CalendarCardPlusPopup() {
-    return L;
+    return j;
   }
 }, Symbol.toStringTag, { value: "Module" }));
-var Lt = Object.defineProperty, jt = Object.getOwnPropertyDescriptor, ve = (n, e, t, a) => {
-  for (var i = a > 1 ? void 0 : a ? jt(e, t) : e, s = n.length - 1, o; s >= 0; s--)
-    (o = n[s]) && (i = (a ? o(e, t, i) : o(i)) || i);
+var Lt = Object.defineProperty, jt = Object.getOwnPropertyDescriptor, ge = (s, e, t, a) => {
+  for (var i = a > 1 ? void 0 : a ? jt(e, t) : e, n = s.length - 1, o; n >= 0; n--)
+    (o = s[n]) && (i = (a ? o(e, t, i) : o(i)) || i);
   return a && i && Lt(e, t, i), i;
 };
-let de = class extends W {
+let ce = class extends Z {
   constructor() {
     super(...arguments);
-    E(this, "hass");
-    E(this, "config");
-    E(this, "_events");
-    E(this, "_handleShowDetail", async (e) => {
+    z(this, "hass");
+    z(this, "config");
+    z(this, "_events");
+    z(this, "_handleShowDetail", async (e) => {
       this._showPopup("calendar-card-plus-popup", {
         hass: this.hass,
         config: this.config,
@@ -2151,7 +2169,7 @@ let de = class extends W {
         events: e.detail.entities
       });
     });
-    E(this, "_openAddEventPopup", async () => {
+    z(this, "_openAddEventPopup", async () => {
       const e = Et(this.hass, this.config);
       this._showPopup("calendar-card-plus-popup", {
         hass: this.hass,
@@ -2161,7 +2179,7 @@ let de = class extends W {
         addEventState: e
       });
     });
-    E(this, "_onEventSaved", () => {
+    z(this, "_onEventSaved", () => {
       this._events = void 0, this.requestUpdate(), this._fetchEvents();
     });
   }
@@ -2184,29 +2202,54 @@ let de = class extends W {
     const e = /* @__PURE__ */ new Date();
     let t;
     if (this.config.upcoming_events) {
-      let s = 1440;
-      this.config.days !== void 0 || this.config.hours !== void 0 || this.config.minutes !== void 0 ? s = (this.config.days || 0) * 1440 + (this.config.hours || 0) * 60 + (this.config.minutes || 0) : this.config.max_minutes_until_start !== void 0 && (s = this.config.max_minutes_until_start), t = new Date(e.getTime() + s * 6e4);
+      let n = 1440;
+      this.config.days !== void 0 || this.config.hours !== void 0 || this.config.minutes !== void 0 ? n = (this.config.days || 0) * 1440 + (this.config.hours || 0) * 60 + (this.config.minutes || 0) : this.config.max_minutes_until_start !== void 0 && (n = this.config.max_minutes_until_start), t = new Date(e.getTime() + n * 6e4);
     } else
       t = new Date(e), t.setHours(23, 59, 59, 999);
-    const a = Object.keys(this.hass.states).filter((s) => s.startsWith("calendar.")).filter((s) => {
+    const a = Object.keys(this.hass.states).filter((n) => n.startsWith("calendar.")).filter((n) => {
       var o;
-      return !((o = this.config.exclude_entities) != null && o.includes(s));
+      return !((o = this.config.exclude_entities) != null && o.includes(n));
     });
     if (a.length === 0) {
       this._events = [];
       return;
     }
-    const i = await nt(this.hass, e, t, a);
-    i.sort((s, o) => {
-      const l = new Date(s.start.dateTime || s.start.date).getTime(), d = new Date(o.start.dateTime || o.start.date).getTime();
-      return l - d;
-    }), this._events = i, this.requestUpdate();
+    const i = await st(this.hass, e, t, a);
+    this.config.show_empty_days ? this._events = this._injectEmptyDays(i, e, t) : this._events = i, this.requestUpdate();
+  }
+  _injectEmptyDays(e, t, a) {
+    const i = [...e], n = /* @__PURE__ */ new Set();
+    e.forEach((d) => {
+      const r = d.start.date || d.start.dateTime;
+      if (r) {
+        const _ = new Date(r);
+        n.add(_.toISOString().split("T")[0]);
+      }
+    });
+    const o = new Date(t);
+    o.setHours(0, 0, 0, 0);
+    const l = new Date(a);
+    for (l.setHours(0, 0, 0, 0); o <= l; ) {
+      const d = o.toISOString().split("T")[0];
+      n.has(d) || i.push({
+        start: { date: d },
+        end: { date: d },
+        summary: "empty",
+        is_empty: !0,
+        entity_id: "empty",
+        calendar_name: ""
+      }), o.setDate(o.getDate() + 1);
+    }
+    return i.sort((d, r) => {
+      const _ = new Date(d.start.dateTime || d.start.date).getTime(), u = new Date(r.start.dateTime || r.start.date).getTime();
+      return _ - u;
+    });
   }
   render() {
     if (!this.config || !this.hass)
-      return v``;
+      return p``;
     const e = At(this.hass, this._events, this.config);
-    return v`
+    return p`
             <ha-card>
                 <div class="add-event-btn" @click=${this._openAddEventPopup} style=${this.config.show_add_event ? "" : "display: none;"}>
                     <ha-icon-button .path=${it}></ha-icon-button>
@@ -2372,18 +2415,18 @@ let de = class extends W {
     };
   }
 };
-ve([
+ge([
   B({ attribute: !1 })
-], de.prototype, "hass", 2);
-ve([
-  ce()
-], de.prototype, "config", 2);
-ve([
-  ce()
-], de.prototype, "_events", 2);
-de = ve([
+], ce.prototype, "hass", 2);
+ge([
+  he()
+], ce.prototype, "config", 2);
+ge([
+  he()
+], ce.prototype, "_events", 2);
+ce = ge([
   Te("calendar-card-plus")
-], de);
+], ce);
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "calendar-card-plus",
@@ -2391,26 +2434,26 @@ window.customCards.push({
   preview: !0,
   description: "A standalone calendar card with dynamic grid styling"
 });
-const N = (n, e, t, a) => {
+const N = (s, e, t, a) => {
   a = a || {}, t = t ?? {};
   const i = new Event(e, {
     bubbles: a.bubbles === void 0 ? !0 : a.bubbles,
     cancelable: !!a.cancelable,
     composed: a.composed === void 0 ? !0 : a.composed
   });
-  return i.detail = t, n.dispatchEvent(i), i;
+  return i.detail = t, s.dispatchEvent(i), i;
 };
-var Ot = Object.defineProperty, Bt = Object.getOwnPropertyDescriptor, pe = (n, e, t, a) => {
-  for (var i = a > 1 ? void 0 : a ? Bt(e, t) : e, s = n.length - 1, o; s >= 0; s--)
-    (o = n[s]) && (i = (a ? o(e, t, i) : o(i)) || i);
+var Ot = Object.defineProperty, Bt = Object.getOwnPropertyDescriptor, ye = (s, e, t, a) => {
+  for (var i = a > 1 ? void 0 : a ? Bt(e, t) : e, n = s.length - 1, o; n >= 0; n--)
+    (o = s[n]) && (i = (a ? o(e, t, i) : o(i)) || i);
   return a && i && Ot(e, t, i), i;
 };
-let Q = class extends W {
+let J = class extends Z {
   constructor() {
     super(...arguments);
-    E(this, "hass");
-    E(this, "_config", { type: "custom:calendar-card-plus" });
-    E(this, "_showAllCalendars", !1);
+    z(this, "hass");
+    z(this, "_config", { type: "custom:calendar-card-plus" });
+    z(this, "_showAllCalendars", !1);
   }
   set config(e) {
     this.setConfig(e);
@@ -2419,11 +2462,11 @@ let Q = class extends W {
     this._config = e, this.requestUpdate();
   }
   render() {
-    var l, d, r, h, u, _, g, p, k, b;
+    var l, d, r, _, u, h, g, f, C, $;
     if (!this.hass)
-      return v``;
-    const e = this._config.upcoming_events ?? !1, t = this._config.unfold_events ?? !1, a = this._config.days ?? 1, i = this._config.hours ?? 0, s = this._config.minutes ?? 0, o = this._config.exclude_entities ?? [];
-    return v`
+      return p``;
+    const e = this._config.upcoming_events ?? !1, t = this._config.unfold_events ?? !1, a = this._config.days ?? 1, i = this._config.hours ?? 0, n = this._config.minutes ?? 0, o = this._config.exclude_entities ?? [];
+    return p`
             <div class="card-config">
 
 
@@ -2474,10 +2517,17 @@ let Q = class extends W {
                                 .checked=${e}
                                 @change=${this._calendarShowAllChanged}
                             ></ha-switch>
-                        </div>     
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">${w(this.hass, "editor_show_empty_days")}</span>
+                            <ha-switch
+                                .checked=${this._config.show_empty_days ?? !1}
+                                @change=${(c) => this._toggleBooleanConfig(c, "show_empty_days")}
+                            ></ha-switch>
+                        </div>
                     </div>
 
-                    ${t ? v`
+                    ${t ? p`
                         <div class="settings-row full-width" style="margin-bottom: 16px;">
                             <ha-selector
                                 .hass=${this.hass}
@@ -2490,7 +2540,7 @@ let Q = class extends W {
                         </div>
                     ` : ""}
 
-                    ${e ? v`
+                    ${e ? p`
                         <div class="settings-row full-width" style="margin-bottom: 8px;">
                              <span class="label" style="margin-bottom: 8px;">${((l = this.hass) == null ? void 0 : l.localize("ui.panel.lovelace.editor.card.statistic.period")) || "Period"}</span>
                              <div class="period-selectors">
@@ -2513,8 +2563,8 @@ let Q = class extends W {
                                 <ha-selector
                                     .hass=${this.hass}
                                     .selector=${{ number: { min: 0, max: 59, mode: "box" } }}
-                                    .value=${s}
-                                    .label=${((h = this.hass) == null ? void 0 : h.localize("component.input_datetime.entity_component._.state_attributes.minute.name")) || "Minutes"}
+                                    .value=${n}
+                                    .label=${((_ = this.hass) == null ? void 0 : _.localize("component.input_datetime.entity_component._.state_attributes.minute.name")) || "Minutes"}
                                     .configValue=${"minutes"}
                                     @value-changed=${this._valueChanged}
                                 ></ha-selector>
@@ -2552,14 +2602,14 @@ let Q = class extends W {
                     </div>
                     <div class="settings-grid" style="margin-top: 16px; margin-bottom: 16px;">
                         <div class="settings-row">
-                            <span class="label">${(u = this.hass) == null ? void 0 : u.localize("ui.common.show")} ${(_ = this.hass) == null ? void 0 : _.localize("component.calendar.entity_component._.name")} ${(g = this.hass) == null ? void 0 : g.localize("ui.common.name")}</span>
+                            <span class="label">${(u = this.hass) == null ? void 0 : u.localize("ui.common.show")} ${(h = this.hass) == null ? void 0 : h.localize("component.calendar.entity_component._.name")} ${(g = this.hass) == null ? void 0 : g.localize("ui.common.name")}</span>
                             <ha-switch
                                 .checked=${this._config.show_calendar_name ?? !1}
                                 @change=${(c) => this._toggleBooleanConfig(c, "show_calendar_name")}
                             ></ha-switch>
                         </div>
                         <div class="settings-row">
-                            <span class="label">${(p = this.hass) == null ? void 0 : p.localize("ui.common.show")} ${((k = this.hass) == null ? void 0 : k.localize("ui.dialogs.helper_settings.input_datetime.date")) || "Date"}</span>
+                            <span class="label">${(f = this.hass) == null ? void 0 : f.localize("ui.common.show")} ${((C = this.hass) == null ? void 0 : C.localize("ui.dialogs.helper_settings.input_datetime.date")) || "Date"}</span>
                             <ha-switch
                                 .checked=${this._config.show_date ?? !1}
                                 @change=${(c) => this._toggleBooleanConfig(c, "show_date")}
@@ -2600,7 +2650,7 @@ let Q = class extends W {
                                 @change=${(c) => this._toggleBooleanConfig(c, "show_weekday")}
                             ></ha-switch>
                         </div>
-                        ${this._config.show_weekday ? v`
+                        ${this._config.show_weekday ? p`
                             <div class="settings-row">
                                 <span class="label" style="color: var(--secondary-text-color);">${this._config.icon_show_weekday ? w(this.hass, "editor_show_month_long") : w(this.hass, "editor_show_weekday_long")}</span>
                                 <ha-switch
@@ -2615,54 +2665,54 @@ let Q = class extends W {
 
 
 
-                <h4>${((b = this.hass) == null ? void 0 : b.localize("ui.components.calendar.my_calendars")) || "Calendars"}</h4>
+                <h4>${(($ = this.hass) == null ? void 0 : $.localize("ui.components.calendar.my_calendars")) || "Calendars"}</h4>
                 <div class="entities-list">
                     ${(() => {
-      const c = this._getCalendarEntities(), y = this._showAllCalendars ? c : c.slice(0, 3), x = c.length > 3;
-      return v`
-                            ${y.map((m) => {
-        var A, M, P, O, z;
-        const $ = !o.includes(m.entity_id), f = ((A = this._config.calendar_colors) == null ? void 0 : A[m.entity_id]) || "", C = this._toCssColor(f || this._config.calendar_icon_color || "#fa3e3e");
-        return v`
-                                    <div class="entity-row ${$ ? "" : "disabled"}">
+      const c = this._getCalendarEntities(), y = this._showAllCalendars ? c : c.slice(0, 3), b = c.length > 3;
+      return p`
+                            ${y.map((v) => {
+        var E, P, L, O, T;
+        const x = !o.includes(v.entity_id), m = ((E = this._config.calendar_colors) == null ? void 0 : E[v.entity_id]) || "", A = this._toCssColor(m || this._config.calendar_icon_color || "#fa3e3e");
+        return p`
+                                    <div class="entity-row ${x ? "" : "disabled"}">
                                         <div class="entity-row-top">
                                             <div class="entity-icon dynamic" style="background: transparent;">
-                                                ${this._renderDynamicIcon(/* @__PURE__ */ new Date(), C, this._config.dark_mode ?? !1, this._config.icon_show_weekday ?? !1)}
+                                                ${this._renderDynamicIcon(/* @__PURE__ */ new Date(), A, this._config.dark_mode ?? !1, this._config.icon_show_weekday ?? !1)}
                                             </div>
                                             <div class="entity-info">
-                                                <span class="entity-name">${m.attributes.friendly_name || m.entity_id}</span>
-                                                <span class="entity-id">${m.entity_id}</span>
+                                                <span class="entity-name">${v.attributes.friendly_name || v.entity_id}</span>
+                                                <span class="entity-id">${v.entity_id}</span>
                                             </div>
                                             <ha-button
                                                 size="small" 
                                                 appearance="filled" 
                                                 variant="brand" 
-                                                class="${$ ? "action-hide" : "action-show"}"
-                                                @click=${(j) => this._calendarToggleEntity(j, m.entity_id)}
+                                                class="${x ? "action-hide" : "action-show"}"
+                                                @click=${(M) => this._calendarToggleEntity(M, v.entity_id)}
                                             >
-                                                ${$ ? ((M = this.hass) == null ? void 0 : M.localize("ui.common.hide")) || "Hide" : ((P = this.hass) == null ? void 0 : P.localize("ui.common.show")) || "Show"}
+                                                ${x ? ((P = this.hass) == null ? void 0 : P.localize("ui.common.hide")) || "Hide" : ((L = this.hass) == null ? void 0 : L.localize("ui.common.show")) || "Show"}
                                             </ha-button>
                                         </div>
                                         <div class="entity-row-bottom">
                                              <ha-selector
                                                 .hass=${this.hass}
                                                 .selector=${{ ui_color: {} }}
-                                                .value=${f}
+                                                .value=${m}
                                                 .label=${((O = this.hass) == null ? void 0 : O.localize("ui.panel.lovelace.editor.card.tile.color")) || "Color"}
-                                                @value-changed=${(j) => this._calendarColorChanged(j, m.entity_id)}
+                                                @value-changed=${(M) => this._calendarColorChanged(M, v.entity_id)}
                                             ></ha-selector>
                                             <ha-selector
                                                 .hass=${this.hass}
                                                 .selector=${{ ui_color: {} }}
-                                                .value=${((z = this._config.calendar_background_colors) == null ? void 0 : z[m.entity_id]) || ""}
+                                                .value=${((T = this._config.calendar_background_colors) == null ? void 0 : T[v.entity_id]) || ""}
                                                 .label=${w(this.hass, "editor_background_color")}
-                                                @value-changed=${(j) => this._calendarBackgroundColorChanged(j, m.entity_id)}
+                                                @value-changed=${(M) => this._calendarBackgroundColorChanged(M, v.entity_id)}
                                             ></ha-selector>
                                         </div>
                                     </div>
                                 `;
       })}
-                            ${x ? v`
+                            ${b ? p`
                                 <div class="show-more-row">
                                     <ha-button @click=${() => {
         this._showAllCalendars = !this._showAllCalendars, this.requestUpdate();
@@ -2729,14 +2779,14 @@ let Q = class extends W {
     const i = (o = e.detail) == null ? void 0 : o.value;
     if (this._config[a] === i)
       return;
-    const s = { ...this._config };
-    i == null || i === "" ? delete s[a] : s[a] = i, this._config = s, N(this, "config-changed", { config: this._config });
+    const n = { ...this._config };
+    i == null || i === "" ? delete n[a] : n[a] = i, this._config = n, N(this, "config-changed", { config: this._config });
   }
   _calendarColorChanged(e, t) {
     const a = e.detail.value, i = { ...this._config.calendar_colors || {} };
     if (a == null || a === "" ? delete i[t] : i[t] = a, Object.keys(i).length === 0) {
-      const s = { ...this._config };
-      delete s.calendar_colors, this._config = s;
+      const n = { ...this._config };
+      delete n.calendar_colors, this._config = n;
     } else
       this._config = {
         ...this._config,
@@ -2747,8 +2797,8 @@ let Q = class extends W {
   _calendarBackgroundColorChanged(e, t) {
     const a = e.detail.value, i = { ...this._config.calendar_background_colors || {} };
     if (a == null || a === "" ? delete i[t] : i[t] = a, Object.keys(i).length === 0) {
-      const s = { ...this._config };
-      delete s.calendar_background_colors, this._config = s;
+      const n = { ...this._config };
+      delete n.calendar_background_colors, this._config = n;
     } else
       this._config = {
         ...this._config,
@@ -2877,12 +2927,12 @@ let Q = class extends W {
     return e.startsWith("#") || e.startsWith("rgb") || e.startsWith("hsl") || e.startsWith("var") ? e : `var(--${e}-color)`;
   }
   _renderDynamicIcon(e, t, a = !1, i = !1) {
-    var u, _, g;
-    const s = ((_ = (u = this.hass) == null ? void 0 : u.locale) == null ? void 0 : _.language) || ((g = this.hass) == null ? void 0 : g.language) || navigator.language || "en";
+    var u, h, g;
+    const n = ((h = (u = this.hass) == null ? void 0 : u.locale) == null ? void 0 : h.language) || ((g = this.hass) == null ? void 0 : g.language) || navigator.language || "en";
     let o;
-    i ? o = e.toLocaleDateString(s, { weekday: "short" }).toUpperCase() : o = e.toLocaleDateString(s, { month: "short" }).toUpperCase();
+    i ? o = e.toLocaleDateString(n, { weekday: "short" }).toUpperCase() : o = e.toLocaleDateString(n, { month: "short" }).toUpperCase();
     const l = e.getDate();
-    return v`
+    return p`
             <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
                 <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${a ? "#222222" : "white"}"></rect>
                 <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="${t}"></path>
@@ -2892,24 +2942,24 @@ let Q = class extends W {
         `;
   }
 };
-pe([
+ye([
   B({ attribute: !1 })
-], Q.prototype, "hass", 2);
-pe([
-  ce()
-], Q.prototype, "_config", 2);
-pe([
-  ce()
-], Q.prototype, "_showAllCalendars", 2);
-Q = pe([
+], J.prototype, "hass", 2);
+ye([
+  he()
+], J.prototype, "_config", 2);
+ye([
+  he()
+], J.prototype, "_showAllCalendars", 2);
+J = ye([
   Te("calendar-card-plus-editor")
-], Q);
+], J);
 const Nt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   get CalendarCardPlusEditor() {
-    return Q;
+    return J;
   }
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  de as CalendarCardPlus
+  ce as CalendarCardPlus
 };

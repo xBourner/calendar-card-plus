@@ -4,6 +4,7 @@ import { HomeAssistant } from './ha/types';
 import { CalendarCardPlusConfig, CalendarEvent } from './types';
 import { saveNewEvent, AddEventPopupState as AddEventState } from './events';
 import { renderAddEventForm } from './events';
+import { localize } from './localize';
 
 import { _resolveColor, _renderDynamicIcon, _toCssColor, _resolveBackgroundColor, _formatDuration, _formatLocalizedDuration, _groupEventsByDate } from './calendar';
 
@@ -162,17 +163,20 @@ export class CalendarCardPlusPopup extends LitElement {
             const groups = _groupEventsByDate(this.detailEvents);
             return groups.map((group) => {
                 const iconDate = group.date;
-                const iconColor = this.config.calendar_icon_color || '#fa3e3e';
+                const iconColor = _resolveColor(group.events[0].entity_id, this.config);
                 const dynamicIcon = _renderDynamicIcon(this.hass, iconDate, iconColor, this.config.dark_mode ?? false);
                 
+                const bgColor = _resolveBackgroundColor(group.events[0].entity_id, this.config);
+                const groupStyle = bgColor ? `background-color: ${bgColor}; border: none;` : '';
+
                 return html`
-                    <div class="calendar-item grouped detail" style="align-items: center;">
+                    <div class="calendar-item grouped detail" style="align-items: center; ${groupStyle}">
                         <div class="calendar-icon dynamic">
                             ${dynamicIcon}
                         </div>
                         <div class="calendar-content">
                             ${group.events.map((event) => {
-                                const title = event.summary;
+                                const title = event.is_empty ? localize(this.hass, 'empty') : event.summary;
                                 const start = new Date(event.start.dateTime || event.start.date!);
                                 const end = new Date(event.end.dateTime || event.end.date!);
                                 const isAllDay = !event.start.dateTime;
@@ -186,7 +190,9 @@ export class CalendarCardPlusPopup extends LitElement {
                                 const allDayText = this.hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
 
                                 let timeText = '';
-                                if (showDate || showTime) {
+                                if (event.is_empty) {
+                                    timeText = '';
+                                } else if (showDate || showTime) {
                                     if (isAllDay) {
                                         const datePart = showDate ? start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
                                         if (showDate && showTime) {
@@ -208,13 +214,13 @@ export class CalendarCardPlusPopup extends LitElement {
                                     timeText = isAllDay ? allDayText : formatTime(start);
                                 }
 
-                                if (this.config.show_duration) {
+                                if (!event.is_empty && this.config.show_duration) {
                                     if (!timeText.endsWith(duration)) {
                                         timeText += ` • ${duration}`;
                                     }
                                 }
                                 
-                                if (this.config.show_weekday) {
+                                if (!event.is_empty && this.config.show_weekday) {
                                     const weekday = start.toLocaleDateString(lang, { weekday: this.config.show_weekday_long ? 'long' : 'short' });
                                     if (!timeText.includes(weekday)) {
                                         timeText += ` • ${weekday}`;
@@ -222,13 +228,15 @@ export class CalendarCardPlusPopup extends LitElement {
                                 }
 
                                 return html`
-                                    <div class="event-entry" @click=${() => this._handleMoreInfo(event.entity_id)} style="margin-bottom: 4px;">
-                                        <div class="event-title">${title}</div>
+                                    <div class="event-entry" @click=${() => event.is_empty ? null : this._handleMoreInfo(event.entity_id)} style="margin-bottom: 4px; ${event.is_empty ? 'opacity: 0.7; cursor: default;' : ''}">
+                                        <div class="event-title">
+                                            ${title}
+                                        </div>
                                         <div class="event-time" style="display: flex; align-items: center; gap: 4px;">
-                                            ${(showDate || showTime) ? html`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ''}
+                                            ${(!event.is_empty && (showDate || showTime)) ? html`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ''}
                                             ${timeText}
                                         </div>
-                                        ${this.config.show_location && event.location
+                                        ${!event.is_empty && this.config.show_location && event.location
                                             ? html`
                                                 <div class="event-location">
                                                     <ha-icon icon="mdi:map-marker" style="--mdc-icon-size: 14px;"></ha-icon>
@@ -255,7 +263,7 @@ export class CalendarCardPlusPopup extends LitElement {
         }
 
         return this.detailEvents.map((event, index) => {
-            const title = event.summary;
+            const title = event.is_empty ? localize(this.hass, 'empty') : event.summary;
             let timeText = '';
             
             let start: Date;
@@ -279,7 +287,9 @@ export class CalendarCardPlusPopup extends LitElement {
             const showTime = this.config.show_time ?? false;
             const allDayText = this.hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
 
-            if (showDate || showTime) {
+            if (event.is_empty) {
+                timeText = '';
+            } else if (showDate || showTime) {
                 if (isAllDay) {
                     const datePart = showDate ? start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
                     if (showDate && showTime) {
@@ -305,7 +315,7 @@ export class CalendarCardPlusPopup extends LitElement {
                 timeText = isAllDay ? allDayText : formatTime(start);
             }
 
-            if (this.config.show_duration) {
+            if (!event.is_empty && this.config.show_duration) {
                 if (timeText) {
                     if (timeText.endsWith(duration)) {
                     } else {
@@ -316,14 +326,15 @@ export class CalendarCardPlusPopup extends LitElement {
                 }
             }
             
-            if (this.config.show_weekday) {
+            if (!event.is_empty && this.config.show_weekday) {
                 const weekday = start.toLocaleDateString(lang, { weekday: this.config.show_weekday_long ? 'long' : 'short' });
                 timeText += ` • ${weekday}`;
             }
 
-            const isActive = start <= now && end >= now;
+            const isActive = !event.is_empty && start <= now && end >= now;
             const iconDate = isActive ? now : start;
-            const iconColor = _resolveColor(event.entity_id, this.config);
+            const iconColor = event.is_empty ? 'var(--disabled-text-color, #bdbdbb)' : _resolveColor(event.entity_id, this.config);
+            
             const dynamicIcon = _renderDynamicIcon(this.hass, iconDate, iconColor, this.config.dark_mode ?? false);
 
             const showDivider = this.config.show_divider && index > 0;
@@ -333,17 +344,17 @@ export class CalendarCardPlusPopup extends LitElement {
 
             return html`
                 ${showDivider ? html`<div class="calendar-divider"></div>` : ''}
-                <div class="calendar-item detail" style=${itemStyle} @click=${() => this._handleMoreInfo(event.entity_id)}>
+                <div class="calendar-item detail" style="${itemStyle} ${event.is_empty ? 'cursor: default; opacity: 0.7;' : ''}" @click=${() => event.is_empty ? null : this._handleMoreInfo(event.entity_id)}>
                     <div class="calendar-icon dynamic">
                         ${dynamicIcon}
                     </div>
                     <div class="calendar-content">
                         <div class="event-title">${title}</div>
                         <div class="event-time">
-                            ${(showDate || showTime) ? html`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ''}
+                            ${(!event.is_empty && (showDate || showTime)) ? html`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ''}
                             ${timeText}
                         </div>
-                        ${this.config.show_location && event.location
+                        ${!event.is_empty && this.config.show_location && event.location
                             ? html`
                                 <div class="event-location">
                                     <ha-icon icon="mdi:map-marker"></ha-icon>

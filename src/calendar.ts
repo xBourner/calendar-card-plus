@@ -39,7 +39,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
     if (!unfoldEvents) {
         const event = events[0];
         const moreCount = events.length - 1;
-        const title = event.summary;
+        const title = event.is_empty ? localize(hass, 'empty') : event.summary;
         let start: Date;
         let end: Date;
         
@@ -65,7 +65,9 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         let timeText = '';
         const allDayText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
 
-        if (showDate || showTime) {
+        if (event.is_empty) {
+            timeText = '';
+        } else if (showDate || showTime) {
             if (isAllDay) {
                 const datePart = showDate ? start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
                 if (showDate && showTime) {
@@ -91,7 +93,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
             timeText = isAllDay ? allDayText : formatTime(start);
         }
 
-        if (config?.show_duration) {
+        if (!event.is_empty && config?.show_duration) {
             if (timeText) {
                 if (timeText.endsWith(duration)) {
                 } else {
@@ -106,7 +108,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
             timeText += ` ${localize(hass, 'more_events', '{x}', moreCount.toString())}`;
         }
         
-        if (config?.show_weekday) {
+        if (!event.is_empty && config?.show_weekday) {
             const lang = hass.locale?.language || hass.language || navigator.language;
             const appendedText = config?.icon_show_weekday 
                 ? start.toLocaleDateString(lang, { month: config.show_weekday_long ? 'long' : 'short' })
@@ -116,7 +118,8 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
 
         const isActive = start <= now && end >= now;
         const iconDate = isActive ? now : start;
-        const iconColor = _resolveColor(event.entity_id, config);
+        const iconColor = event.is_empty ? (_resolveColor(event.entity_id, config) || 'var(--disabled-text-color, #bdbdbb)') : _resolveColor(event.entity_id, config);
+        
         const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false, config?.icon_show_weekday ?? false);
 
         const bgColor = _resolveBackgroundColor(event.entity_id, config);
@@ -125,19 +128,19 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
         return html`
             <div class="calendar-container">
                 <div class="calendar-item"  
-                     style="${itemStyle}"
+                     style="${itemStyle} ${event.is_empty ? 'cursor: default; opacity: 0.7;' : ''}"
                      title="${title}"
-                     @click=${(e: Event) => _handleCompactClick(e, hass, events)}>
+                     @click=${(e: Event) => event.is_empty ? null : _handleCompactClick(e, hass, events)}>
                      <div class="calendar-icon dynamic">
                         ${dynamicIcon}
                     </div>
                     <div class="calendar-content">
                         <div class="event-title">${title}</div>
                         <div class="event-time">
-                            ${(showDate || showTime) ? html`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ''}
+                            ${(!event.is_empty && (showDate || showTime)) ? html`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ''}
                             ${timeText}
                         </div>
-                        ${config?.show_location && event.location
+                        ${!event.is_empty && config?.show_location && event.location
                             ? html`
                                 <div class="event-location">
                                     <ha-icon icon="mdi:map-marker"></ha-icon>
@@ -165,17 +168,20 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
             <div class="calendar-container">
                 ${groups.map((group) => {
                     const iconDate = group.date;
-                    const iconColor = _toCssColor(config.calendar_icon_color || '#fa3e3e');
+                    const iconColor = _resolveColor(group.events[0].entity_id, config);
                     const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false, config?.icon_show_weekday ?? false);
                     
+                    const bgColor = _resolveBackgroundColor(group.events[0].entity_id, config);
+                    const groupStyle = bgColor ? `background-color: ${bgColor}; border: none;` : '';
+                    
                     return html`
-                        <div class="calendar-item grouped" style="align-items: center;">
+                        <div class="calendar-item grouped" style="align-items: center; ${groupStyle}">
                             <div class="calendar-icon dynamic">
                                 ${dynamicIcon}
                             </div>
                             <div class="calendar-content">
                                 ${group.events.map((event) => {
-                                    const title = event.summary;
+                                    const title = event.is_empty ? localize(hass, 'empty') : event.summary;
                                     const start = new Date(event.start.dateTime || event.start.date!);
                                     const end = new Date(event.end.dateTime || event.end.date!);
                                     const isAllDay = !event.start.dateTime;
@@ -189,7 +195,9 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                                     const allDayText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
 
                                     let timeText = '';
-                                    if (showDate || showTime) {
+                                    if (event.is_empty) {
+                                        timeText = '';
+                                    } else if (showDate || showTime) {
                                         if (isAllDay) {
                                             const datePart = showDate ? start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
                                             if (showDate && showTime) {
@@ -211,13 +219,13 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                                         timeText = isAllDay ? allDayText : formatTime(start);
                                     }
 
-                                    if (config?.show_duration) {
+                                    if (!event.is_empty && config?.show_duration) {
                                         if (!timeText.endsWith(duration)) {
                                             timeText += ` • ${duration}`;
                                         }
                                     }
                                     
-                                    if (config?.show_weekday) {
+                                    if (!event.is_empty && config?.show_weekday) {
                                         const appendedText = config?.icon_show_weekday
                                             ? start.toLocaleDateString(lang, { month: config.show_weekday_long ? 'long' : 'short' })
                                             : start.toLocaleDateString(lang, { weekday: config.show_weekday_long ? 'long' : 'short' });
@@ -227,13 +235,15 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                                     }
 
                                     return html`
-                                        <div class="event-entry" @click=${(e: Event) => _handleCalendarClick(e, event.entity_id)} style="margin-bottom: 4px;">
-                                            <div class="event-title">${title}</div>
+                                        <div class="event-entry" @click=${(e: Event) => event.is_empty ? null : _handleCalendarClick(e, event.entity_id)} style="margin-bottom: 4px; ${event.is_empty ? 'opacity: 0.7; cursor: default;' : ''}">
+                                            <div class="event-title">
+                                                ${title}
+                                            </div>
                                             <div class="event-time" style="display: flex; align-items: center; gap: 4px;">
-                                                ${(showDate || showTime) ? html`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ''}
+                                                ${(!event.is_empty && (showDate || showTime)) ? html`<ha-icon icon="mdi:clock-time-four-outline" style="--mdc-icon-size: 14px;"></ha-icon>` : ''}
                                                 ${timeText}
                                             </div>
-                                            ${config?.show_location && event.location
+                                            ${!event.is_empty && config?.show_location && event.location
                                                 ? html`
                                                     <div class="event-location" style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);">
                                                         <ha-icon icon="mdi:map-marker" style="--mdc-icon-size: 14px;"></ha-icon>
@@ -268,7 +278,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
     return html`
         <div class="calendar-container">
             ${displayEvents.map((event, index) => {
-                const title = event.summary;
+                const title = event.is_empty ? localize(hass, 'empty') : event.summary;
                 let start: Date;
                 let end: Date;
                 
@@ -298,7 +308,9 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 let timeText = '';
                 const allDayText = hass.localize('component.calendar.entity_component._.state_attributes.all_day.name') || 'All day';
 
-                if (showDate || showTime) {
+                if (event.is_empty) {
+                    timeText = '';
+                } else if (showDate || showTime) {
                     if (isAllDay) {
                         const datePart = showDate ? start.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
                         if (showDate && showTime) {
@@ -324,7 +336,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                     timeText = isAllDay ? allDayText : formatTime(start);
                 }
 
-                if (config?.show_duration) {
+                if (!event.is_empty && config?.show_duration) {
                     if (timeText) {
                         if (timeText.endsWith(duration)) {
                         } else {
@@ -335,7 +347,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                     }
                 }
                 
-                if (!isAllDay && start <= now && end >= now) {
+                if (!event.is_empty && !isAllDay && start <= now && end >= now) {
                     const totalDuration = end.getTime() - start.getTime();
                     const elapsed = now.getTime() - start.getTime();
                     if (totalDuration > 0) {
@@ -343,7 +355,7 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                     }
                 }
                 
-                if (config?.show_weekday) {
+                if (!event.is_empty && config?.show_weekday) {
                     const lang = hass.locale?.language || hass.language || navigator.language;
                     const appendedText = config?.icon_show_weekday
                         ? start.toLocaleDateString(lang, { month: config.show_weekday_long ? 'long' : 'short' })
@@ -353,7 +365,8 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
 
                 const isActive = start <= now && end >= now;
                 const iconDate = isActive ? now : start;
-                const iconColor = _resolveColor(event.entity_id, config);
+                const iconColor = event.is_empty ? (_resolveColor(event.entity_id, config) || 'var(--disabled-text-color, #bdbdbb)') : _resolveColor(event.entity_id, config);
+                
                 const dynamicIcon = _renderDynamicIcon(hass, iconDate, iconColor, config?.dark_mode ?? false, config?.icon_show_weekday ?? false);
 
                 const bgColor = _resolveBackgroundColor(event.entity_id, config);
@@ -365,13 +378,13 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                 return html`
                 ${showDivider ? html`<div class="calendar-divider"></div>` : ''}
                 <div class="calendar-item"  
-                     style="${itemStyle}"
+                     style="${itemStyle} ${event.is_empty ? 'cursor: default; opacity: 0.7;' : ''}"
                      title="${isLastLimited ? localize(hass, 'popup_upcoming_events') : title}"
-                     @click=${(e: Event) => isLastLimited ? _handleCompactClick(e, hass, events) : _handleCalendarClick(e, event.entity_id)}>
+                     @click=${(e: Event) => event.is_empty ? null : (isLastLimited ? _handleCompactClick(e, hass, events) : _handleCalendarClick(e, event.entity_id))}>
                      <div class="calendar-icon dynamic">
                         ${dynamicIcon}
                     </div>
-                    <div class="calendar-content">
+                    <div class="calendar-content" style="${event.is_empty ? 'opacity: 0.8;' : ''}">
                         <div class="event-title" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">${title}</span>
                             ${isLastLimited ? html`
@@ -382,10 +395,10 @@ export function renderCalendar(hass: HomeAssistant, events: CalendarEvent[] | un
                             ` : ''}
                         </div>
                         <div class="event-time">
-                            ${(showDate || showTime) ? html`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ''}
+                            ${(!event.is_empty && (showDate || showTime)) ? html`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ''}
                             ${timeText}
                         </div>
-                        ${config?.show_location && event.location
+                        ${!event.is_empty && config?.show_location && event.location
                             ? html`
                                 <div class="event-location">
                                     <ha-icon icon="mdi:map-marker"></ha-icon>
