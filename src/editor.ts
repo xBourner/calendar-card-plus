@@ -1,592 +1,788 @@
-import { LitElement, html, TemplateResult, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { HomeAssistant, LovelaceCardEditor } from './ha/types';
-import { fireEvent } from './ha/fire_event';
-import { CalendarCardPlusConfig } from './types';
-import { localize } from './localize';
+import { LitElement, html, TemplateResult, css } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { HomeAssistant, LovelaceCardEditor } from "./ha/types";
+import { fireEvent } from "./ha/fire_event";
+import { CalendarCardPlusConfig } from "./types";
+import { localize } from "./localize";
 
-@customElement('calendar-card-plus-editor')
-export class CalendarCardPlusEditor extends LitElement implements LovelaceCardEditor {
-    @property({ attribute: false }) public hass?: HomeAssistant;
-    @state() private _config: CalendarCardPlusConfig = { type: 'custom:calendar-card-plus' };
-    @state() private _showAllCalendars: boolean = false;
-    public set config(c: CalendarCardPlusConfig) {
-        this.setConfig(c);
+@customElement("calendar-card-plus-editor")
+export class CalendarCardPlusEditor
+  extends LitElement
+  implements LovelaceCardEditor
+{
+  @property({ attribute: false }) public hass?: HomeAssistant;
+  @state() private _config: CalendarCardPlusConfig = {
+    type: "custom:calendar-card-plus",
+  };
+  @state() private _showAllCalendars: boolean = false;
+  public set config(c: CalendarCardPlusConfig) {
+    this.setConfig(c);
+  }
+
+  public setConfig(config: CalendarCardPlusConfig): void {
+    this._config = config;
+    this.requestUpdate();
+  }
+
+  protected render(): TemplateResult {
+    if (!this.hass) {
+      return html``;
     }
 
-    public setConfig(config: CalendarCardPlusConfig): void {
-        this._config = config;
-        this.requestUpdate();
-    }
+    const upcoming_events = this._config.upcoming_events ?? false;
+    const unfold_events = this._config.unfold_events ?? false;
+    const days = this._config.days ?? 1;
+    const hours = this._config.hours ?? 0;
+    const minutes = this._config.minutes ?? 0;
+    const exclude_entities = this._config.exclude_entities ?? [];
 
-    protected render(): TemplateResult {
-        if (!this.hass) {
-            return html``;
-        }
-
-        const upcoming_events = this._config.upcoming_events ?? false;
-        const unfold_events = this._config.unfold_events ?? false;
-        const days = this._config.days ?? 1;
-        const hours = this._config.hours ?? 0;
-        const minutes = this._config.minutes ?? 0;
-        const exclude_entities = this._config.exclude_entities ?? [];
-
-        return html`
-            <div class="card-config">
-
-
-                <ha-expansion-panel outlined>
-                    <div slot="header" role="heading" aria-level="3" style="display: flex; align-items: center; gap: 8px;">
-                        <ha-icon icon="mdi:cog" style="color: var(--secondary-text-color);"></ha-icon>
-                        ${localize(this.hass, 'editor_configuration')}
-                    </div>
-                    <div class="settings-grid" style="margin-top: 16px; margin-bottom: 16px;">
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_unfold_events')}</span>
-                            <ha-switch
-                                .checked=${unfold_events}
-                                @change=${this._compactModeChanged}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_show_divider')}</span>
-                            <ha-switch
-                                .checked=${this._config.show_divider ?? false}
-                                @change=${this._calendarDividerChanged}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_show_add_event')}</span>
-                            <ha-switch
-                                .checked=${this._config.show_add_event ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_add_event')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'group_by_date')}</span>
-                            <ha-switch
-                                .checked=${this._config.group_by_date ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'group_by_date')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">Dark Mode</span>
-                            <ha-switch
-                                .checked=${this._config.dark_mode ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'dark_mode')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_show_upcoming')}</span>
-                            <ha-switch
-                                .checked=${upcoming_events}
-                                @change=${this._calendarShowAllChanged}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_show_empty_days')}</span>
-                            <ha-switch
-                                .checked=${this._config.show_empty_days ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_empty_days')}
-                            ></ha-switch>
-                        </div>
-                    </div>
-
-                    ${unfold_events ? html`
-                        <div class="settings-row full-width" style="margin-bottom: 16px;">
-                            <ha-selector
-                                .hass=${this.hass}
-                                .selector=${{ number: { min: 0, max: 20, mode: 'box' } }}
-                                .value=${this._config.max_lines || 0}
-                                .label=${localize(this.hass, 'editor_max_lines')}
-                                .configValue=${'max_lines'}
-                                @value-changed=${this._valueChanged}
-                            ></ha-selector>
-                        </div>
-                    ` : ''}
-
-                    ${upcoming_events ? html`
-                        <div class="settings-row full-width" style="margin-bottom: 8px;">
-                             <span class="label" style="margin-bottom: 8px;">${this.hass?.localize('ui.panel.lovelace.editor.card.statistic.period') || 'Period'}</span>
-                             <div class="period-selectors">
-                                <ha-selector
-                                    .hass=${this.hass}
-                                    .selector=${{ number: { min: 0, max: 365, mode: 'box' } }}
-                                    .value=${days}
-                                    .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.day.name') || 'Days'}
-                                    .configValue=${'days'}
-                                    @value-changed=${this._valueChanged}
-                                ></ha-selector>
-                                <ha-selector
-                                    .hass=${this.hass}
-                                    .selector=${{ number: { min: 0, max: 23, mode: 'box' } }}
-                                    .value=${hours}
-                                    .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.hour.name') || 'Hours'}
-                                    .configValue=${'hours'}
-                                    @value-changed=${this._valueChanged}
-                                ></ha-selector>
-                                <ha-selector
-                                    .hass=${this.hass}
-                                    .selector=${{ number: { min: 0, max: 59, mode: 'box' } }}
-                                    .value=${minutes}
-                                    .label=${this.hass?.localize('component.input_datetime.entity_component._.state_attributes.minute.name') || 'Minutes'}
-                                    .configValue=${'minutes'}
-                                    @value-changed=${this._valueChanged}
-                                ></ha-selector>
-                             </div>
-                        </div>
-                    ` : ''}
-
-                    <div class="settings-row full-width" style="margin-bottom: 16px;">
-                        <ha-selector
-                            .hass=${this.hass}
-                            .selector=${{ ui_color: {} }}
-                            .value=${this._config.calendar_icon_color || ''}
-                            .label="Global ${this.hass.localize('ui.panel.lovelace.editor.card.tile.color') || 'Color'}"
-                            .configValue=${'calendar_icon_color'}
-                            @value-changed=${this._valueChanged}
-                        ></ha-selector>
-                    </div>
-
-                    <div class="settings-row full-width" style="margin-bottom: 16px;">
-                        <ha-selector
-                            .hass=${this.hass}
-                            .selector=${{ ui_color: {} }}
-                            .value=${this._config.background_color || ''}
-                            .label=${localize(this.hass, 'editor_background_color')}
-                            .configValue=${'background_color'}
-                            @value-changed=${this._valueChanged}
-                        ></ha-selector>
-                    </div>
-                </ha-expansion-panel>
-
-                <ha-expansion-panel outlined>
-                    <div slot="header" role="heading" aria-level="3" style="display: flex; align-items: center; gap: 8px;">
-                        <ha-icon icon="mdi:card-text" style="color: var(--secondary-text-color);"></ha-icon>
-                        ${localize(this.hass, 'editor_text_visibility')}
-                    </div>
-                    <div class="settings-grid" style="margin-top: 16px; margin-bottom: 16px;">
-                        <div class="settings-row">
-                            <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('component.calendar.entity_component._.name')} ${this.hass?.localize('ui.common.name')}</span>
-                            <ha-switch
-                                .checked=${this._config.show_calendar_name ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_calendar_name')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${this.hass?.localize('ui.common.show')} ${this.hass?.localize('ui.dialogs.helper_settings.input_datetime.date') || 'Date'}</span>
-                            <ha-switch
-                                .checked=${this._config.show_date ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_date')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_show_location')}</span>
-                            <ha-switch
-                                .checked=${this._config.show_location ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_location')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_show_duration')}</span>
-                            <ha-switch
-                                .checked=${this._config.show_duration ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_duration')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_show_time')}</span>
-                            <ha-switch
-                                .checked=${this._config.show_time ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_time')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${localize(this.hass, 'editor_icon_show_weekday')}</span>
-                            <ha-switch
-                                .checked=${this._config.icon_show_weekday ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'icon_show_weekday')}
-                            ></ha-switch>
-                        </div>
-                        <div class="settings-row">
-                            <span class="label">${this._config.icon_show_weekday ? localize(this.hass, 'editor_show_month') : localize(this.hass, 'editor_show_weekday')}</span>
-                            <ha-switch
-                                .checked=${this._config.show_weekday ?? false}
-                                @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_weekday')}
-                            ></ha-switch>
-                        </div>
-                        ${this._config.show_weekday ? html`
-                            <div class="settings-row">
-                                <span class="label" style="color: var(--secondary-text-color);">${this._config.icon_show_weekday ? localize(this.hass, 'editor_show_month_long') : localize(this.hass, 'editor_show_weekday_long')}</span>
-                                <ha-switch
-                                    .checked=${this._config.show_weekday_long ?? false}
-                                    @change=${(ev: Event) => this._toggleBooleanConfig(ev, 'show_weekday_long')}
-                                ></ha-switch>
-                            </div>
-                            <div></div>
-                        ` : ''}
-                    </div>
-                </ha-expansion-panel>
-
-
-
-                <h4>${this.hass?.localize('ui.components.calendar.my_calendars') || 'Calendars'}</h4>
-                <div class="entities-list">
-                    ${(() => {
-                        const entities = this._getCalendarEntities();
-                        const displayedEntities = this._showAllCalendars ? entities : entities.slice(0, 3);
-                        const hasMore = entities.length > 3;
-
-                        return html`
-                            ${displayedEntities.map(entity => {
-                                const isIncluded = !exclude_entities.includes(entity.entity_id);
-                                
-                                const configColor = this._config.calendar_colors?.[entity.entity_id] || '';
-                                
-                                const renderColor = this._toCssColor(configColor || this._config.calendar_icon_color || '#fa3e3e');
-                                
-                                return html`
-                                    <div class="entity-row ${isIncluded ? '' : 'disabled'}">
-                                        <div class="entity-row-top">
-                                            <div class="entity-icon dynamic" style="background: transparent;">
-                                                ${this._renderDynamicIcon(new Date(), renderColor, this._config.dark_mode ?? false, this._config.icon_show_weekday ?? false)}
-                                            </div>
-                                            <div class="entity-info">
-                                                <span class="entity-name">${entity.attributes.friendly_name || entity.entity_id}</span>
-                                                <span class="entity-id">${entity.entity_id}</span>
-                                            </div>
-                                            <ha-button
-                                                size="small" 
-                                                appearance="filled" 
-                                                variant="brand" 
-                                                class="${isIncluded ? 'action-hide' : 'action-show'}"
-                                                @click=${(e: Event) => this._calendarToggleEntity(e, entity.entity_id)}
-                                            >
-                                                ${isIncluded ? (this.hass?.localize('ui.common.hide') || 'Hide') : (this.hass?.localize('ui.common.show') || 'Show')}
-                                            </ha-button>
-                                        </div>
-                                        <div class="entity-row-bottom">
-                                             <ha-selector
-                                                .hass=${this.hass}
-                                                .selector=${{ ui_color: {} }}
-                                                .value=${configColor}
-                                                .label=${this.hass?.localize('ui.panel.lovelace.editor.card.tile.color') || 'Color'}
-                                                @value-changed=${(e: CustomEvent) => this._calendarColorChanged(e, entity.entity_id)}
-                                            ></ha-selector>
-                                            <ha-selector
-                                                .hass=${this.hass}
-                                                .selector=${{ ui_color: {} }}
-                                                .value=${this._config.calendar_background_colors?.[entity.entity_id] || ''}
-                                                .label=${localize(this.hass as HomeAssistant, 'editor_background_color')}
-                                                @value-changed=${(e: CustomEvent) => this._calendarBackgroundColorChanged(e, entity.entity_id)}
-                                            ></ha-selector>
-                                        </div>
-                                    </div>
-                                `;
-                            })}
-                            ${hasMore ? html`
-                                <div class="show-more-row">
-                                    <ha-button @click=${() => { this._showAllCalendars = !this._showAllCalendars; this.requestUpdate(); }}>
-                                        ${this._showAllCalendars ? localize(this.hass, 'editor_show_less') : localize(this.hass, 'editor_show_more')}
-                                    </ha-button>
-                                </div>
-                            ` : ''}
-                        `;
-                    })()}
-                </div>
+    return html`
+      <div class="card-config">
+        <ha-expansion-panel outlined>
+          <div
+            slot="header"
+            role="heading"
+            aria-level="3"
+            style="display: flex; align-items: center; gap: 8px;"
+          >
+            <ha-icon
+              icon="mdi:cog"
+              style="color: var(--secondary-text-color);"
+            ></ha-icon>
+            ${localize(this.hass, "editor_configuration")}
+          </div>
+          <div
+            class="settings-grid"
+            style="margin-top: 16px; margin-bottom: 16px;"
+          >
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_unfold_events")}</span
+              >
+              <ha-switch
+                .checked=${unfold_events}
+                @change=${this._compactModeChanged}
+              ></ha-switch>
             </div>
-        `;
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_show_divider")}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_divider ?? false}
+                @change=${this._calendarDividerChanged}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_show_add_event")}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_add_event ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_add_event")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label">${localize(this.hass, "group_by_date")}</span>
+              <ha-switch
+                .checked=${this._config.group_by_date ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "group_by_date")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "group_by_date_and_calendar")}</span
+              >
+              <ha-switch
+                .checked=${this._config.group_by_date_and_calendar ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "group_by_date_and_calendar")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label">Dark Mode</span>
+              <ha-switch
+                .checked=${this._config.dark_mode ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "dark_mode")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_show_upcoming")}</span
+              >
+              <ha-switch
+                .checked=${upcoming_events}
+                @change=${this._calendarShowAllChanged}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_show_empty_days")}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_empty_days ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_empty_days")}
+              ></ha-switch>
+            </div>
+          </div>
+
+          ${unfold_events
+            ? html`
+                <div
+                  class="settings-row full-width"
+                  style="margin-bottom: 16px;"
+                >
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{ number: { min: 0, max: 20, mode: "box" } }}
+                    .value=${this._config.max_lines || 0}
+                    .label=${localize(this.hass, "editor_max_lines")}
+                    .configValue=${"max_lines"}
+                    @value-changed=${this._valueChanged}
+                  ></ha-selector>
+                </div>
+              `
+            : ""}
+          ${upcoming_events
+            ? html`
+                <div
+                  class="settings-row full-width"
+                  style="margin-bottom: 8px;"
+                >
+                  <span class="label" style="margin-bottom: 8px;"
+                    >${this.hass?.localize(
+                      "ui.panel.lovelace.editor.card.statistic.period",
+                    ) || "Period"}</span
+                  >
+                  <div class="period-selectors">
+                    <ha-selector
+                      .hass=${this.hass}
+                      .selector=${{ number: { min: 0, max: 365, mode: "box" } }}
+                      .value=${days}
+                      .label=${this.hass?.localize(
+                        "component.input_datetime.entity_component._.state_attributes.day.name",
+                      ) || "Days"}
+                      .configValue=${"days"}
+                      @value-changed=${this._valueChanged}
+                    ></ha-selector>
+                    <ha-selector
+                      .hass=${this.hass}
+                      .selector=${{ number: { min: 0, max: 23, mode: "box" } }}
+                      .value=${hours}
+                      .label=${this.hass?.localize(
+                        "component.input_datetime.entity_component._.state_attributes.hour.name",
+                      ) || "Hours"}
+                      .configValue=${"hours"}
+                      @value-changed=${this._valueChanged}
+                    ></ha-selector>
+                    <ha-selector
+                      .hass=${this.hass}
+                      .selector=${{ number: { min: 0, max: 59, mode: "box" } }}
+                      .value=${minutes}
+                      .label=${this.hass?.localize(
+                        "component.input_datetime.entity_component._.state_attributes.minute.name",
+                      ) || "Minutes"}
+                      .configValue=${"minutes"}
+                      @value-changed=${this._valueChanged}
+                    ></ha-selector>
+                  </div>
+                </div>
+              `
+            : ""}
+
+          <div class="settings-row full-width" style="margin-bottom: 16px;">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ ui_color: {} }}
+              .value=${this._config.calendar_icon_color || ""}
+              .label="Global ${this.hass.localize(
+                "ui.panel.lovelace.editor.card.tile.color",
+              ) || "Color"}"
+              .configValue=${"calendar_icon_color"}
+              @value-changed=${this._valueChanged}
+            ></ha-selector>
+          </div>
+
+          <div class="settings-row full-width" style="margin-bottom: 16px;">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{ ui_color: {} }}
+              .value=${this._config.background_color || ""}
+              .label=${localize(this.hass, "editor_background_color")}
+              .configValue=${"background_color"}
+              @value-changed=${this._valueChanged}
+            ></ha-selector>
+          </div>
+        </ha-expansion-panel>
+
+        <ha-expansion-panel outlined>
+          <div
+            slot="header"
+            role="heading"
+            aria-level="3"
+            style="display: flex; align-items: center; gap: 8px;"
+          >
+            <ha-icon
+              icon="mdi:card-text"
+              style="color: var(--secondary-text-color);"
+            ></ha-icon>
+            ${localize(this.hass, "editor_text_visibility")}
+          </div>
+          <div
+            class="settings-grid"
+            style="margin-top: 16px; margin-bottom: 16px;"
+          >
+            <div class="settings-row">
+              <span class="label"
+                >${this.hass?.localize("ui.common.show")}
+                ${this.hass?.localize(
+                  "component.calendar.entity_component._.name",
+                )}
+                ${this.hass?.localize("ui.common.name")}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_calendar_name ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_calendar_name")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${this.hass?.localize("ui.common.show")}
+                ${this.hass?.localize(
+                  "ui.dialogs.helper_settings.input_datetime.date",
+                ) || "Date"}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_date ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_date")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_show_location")}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_location ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_location")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_show_duration")}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_duration ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_duration")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_show_time")}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_time ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_time")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_icon_show_weekday")}</span
+              >
+              <ha-switch
+                .checked=${this._config.icon_show_weekday ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "icon_show_weekday")}
+              ></ha-switch>
+            </div>
+            <div class="settings-row">
+              <span class="label"
+                >${this._config.icon_show_weekday
+                  ? localize(this.hass, "editor_show_month")
+                  : localize(this.hass, "editor_show_weekday")}</span
+              >
+              <ha-switch
+                .checked=${this._config.show_weekday ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_weekday")}
+              ></ha-switch>
+            </div>
+            ${this._config.show_weekday
+              ? html`
+                  <div class="settings-row">
+                    <span
+                      class="label"
+                      style="color: var(--secondary-text-color);"
+                      >${this._config.icon_show_weekday
+                        ? localize(this.hass, "editor_show_month_long")
+                        : localize(this.hass, "editor_show_weekday_long")}</span
+                    >
+                    <ha-switch
+                      .checked=${this._config.show_weekday_long ?? false}
+                      @change=${(ev: Event) =>
+                        this._toggleBooleanConfig(ev, "show_weekday_long")}
+                    ></ha-switch>
+                  </div>
+                  <div></div>
+                `
+              : ""}
+          </div>
+        </ha-expansion-panel>
+
+        <h4>
+          ${this.hass?.localize("ui.components.calendar.my_calendars") ||
+          "Calendars"}
+        </h4>
+        <div class="entities-list">
+          ${(() => {
+            const entities = this._getCalendarEntities();
+            const displayedEntities = this._showAllCalendars
+              ? entities
+              : entities.slice(0, 3);
+            const hasMore = entities.length > 3;
+
+            return html`
+              ${displayedEntities.map((entity) => {
+                const isIncluded = !exclude_entities.includes(entity.entity_id);
+
+                const configColor =
+                  this._config.calendar_colors?.[entity.entity_id] || "";
+
+                const renderColor = this._toCssColor(
+                  configColor || this._config.calendar_icon_color || "#fa3e3e",
+                );
+
+                return html`
+                  <div class="entity-row ${isIncluded ? "" : "disabled"}">
+                    <div class="entity-row-top">
+                      <div
+                        class="entity-icon dynamic"
+                        style="background: transparent;"
+                      >
+                        ${this._renderDynamicIcon(
+                          new Date(),
+                          renderColor,
+                          this._config.dark_mode ?? false,
+                          this._config.icon_show_weekday ?? false,
+                        )}
+                      </div>
+                      <div class="entity-info">
+                        <span class="entity-name"
+                          >${entity.attributes.friendly_name ||
+                          entity.entity_id}</span
+                        >
+                        <span class="entity-id">${entity.entity_id}</span>
+                      </div>
+                      <ha-button
+                        size="small"
+                        appearance="filled"
+                        variant="brand"
+                        class="${isIncluded ? "action-hide" : "action-show"}"
+                        @click=${(e: Event) =>
+                          this._calendarToggleEntity(e, entity.entity_id)}
+                      >
+                        ${isIncluded
+                          ? this.hass?.localize("ui.common.hide") || "Hide"
+                          : this.hass?.localize("ui.common.show") || "Show"}
+                      </ha-button>
+                    </div>
+                    <div class="entity-row-bottom">
+                      <ha-selector
+                        .hass=${this.hass}
+                        .selector=${{ ui_color: {} }}
+                        .value=${configColor}
+                        .label=${this.hass?.localize(
+                          "ui.panel.lovelace.editor.card.tile.color",
+                        ) || "Color"}
+                        @value-changed=${(e: CustomEvent) =>
+                          this._calendarColorChanged(e, entity.entity_id)}
+                      ></ha-selector>
+                      <ha-selector
+                        .hass=${this.hass}
+                        .selector=${{ ui_color: {} }}
+                        .value=${this._config.calendar_background_colors?.[
+                          entity.entity_id
+                        ] || ""}
+                        .label=${localize(
+                          this.hass as HomeAssistant,
+                          "editor_background_color",
+                        )}
+                        @value-changed=${(e: CustomEvent) =>
+                          this._calendarBackgroundColorChanged(
+                            e,
+                            entity.entity_id,
+                          )}
+                      ></ha-selector>
+                    </div>
+                  </div>
+                `;
+              })}
+              ${hasMore
+                ? html`
+                    <div class="show-more-row">
+                      <ha-button
+                        @click=${() => {
+                          this._showAllCalendars = !this._showAllCalendars;
+                          this.requestUpdate();
+                        }}
+                      >
+                        ${this._showAllCalendars
+                          ? localize(this.hass, "editor_show_less")
+                          : localize(this.hass, "editor_show_more")}
+                      </ha-button>
+                    </div>
+                  `
+                : ""}
+            `;
+          })()}
+        </div>
+      </div>
+    `;
+  }
+
+  private _getCalendarEntities() {
+    if (!this.hass) return [];
+    return Object.keys(this.hass.states)
+      .filter((eid) => eid.startsWith("calendar."))
+      .map((eid) => this.hass?.states[eid]);
+  }
+
+  private _calendarToggleEntity(ev: Event, entityId: string) {
+    ev.stopPropagation();
+
+    const exclude = [...(this._config.exclude_entities ?? [])];
+    const index = exclude.indexOf(entityId);
+
+    if (index === -1) {
+      exclude.push(entityId);
+    } else {
+      exclude.splice(index, 1);
     }
 
-    private _getCalendarEntities() {
-        if (!this.hass) return [];
-        return Object.keys(this.hass.states)
-            .filter(eid => eid.startsWith('calendar.'))
-            .map(eid => this.hass?.states[eid]);
+    this._config = {
+      ...this._config,
+      exclude_entities: exclude,
+    };
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  private _calendarShowAllChanged(ev: Event) {
+    const checked = (ev.target as any).checked;
+    this._config = {
+      ...this._config,
+      upcoming_events: checked,
+    };
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  private _compactModeChanged(ev: Event) {
+    const checked = (ev.target as any).checked;
+    this._config = {
+      ...this._config,
+      unfold_events: checked,
+    };
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  private _calendarDividerChanged(ev: Event) {
+    const checked = (ev.target as any).checked;
+    this._config = {
+      ...this._config,
+      show_divider: checked,
+    };
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  private _toggleBooleanConfig(ev: Event, key: string) {
+    const checked = (ev.target as any).checked;
+    this._config = {
+      ...this._config,
+      [key]: checked,
+    };
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  private _valueChanged(ev: CustomEvent): void {
+    if (!this._config || !this.hass) {
+      return;
+    }
+    const target = ev.target as any;
+    const configValue = target.configValue;
+
+    if (!configValue) {
+      return;
     }
 
-    private _calendarToggleEntity(ev: Event, entityId: string) {
-        ev.stopPropagation();
-        
-        const exclude = [...(this._config.exclude_entities ?? [])];
-        const index = exclude.indexOf(entityId);
+    const value = ev.detail?.value;
 
-        if (index === -1) {
-            exclude.push(entityId);
-        } else {
-            exclude.splice(index, 1);
+    if (this._config[configValue] === value) {
+      return;
+    }
+
+    const newConfig = { ...this._config };
+    if (value === undefined || value === null || value === "") {
+      delete newConfig[configValue];
+    } else {
+      newConfig[configValue] = value;
+    }
+
+    this._config = newConfig;
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  private _calendarColorChanged(ev: CustomEvent, entityId: string) {
+    const value = ev.detail.value;
+    const currentColors = { ...(this._config.calendar_colors || {}) };
+
+    if (value === undefined || value === null || value === "") {
+      delete currentColors[entityId];
+    } else {
+      currentColors[entityId] = value;
+    }
+
+    if (Object.keys(currentColors).length === 0) {
+      const newConfig = { ...this._config };
+      delete newConfig.calendar_colors;
+      this._config = newConfig;
+    } else {
+      this._config = {
+        ...this._config,
+        calendar_colors: currentColors,
+      };
+    }
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  private _calendarBackgroundColorChanged(ev: CustomEvent, entityId: string) {
+    const value = ev.detail.value;
+    const currentColors = {
+      ...(this._config.calendar_background_colors || {}),
+    };
+
+    if (value === undefined || value === null || value === "") {
+      delete currentColors[entityId];
+    } else {
+      currentColors[entityId] = value;
+    }
+
+    if (Object.keys(currentColors).length === 0) {
+      const newConfig = { ...this._config };
+      delete newConfig.calendar_background_colors;
+      this._config = newConfig;
+    } else {
+      this._config = {
+        ...this._config,
+        calendar_background_colors: currentColors,
+      };
+    }
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  static get styles() {
+    return css`
+      .card-config {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .ha-select {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid var(--divider-color, #eee);
+        background: var(--card-background-color, #fff);
+        color: var(--primary-text-color);
+        width: 50%;
+      }
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 32px 16px;
+      }
+      @media (min-width: 600px) {
+        .settings-grid {
+          grid-template-columns: repeat(2, 1fr);
         }
+      }
+      .settings-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+      .settings-row.full-width {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .settings-row.full-width ha-selector {
+        width: 100%;
+      }
+      .period-selectors {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+      }
+      .period-selectors ha-selector {
+        flex: 1;
+      }
+      .entities-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-bottom: 12px;
+      }
+      .show-more-row {
+        display: flex;
+        justify-content: center;
+        margin-top: 8px;
+      }
+      .entity-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid var(--divider-color, #eee);
+        border-radius: 8px;
+        transition: opacity 0.2s;
+      }
+      .entity-row-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+      }
+      .entity-row-bottom {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .entity-row.disabled {
+        opacity: 0.6;
+      }
+      .entity-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--secondary-text-color);
+      }
+      .entity-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .entity-name {
+        font-weight: 500;
+      }
+      .entity-id {
+        font-size: 0.85em;
+        color: var(--secondary-text-color);
+      }
+      .action-hide {
+        --mdc-theme-primary: var(--error-color, #db4437);
+      }
+      .action-show {
+        --mdc-theme-primary: var(--primary-color, #03a9f4);
+      }
+      h4 {
+        margin-bottom: 0px;
+        margin-top: 8px;
+      }
+      ha-textfield {
+        width: 100%;
+      }
+    `;
+  }
 
-        this._config = {
-            ...this._config,
-            exclude_entities: exclude
-        };
-        fireEvent(this, 'config-changed', { config: this._config });
+  private _toCssColor(color: string): string {
+    if (
+      color.startsWith("#") ||
+      color.startsWith("rgb") ||
+      color.startsWith("hsl") ||
+      color.startsWith("var")
+    ) {
+      return color;
     }
+    return `var(--${color}-color)`;
+  }
 
-    private _calendarShowAllChanged(ev: Event) {
-        const checked = (ev.target as any).checked;
-        this._config = {
-            ...this._config,
-            upcoming_events: checked
-        };
-        fireEvent(this, 'config-changed', { config: this._config });
+  private _renderDynamicIcon(
+    date: Date,
+    color: string,
+    darkMode: boolean = false,
+    iconShowWeekday: boolean = false,
+  ): TemplateResult {
+    const lang =
+      this.hass?.locale?.language ||
+      this.hass?.language ||
+      navigator.language ||
+      "en";
+    let topText: string;
+    if (iconShowWeekday) {
+      topText = date
+        .toLocaleDateString(lang, { weekday: "short" })
+        .toUpperCase();
+    } else {
+      topText = date.toLocaleDateString(lang, { month: "short" }).toUpperCase();
     }
+    const day = date.getDate();
 
+    const bgColor = darkMode ? "#222222" : "white";
+    const dayColor = darkMode ? "white" : "#333";
+    const monthColor = darkMode ? "#222222" : "white";
 
-
-    private _compactModeChanged(ev: Event) {
-        const checked = (ev.target as any).checked;
-        this._config = {
-            ...this._config,
-            unfold_events: checked
-        };
-        fireEvent(this, 'config-changed', { config: this._config });
-    }
-
-    private _calendarDividerChanged(ev: Event) {
-        const checked = (ev.target as any).checked;
-        this._config = {
-            ...this._config,
-            show_divider: checked
-        };
-        fireEvent(this, 'config-changed', { config: this._config });
-    }
-
-    private _toggleBooleanConfig(ev: Event, key: string) {
-        const checked = (ev.target as any).checked;
-        this._config = {
-            ...this._config,
-            [key]: checked
-        };
-        fireEvent(this, 'config-changed', { config: this._config });
-    }
-
-    private _valueChanged(ev: CustomEvent): void {
-        if (!this._config || !this.hass) {
-            return;
-        }
-        const target = ev.target as any;
-        const configValue = target.configValue;
-        
-        if (!configValue) {
-            return;
-        }
-
-        const value = ev.detail?.value;
-        
-        if (this._config[configValue] === value) {
-            return;
-        }
-
-        const newConfig = { ...this._config };
-        if (value === undefined || value === null || value === '') {
-            delete newConfig[configValue];
-        } else {
-            newConfig[configValue] = value;
-        }
-        
-        this._config = newConfig;
-        fireEvent(this, 'config-changed', { config: this._config });
-    }
-
-    private _calendarColorChanged(ev: CustomEvent, entityId: string) {
-        const value = ev.detail.value;
-        const currentColors = { ...(this._config.calendar_colors || {}) };
-        
-        if (value === undefined || value === null || value === '') {
-            delete currentColors[entityId];
-        } else {
-            currentColors[entityId] = value;
-        }
-
-        if (Object.keys(currentColors).length === 0) {
-            const newConfig = { ...this._config };
-            delete newConfig.calendar_colors;
-            this._config = newConfig;
-        } else {
-            this._config = {
-                ...this._config,
-                calendar_colors: currentColors
-            };
-        }
-        fireEvent(this, 'config-changed', { config: this._config });
-    }
-
-    private _calendarBackgroundColorChanged(ev: CustomEvent, entityId: string) {
-        const value = ev.detail.value;
-        const currentColors = { ...(this._config.calendar_background_colors || {}) };
-        
-        if (value === undefined || value === null || value === '') {
-            delete currentColors[entityId];
-        } else {
-            currentColors[entityId] = value;
-        }
-
-        if (Object.keys(currentColors).length === 0) {
-            const newConfig = { ...this._config };
-            delete newConfig.calendar_background_colors;
-            this._config = newConfig;
-        } else {
-            this._config = {
-                ...this._config,
-                calendar_background_colors: currentColors
-            };
-        }
-        fireEvent(this, 'config-changed', { config: this._config });
-    }
-
-    static get styles() {
-        return css`
-            .card-config {
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-            .ha-select {
-                padding: 8px;
-                border-radius: 4px;
-                border: 1px solid var(--divider-color, #eee);
-                background: var(--card-background-color, #fff);
-                color: var(--primary-text-color);
-                width: 50%;
-            }
-            .settings-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 32px 16px;
-            }
-            @media (min-width: 600px) {
-                .settings-grid {
-                    grid-template-columns: repeat(2, 1fr);
-                }
-            }
-            .settings-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                width: 100%;
-            }
-            .settings-row.full-width {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .settings-row.full-width ha-selector {
-                width: 100%;
-            }
-            .period-selectors {
-                display: flex;
-                flex-direction: row;
-                gap: 8px;
-                width: 100%;
-            }
-            .period-selectors ha-selector {
-                 flex: 1;
-            }
-            .entities-list {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                padding-bottom: 12px;
-            }
-            .show-more-row {
-                display: flex;
-                justify-content: center;
-                margin-top: 8px;
-            }
-            .entity-row {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                padding: 12px;
-                border: 1px solid var(--divider-color, #eee);
-                border-radius: 8px;
-                transition: opacity 0.2s;
-            }
-            .entity-row-top {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                width: 100%;
-            }
-            .entity-row-bottom {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-            .entity-row.disabled {
-                opacity: 0.6;
-            }
-            .entity-icon {
-                width: 36px;
-                height: 36px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--secondary-text-color);
-            }
-            .entity-info {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-            }
-            .entity-name {
-                font-weight: 500;
-            }
-            .entity-id {
-                font-size: 0.85em;
-                color: var(--secondary-text-color);
-            }
-            .action-hide {
-                --mdc-theme-primary: var(--error-color, #db4437);
-            }
-            .action-show {
-                --mdc-theme-primary: var(--primary-color, #03a9f4);
-            }
-            h4 {
-                margin-bottom: 0px;
-                margin-top: 8px;
-            }
-            ha-textfield {
-                width: 100%;
-            }
-        `;
-    }
-
-    private _toCssColor(color: string): string {
-        if (
-            color.startsWith('#') ||
-            color.startsWith('rgb') ||
-            color.startsWith('hsl') ||
-            color.startsWith('var')
-        ) {
-            return color;
-        }
-        return `var(--${color}-color)`;
-    }
-
-    private _renderDynamicIcon(date: Date, color: string, darkMode: boolean = false, iconShowWeekday: boolean = false): TemplateResult {
-        const lang = this.hass?.locale?.language || this.hass?.language || navigator.language || 'en';
-        let topText: string;
-        if (iconShowWeekday) {
-            topText = date.toLocaleDateString(lang, { weekday: 'short' }).toUpperCase();
-        } else {
-            topText = date.toLocaleDateString(lang, { month: 'short' }).toUpperCase();
-        }
-        const day = date.getDate();
-
-        const bgColor = darkMode ? '#222222' : 'white';
-        const dayColor = darkMode ? 'white' : '#333';
-        const monthColor = darkMode ? '#222222' : 'white';
-
-        return html`
-            <svg viewBox="0 0 100 100" class="dynamic-calendar-icon" style="width: 100%; height: 100%; display: block;">
-                <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="${bgColor}"></rect>
-                <path d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z" fill="${color}"></path>
-                <text x="50" y="23" font-family="sans-serif" font-size="22" font-weight="bold" fill="${monthColor}" text-anchor="middle">${topText}</text>
-                <text x="50" y="82" font-family="sans-serif" font-size="52" font-weight="bold" fill="${dayColor}" text-anchor="middle">${day}</text>
-            </svg>
-        `;
-    }
+    return html`
+      <svg
+        viewBox="0 0 100 100"
+        class="dynamic-calendar-icon"
+        style="width: 100%; height: 100%; display: block;"
+      >
+        <rect
+          x="0"
+          y="0"
+          width="100"
+          height="100"
+          rx="20"
+          ry="20"
+          fill="${bgColor}"
+        ></rect>
+        <path
+          d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z"
+          fill="${color}"
+        ></path>
+        <text
+          x="50"
+          y="23"
+          font-family="sans-serif"
+          font-size="22"
+          font-weight="bold"
+          fill="${monthColor}"
+          text-anchor="middle"
+        >
+          ${topText}
+        </text>
+        <text
+          x="50"
+          y="82"
+          font-family="sans-serif"
+          font-size="52"
+          font-weight="bold"
+          fill="${dayColor}"
+          text-anchor="middle"
+        >
+          ${day}
+        </text>
+      </svg>
+    `;
+  }
 }

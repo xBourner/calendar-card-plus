@@ -1,4 +1,4 @@
-import { ActionConfig, LovelaceCardConfig } from './ha/types';
+import { ActionConfig, LovelaceCardConfig } from "./ha/types";
 
 export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   type: string;
@@ -7,8 +7,7 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   show_error?: boolean;
   test_gui?: boolean;
   debug?: boolean;
-  
-  
+
   exclude_entities?: string[];
   upcoming_events?: boolean;
   days?: number;
@@ -19,7 +18,7 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
-  
+
   unfold_events?: boolean;
   calendar_icon_color?: string;
   show_divider?: boolean;
@@ -38,20 +37,21 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   calendar_background_colors?: Record<string, string>;
   max_lines?: number;
   group_by_date?: boolean;
+  group_by_date_and_calendar?: boolean;
   show_empty_days?: boolean;
 }
 
 export interface CalendarEvent {
-    start: { date?: string; dateTime?: string };
-    end: { date?: string; dateTime?: string };
-    summary: string;
-    description?: string;
-    location?: string;
-    uid?: string;
-    recurrence_id?: string;
-    rrule?: string;
-    
-    entity_id: string;
-    calendar_name: string;
-    is_empty?: boolean;
+  start: { date?: string; dateTime?: string };
+  end: { date?: string; dateTime?: string };
+  summary: string;
+  description?: string;
+  location?: string;
+  uid?: string;
+  recurrence_id?: string;
+  rrule?: string;
+
+  entity_id: string;
+  calendar_name: string;
+  is_empty?: boolean;
 }
