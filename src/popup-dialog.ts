@@ -9,7 +9,6 @@ import { localize } from "./localize";
 import {
   _resolveColor,
   _renderDynamicIcon,
-  _toCssColor,
   _resolveBackgroundColor,
   _formatDuration,
   _formatLocalizedDuration,
@@ -149,7 +148,10 @@ export class CalendarCardPlusPopup extends LitElement {
         this._closeDialog();
       },
       (err) => {
-        alert("Error saving event: " + err.message);
+        this.hass.callService("persistent_notification", "create", {
+          title: "Calendar Card Plus",
+          message: "Error saving event: " + err.message,
+        });
       },
     );
   }
@@ -817,6 +819,40 @@ export class CalendarCardPlusPopup extends LitElement {
       gap: 16px;
     }
 
+    .add-event-form .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .add-event-form .field-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--secondary-text-color);
+    }
+
+    .add-event-form .field-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--divider-color, #e0e0e0);
+      border-radius: 4px;
+      background: var(--card-background-color, white);
+      color: var(--primary-text-color);
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .add-event-form .field-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .add-event-form select.field-input {
+      cursor: pointer;
+      appearance: auto;
+    }
+
     .row-flex {
       display: flex;
       align-items: center;
@@ -826,18 +862,11 @@ export class CalendarCardPlusPopup extends LitElement {
     .date-row {
       display: flex;
       gap: 8px;
-      align-items: flex-start;
-    }
-
-    .date-selector {
-      flex: 2;
-    }
-
-    .time-inputs-wrap {
-      flex: 1;
-      display: flex;
       align-items: center;
-      gap: 4px;
+    }
+
+    .date-row .field-input {
+      flex: 1;
     }
 
     .dialog-actions {

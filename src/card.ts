@@ -1,10 +1,10 @@
-import { mdiPlus } from '@mdi/js';
+const mdiPlus = "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
 import { fetchCalendarEvents } from './ha/data/calendar';
 import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant } from './ha/types';
 import { CalendarCardPlusConfig } from './types';
-import { renderCalendar, _resolveColor, _resolveBackgroundColor, _renderDynamicIcon, _formatLocalizedDuration, _toCssColor } from './calendar';
+import { renderCalendar } from './calendar';
 
 
 

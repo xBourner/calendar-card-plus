@@ -38,11 +38,3 @@ export interface ActionConfig {
   confirmation?: any;
 }
 
-export interface Schema {
-  name: string;
-  selector?: any;
-  required?: boolean;
-  default?: any;
-  type?: string;
-  schema?: Schema[];
-}

@@ -6,8 +6,10 @@ export interface AddEventPopupState {
     open: boolean;
     calendar_id?: string;
     name?: string;
-    start?: string;
-    end?: string;
+    start_date?: string;
+    start_time?: string;
+    end_date?: string;
+    end_time?: string;
     all_day?: boolean;
     location?: string;
     description?: string;
@@ -28,14 +30,17 @@ export function openAddEventPopup(hass: HomeAssistant, config: CalendarCardPlusC
     end.setHours(end.getHours() + 1, 0, 0, 0);
 
     const pad = (n: number) => n.toString().padStart(2, '0');
-    const formatDt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    const fmtDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const fmtTime = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
     return {
         open: true,
         calendar_id: defaultCalendar,
         name: '',
-        start: formatDt(start),
-        end: formatDt(end),
+        start_date: fmtDate(start),
+        start_time: fmtTime(start),
+        end_date: fmtDate(end),
+        end_time: fmtTime(end),
         location: '',
         description: '',
         recurrence: 'none',
@@ -49,7 +54,7 @@ export async function saveNewEvent(
     onSuccess: () => void, 
     onError: (err: any) => void
 ) {
-    if (!popupState.calendar_id || !popupState.name || !popupState.start || !popupState.end) {
+    if (!popupState.calendar_id || !popupState.name || !popupState.start_date || !popupState.end_date) {
         return;
     }
 
@@ -60,22 +65,21 @@ export async function saveNewEvent(
         };
 
         if (popupState.all_day) {
-            const startStr = popupState.start.split(' ')[0];
-            let endStr = popupState.end.split(' ')[0];
-            
-            if (startStr === endStr) {
+            let endStr = popupState.end_date;
+            if (popupState.start_date === endStr) {
                 const parts = endStr.split('-');
                 const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
                 d.setDate(d.getDate() + 1);
                 const pad = (n: number) => n.toString().padStart(2, '0');
                 endStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
             }
-
-            svcData.start_date = startStr;
+            svcData.start_date = popupState.start_date;
             svcData.end_date = endStr;
         } else {
-            svcData.start_date_time = popupState.start;
-            svcData.end_date_time = popupState.end;
+            const startTime = popupState.start_time || '09:00';
+            const endTime = popupState.end_time || '10:00';
+            svcData.start_date_time = `${popupState.start_date} ${startTime}:00`;
+            svcData.end_date_time = `${popupState.end_date} ${endTime}:00`;
             if (popupState.location) svcData.location = popupState.location;
             if (popupState.description) svcData.description = popupState.description;
         }
@@ -100,7 +104,7 @@ export async function saveNewEvent(
 }
 
 export function renderAddEventForm(
-    hass: HomeAssistant, 
+    hass: HomeAssistant,
     config: CalendarCardPlusConfig,
     popupState: AddEventPopupState,
     updateState: (newState: Partial<AddEventPopupState>) => void,
@@ -111,161 +115,133 @@ export function renderAddEventForm(
         .filter(eid => eid.startsWith('calendar.'))
         .filter(eid => !config.exclude_entities?.includes(eid));
 
+    const isAllDay = popupState.all_day || false;
+
     return html`
         <div class="add-event-form">
-            <ha-textfield
-                    label=${hass.localize('ui.components.calendar.event.summary') || 'Title'}
+            <div class="field">
+                <label class="field-label">${hass.localize('ui.components.calendar.event.summary') || 'Title'}</label>
+                <input
+                    type="text"
+                    class="field-input"
                     .value=${popupState.name || ''}
-                    @input=${(e: any) => updateState({ name: e.target.value })}
-                    dialogInitialFocus
-                ></ha-textfield>
+                    @input=${(e: Event) => updateState({ name: (e.target as HTMLInputElement).value })}
+                />
+            </div>
 
-                <ha-textfield
-                    label=${hass.localize('ui.components.calendar.event.location') || 'Location'}
+            <div class="field">
+                <label class="field-label">${hass.localize('ui.components.calendar.event.location') || 'Location'}</label>
+                <input
+                    type="text"
+                    class="field-input"
                     .value=${popupState.location || ''}
-                    @input=${(e: any) => updateState({ location: e.target.value })}
-                ></ha-textfield>
+                    @input=${(e: Event) => updateState({ location: (e.target as HTMLInputElement).value })}
+                />
+            </div>
 
-                <ha-textfield
-                    label=${hass.localize('ui.components.calendar.event.description') || 'Description'}
+            <div class="field">
+                <label class="field-label">${hass.localize('ui.components.calendar.event.description') || 'Description'}</label>
+                <input
+                    type="text"
+                    class="field-input"
                     .value=${popupState.description || ''}
-                    @input=${(e: any) => updateState({ description: e.target.value })}
-                ></ha-textfield>
+                    @input=${(e: Event) => updateState({ description: (e.target as HTMLInputElement).value })}
+                />
+            </div>
 
-                <ha-selector
-                    .hass=${hass}
-                    .selector=${{ select: { options: calendars.map(c => ({ value: c, label: hass.states[c]?.attributes?.friendly_name || c })) } }}
-                    .value=${popupState.calendar_id}
-                    .label=${hass.localize('ui.components.calendar.my_calendars') || 'Calendar'}
-                    @value-changed=${(e: any) => updateState({ calendar_id: e.detail.value })}
-                ></ha-selector>
+            <div class="field">
+                <label class="field-label">${hass.localize('ui.components.calendar.my_calendars') || 'Calendar'}</label>
+                <select
+                    class="field-input"
+                    .value=${popupState.calendar_id || ''}
+                    @change=${(e: Event) => updateState({ calendar_id: (e.target as HTMLSelectElement).value })}
+                >
+                    ${calendars.length === 0
+                        ? html`<option value="">-- ${hass.localize('ui.common.none') || 'no calendars'} --</option>`
+                        : calendars.map(c => html`
+                            <option value=${c} ?selected=${c === popupState.calendar_id}>
+                                ${hass.states[c]?.attributes?.friendly_name || c}
+                            </option>
+                        `)}
+                </select>
+            </div>
 
-                <div class="row-flex">
-                    <ha-formfield .label=${hass.localize('ui.components.calendar.event.all_day') || 'All Day'}>
-                        <ha-switch
-                            .checked=${popupState.all_day || false}
-                            @change=${(e: any) => updateState({ all_day: e.target.checked })}
-                        ></ha-switch>
-                    </ha-formfield>
-                </div>
+            <div class="row-flex">
+                <ha-formfield .label=${hass.localize('ui.components.calendar.event.all_day') || 'All Day'}>
+                    <ha-switch
+                        .checked=${isAllDay}
+                        @change=${(e: any) => updateState({ all_day: e.target.checked })}
+                    ></ha-switch>
+                </ha-formfield>
+            </div>
 
-                <div class="row-label">${hass.localize('ui.components.calendar.event.start') || 'Start'}:</div>
+            <div class="field">
+                <label class="field-label">${hass.localize('ui.components.calendar.event.start') || 'Start'}</label>
                 <div class="date-row">
-                    <ha-selector
-                        class="date-selector"
-                        .hass=${hass}
-                        .selector=${{ date: {} }}
-                        .required=${false}
-                        .value=${popupState.start?.split(' ')[0] || ''}
-                        @value-changed=${(e: any) => { 
-                            const timePart = popupState.start?.split(' ')[1] || '00:00:00';
-                            updateState({ start: `${e.detail.value} ${timePart}` });
-                        }}
-                    ></ha-selector>
-                    <div class="time-inputs-wrap">
-                        <ha-textfield
-                            type="number"
-                            min="0"
-                            max="23"
-                            .disabled=${popupState.all_day}
-                            .value=${popupState.start?.split(' ')[1]?.substring(0, 2) || '00'}
-                            @change=${(e: any) => { 
-                                const datePart = popupState.start?.split(' ')[0] || '';
-                                const minPart = popupState.start?.split(' ')[1]?.substring(3, 5) || '00';
-                                updateState({ start: `${datePart} ${e.target.value.padStart(2, '0')}:${minPart}:00` });
-                            }}
-                            style="flex: 1; min-width: 0;"
-                        ></ha-textfield>
-                        <span>:</span>
-                        <ha-textfield
-                            type="number"
-                            min="0"
-                            max="59"
-                            .disabled=${popupState.all_day}
-                            .value=${popupState.start?.split(' ')[1]?.substring(3, 5) || '00'}
-                            @change=${(e: any) => { 
-                                const datePart = popupState.start?.split(' ')[0] || '';
-                                const hrPart = popupState.start?.split(' ')[1]?.substring(0, 2) || '00';
-                                updateState({ start: `${datePart} ${hrPart}:${e.target.value.padStart(2, '0')}:00` });
-                            }}
-                            style="flex: 1; min-width: 0;"
-                        ></ha-textfield>
-                    </div>
+                    <input
+                        type="date"
+                        class="field-input"
+                        .value=${popupState.start_date || ''}
+                        @change=${(e: Event) => updateState({ start_date: (e.target as HTMLInputElement).value })}
+                    />
+                    ${!isAllDay ? html`
+                        <input
+                            type="time"
+                            class="field-input"
+                            .value=${popupState.start_time || '09:00'}
+                            @change=${(e: Event) => updateState({ start_time: (e.target as HTMLInputElement).value })}
+                        />
+                    ` : ''}
                 </div>
-                
-                <div class="row-label">${hass.localize('ui.components.calendar.event.end') || 'End'}:</div>
-                <div class="date-row">
-                    <ha-selector
-                        class="date-selector"
-                        .hass=${hass}
-                        .selector=${{ date: {} }}
-                        .required=${false}
-                        .value=${popupState.end?.split(' ')[0] || ''}
-                        @value-changed=${(e: any) => { 
-                            const timePart = popupState.end?.split(' ')[1] || '00:00:00';
-                            updateState({ end: `${e.detail.value} ${timePart}` });
-                        }}
-                    ></ha-selector>
-                    <div class="time-inputs-wrap">
-                        <ha-textfield
-                            type="number"
-                            min="0"
-                            max="23"
-                            .disabled=${popupState.all_day}
-                            .value=${popupState.end?.split(' ')[1]?.substring(0, 2) || '00'}
-                            @change=${(e: any) => { 
-                                const datePart = popupState.end?.split(' ')[0] || '';
-                                const minPart = popupState.end?.split(' ')[1]?.substring(3, 5) || '00';
-                                updateState({ end: `${datePart} ${e.target.value.padStart(2, '0')}:${minPart}:00` });
-                            }}
-                            style="flex: 1; min-width: 0;"
-                        ></ha-textfield>
-                        <span>:</span>
-                        <ha-textfield
-                            type="number"
-                            min="0"
-                            max="59"
-                            .disabled=${popupState.all_day}
-                            .value=${popupState.end?.split(' ')[1]?.substring(3, 5) || '00'}
-                            @change=${(e: any) => { 
-                                const datePart = popupState.end?.split(' ')[0] || '';
-                                const hrPart = popupState.end?.split(' ')[1]?.substring(0, 2) || '00';
-                                updateState({ end: `${datePart} ${hrPart}:${e.target.value.padStart(2, '0')}:00` });
-                            }}
-                            style="flex: 1; min-width: 0;"
-                        ></ha-textfield>
-                    </div>
-                </div>
+            </div>
 
-                <ha-selector
-                    .hass=${hass}
-                    .selector=${{ select: { 
-                        options: [
-                            { value: 'none', label: hass.localize('ui.components.calendar.event.repeat.freq.none') || 'None' },
-                            { value: 'DAILY', label: hass.localize('ui.components.calendar.event.repeat.freq.daily') || 'Daily' },
-                            { value: 'WEEKLY', label: hass.localize('ui.components.calendar.event.repeat.freq.weekly') || 'Weekly' },
-                            { value: 'MONTHLY', label: hass.localize('ui.components.calendar.event.repeat.freq.monthly') || 'Monthly' },
-                            { value: 'YEARLY', label: hass.localize('ui.components.calendar.event.repeat.freq.yearly') || 'Yearly' }
-                        ],
-                        mode: 'dropdown'
-                    } }}
+            <div class="field">
+                <label class="field-label">${hass.localize('ui.components.calendar.event.end') || 'End'}</label>
+                <div class="date-row">
+                    <input
+                        type="date"
+                        class="field-input"
+                        .value=${popupState.end_date || ''}
+                        @change=${(e: Event) => updateState({ end_date: (e.target as HTMLInputElement).value })}
+                    />
+                    ${!isAllDay ? html`
+                        <input
+                            type="time"
+                            class="field-input"
+                            .value=${popupState.end_time || '10:00'}
+                            @change=${(e: Event) => updateState({ end_time: (e.target as HTMLInputElement).value })}
+                        />
+                    ` : ''}
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="field-label">${hass.localize('ui.components.calendar.event.repeat.label') || 'Repeat'}</label>
+                <select
+                    class="field-input"
                     .value=${popupState.recurrence || 'none'}
-                    .label=${hass.localize('ui.components.calendar.event.repeat.label') || 'Repeat'}
-                    @value-changed=${(e: any) => updateState({ recurrence: e.detail.value })}
-                ></ha-selector>
+                    @change=${(e: Event) => updateState({ recurrence: (e.target as HTMLSelectElement).value })}
+                >
+                    <option value="none">${hass.localize('ui.components.calendar.event.repeat.freq.none') || 'None'}</option>
+                    <option value="DAILY">${hass.localize('ui.components.calendar.event.repeat.freq.daily') || 'Daily'}</option>
+                    <option value="WEEKLY">${hass.localize('ui.components.calendar.event.repeat.freq.weekly') || 'Weekly'}</option>
+                    <option value="MONTHLY">${hass.localize('ui.components.calendar.event.repeat.freq.monthly') || 'Monthly'}</option>
+                    <option value="YEARLY">${hass.localize('ui.components.calendar.event.repeat.freq.yearly') || 'Yearly'}</option>
+                </select>
+            </div>
 
-                <div class="dialog-actions">
-                    <ha-button @click=${onClose}>
-                        ${hass.localize('ui.common.cancel') || 'Cancel'}
-                    </ha-button>
-                    <ha-button
-                        unelevated
-                        @click=${onSave}
-                        ?disabled=${!popupState.name || !popupState.calendar_id}
-                    >
-                        ${hass.localize('ui.common.save') || 'Save'}
-                    </ha-button>
-                </div>
+            <div class="dialog-actions">
+                <ha-button @click=${onClose}>
+                    ${hass.localize('ui.common.cancel') || 'Cancel'}
+                </ha-button>
+                <ha-button
+                    unelevated
+                    @click=${onSave}
+                    ?disabled=${!popupState.name || !popupState.calendar_id}
+                >
+                    ${hass.localize('ui.common.save') || 'Save'}
+                </ha-button>
+            </div>
         </div>
     `;
 }

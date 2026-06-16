@@ -1,12 +1,8 @@
-import { ActionConfig, LovelaceCardConfig } from "./ha/types";
+import { LovelaceCardConfig } from "./ha/types";
 
 export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   type: string;
   name?: string;
-  show_warning?: boolean;
-  show_error?: boolean;
-  test_gui?: boolean;
-  debug?: boolean;
 
   exclude_entities?: string[];
   upcoming_events?: boolean;
@@ -14,10 +10,6 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   hours?: number;
   minutes?: number;
   max_minutes_until_start?: number;
-
-  tap_action?: ActionConfig;
-  hold_action?: ActionConfig;
-  double_tap_action?: ActionConfig;
 
   unfold_events?: boolean;
   calendar_icon_color?: string;
