@@ -1,342 +1,360 @@
-const mdiPlus = "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
-import { fetchCalendarEvents } from './ha/data/calendar';
-import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { HomeAssistant } from './ha/types';
-import { CalendarCardPlusConfig } from './types';
-import { renderCalendar } from './calendar';
+import { mdiPlus } from "@mdi/js";
+import { fetchCalendarEvents } from "./ha/data/calendar";
+import { LitElement, html, css, TemplateResult, CSSResultGroup } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { HomeAssistant } from "./ha/types";
+import { CalendarCardPlusConfig } from "./types";
+import { renderCalendar } from "./calendar";
 
+import { openAddEventPopup } from "./events";
+import "./popup-dialog";
 
+import { CalendarEvent } from "./types";
 
-import { openAddEventPopup } from './events';
-import './popup-dialog';
-
-import { CalendarEvent } from './types';
-
-@customElement('calendar-card-plus')
+@customElement("calendar-card-plus")
 export class CalendarCardPlus extends LitElement {
-    @property({ attribute: false }) public hass!: HomeAssistant;
-    @state() private config!: CalendarCardPlusConfig;
-    @state() private _events: CalendarEvent[] | undefined = undefined;
+  @property({ attribute: false }) public hass!: HomeAssistant;
+  @state() private config!: CalendarCardPlusConfig;
+  @state() private _events: CalendarEvent[] | undefined = undefined;
 
-    public connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener('calendar-card-show-detail', this._handleShowDetail as unknown as EventListener);
-    }
+  public connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener(
+      "calendar-card-show-detail",
+      this._handleShowDetail as unknown as EventListener,
+    );
+  }
 
-    public disconnectedCallback() {
-        super.disconnectedCallback();
-        this.removeEventListener('calendar-card-show-detail', this._handleShowDetail as unknown as EventListener);
-    }
+  public disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(
+      "calendar-card-show-detail",
+      this._handleShowDetail as unknown as EventListener,
+    );
+  }
 
-    protected willUpdate(changedProps: Map<string, any>) {
-        super.willUpdate(changedProps);
-        
-        if (this.hass && this.config) {
-            if (this._events === undefined || changedProps.has('config')) {
-                this._fetchEvents();
-            }
-        }
-    }
+  protected willUpdate(changedProps: Map<string, any>) {
+    super.willUpdate(changedProps);
 
-    public setConfig(config: CalendarCardPlusConfig): void {
-        if (!config) {
-            throw new Error('Invalid configuration');
-        }
-        this.config = config;
-    }
-
-    private async _fetchEvents() {
-        if (!this.hass || !this.config) return;
-
-        const now = new Date();
-        let end: Date;
-
-        if (this.config.upcoming_events) {
-            let minutes = 1440; 
-            if (this.config.days !== undefined || this.config.hours !== undefined || this.config.minutes !== undefined) {
-                minutes = (this.config.days || 0) * 1440 + 
-                          (this.config.hours || 0) * 60 + 
-                          (this.config.minutes || 0);
-            } else if (this.config.max_minutes_until_start !== undefined) {
-                 minutes = this.config.max_minutes_until_start;
-            }
-            end = new Date(now.getTime() + minutes * 60000);
-        } else {
-            end = new Date(now);
-            end.setHours(23, 59, 59, 999);
-        }
-
-        const calendars = Object.keys(this.hass.states)
-            .filter(eid => eid.startsWith('calendar.'))
-            .filter(eid => !this.config.exclude_entities?.includes(eid));
-
-        if (calendars.length === 0) {
-            this._events = [];
-            return;
-        }
-
-        const allEvents = await fetchCalendarEvents(this.hass, now, end, calendars);
-
-        if (this.config.show_empty_days) {
-            this._events = this._injectEmptyDays(allEvents, now, end);
-        } else {
-            this._events = allEvents;
-        }
-        this.requestUpdate();
-    }
-
-    private _injectEmptyDays(events: CalendarEvent[], start: Date, end: Date): CalendarEvent[] {
-        const result: CalendarEvent[] = [...events];
-        const dayMap = new Set<string>();
-        events.forEach(e => {
-            const dStr = e.start.date || e.start.dateTime;
-            if (dStr) {
-                const d = new Date(dStr);
-                dayMap.add(d.toISOString().split('T')[0]);
-            }
-        });
-
-        const current = new Date(start);
-        current.setHours(0, 0, 0, 0);
-        const last = new Date(end);
-        last.setHours(0, 0, 0, 0);
-
-        while (current <= last) {
-            const key = current.toISOString().split('T')[0];
-            if (!dayMap.has(key)) {
-                result.push({
-                    start: { date: key },
-                    end: { date: key },
-                    summary: 'empty',
-                    is_empty: true,
-                    entity_id: 'empty',
-                    calendar_name: ''
-                });
-            }
-            current.setDate(current.getDate() + 1);
-        }
-
-        return result.sort((a: CalendarEvent, b: CalendarEvent) => {
-            const dateA = new Date(a.start.dateTime || a.start.date!).getTime();
-            const dateB = new Date(b.start.dateTime || b.start.date!).getTime();
-            return dateA - dateB;
-        });
-    }
-
-    private _handleShowDetail = async (e: CustomEvent) => {
-        this._showPopup('calendar-card-plus-popup', {
-            hass: this.hass,
-            config: this.config,
-            opener: this,
-            mode: 'detail',
-            title: e.detail.title,
-            events: e.detail.entities
-        });
-    }
-
-    protected render(): TemplateResult {
-        if (!this.config || !this.hass) {
-            return html``;
-        }
-
-        const content = renderCalendar(this.hass, this._events, this.config);
-        
-
-        return html`
-            <ha-card>
-                <div class="add-event-btn" @click=${this._openAddEventPopup} style=${this.config.show_add_event ? '' : 'display: none;'}>
-                    <ha-icon-button .path=${mdiPlus}></ha-icon-button>
-                </div>
-                ${content}
-            </ha-card>
-        `;
-    }
-
-    private _openAddEventPopup = async () => {
-        const addEventState = openAddEventPopup(this.hass, this.config);
-        this._showPopup('calendar-card-plus-popup', {
-            hass: this.hass,
-            config: this.config,
-            opener: this,
-            mode: 'add-event',
-            addEventState
-        });
-    }
-
-    private _showPopup(dialogTag: string, dialogParams: any): void {
-        this.dispatchEvent(
-            new CustomEvent('show-dialog', {
-                detail: {
-                    dialogTag,
-                    dialogImport: () => import('./popup-dialog'),
-                    dialogParams: {
-                        ...dialogParams,
-                        onEventSaved: this._onEventSaved
-                    },
-                },
-                bubbles: true,
-                composed: true,
-            })
-        );
-    }
-
-    private _onEventSaved = () => {
-        this._events = undefined;
-        this.requestUpdate();
+    if (this.hass && this.config) {
+      if (this._events === undefined || changedProps.has("config")) {
         this._fetchEvents();
+      }
+    }
+  }
+
+  public setConfig(config: CalendarCardPlusConfig): void {
+    if (!config) {
+      throw new Error("Invalid configuration");
+    }
+    this.config = config;
+  }
+
+  private async _fetchEvents() {
+    if (!this.hass || !this.config) return;
+
+    const now = new Date();
+    let end: Date;
+
+    if (this.config.upcoming_events) {
+      let minutes = 1440;
+      if (
+        this.config.days !== undefined ||
+        this.config.hours !== undefined ||
+        this.config.minutes !== undefined
+      ) {
+        minutes =
+          (this.config.days || 0) * 1440 +
+          (this.config.hours || 0) * 60 +
+          (this.config.minutes || 0);
+      } else if (this.config.max_minutes_until_start !== undefined) {
+        minutes = this.config.max_minutes_until_start;
+      }
+      end = new Date(now.getTime() + minutes * 60000);
+    } else {
+      end = new Date(now);
+      end.setHours(23, 59, 59, 999);
+    }
+
+    const calendars = Object.keys(this.hass.states)
+      .filter((eid) => eid.startsWith("calendar."))
+      .filter((eid) => !this.config.exclude_entities?.includes(eid));
+
+    if (calendars.length === 0) {
+      this._events = [];
+      return;
+    }
+
+    const allEvents = await fetchCalendarEvents(this.hass, now, end, calendars);
+
+    if (this.config.show_empty_days) {
+      this._events = this._injectEmptyDays(allEvents, now, end);
+    } else {
+      this._events = allEvents;
+    }
+    this.requestUpdate();
+  }
+
+  private _injectEmptyDays(
+    events: CalendarEvent[],
+    start: Date,
+    end: Date,
+  ): CalendarEvent[] {
+    const result: CalendarEvent[] = [...events];
+    const dayMap = new Set<string>();
+    events.forEach((e) => {
+      const dStr = e.start.date || e.start.dateTime;
+      if (dStr) {
+        const d = new Date(dStr);
+        dayMap.add(d.toISOString().split("T")[0]);
+      }
+    });
+
+    const current = new Date(start);
+    current.setHours(0, 0, 0, 0);
+    const last = new Date(end);
+    last.setHours(0, 0, 0, 0);
+
+    while (current <= last) {
+      const key = current.toISOString().split("T")[0];
+      if (!dayMap.has(key)) {
+        result.push({
+          start: { date: key },
+          end: { date: key },
+          summary: "empty",
+          is_empty: true,
+          entity_id: "empty",
+          calendar_name: "",
+        });
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    return result.sort((a: CalendarEvent, b: CalendarEvent) => {
+      const dateA = new Date(a.start.dateTime || a.start.date!).getTime();
+      const dateB = new Date(b.start.dateTime || b.start.date!).getTime();
+      return dateA - dateB;
+    });
+  }
+
+  private _handleShowDetail = async (e: CustomEvent) => {
+    this._showPopup("calendar-card-plus-popup", {
+      hass: this.hass,
+      config: this.config,
+      opener: this,
+      mode: "detail",
+      title: e.detail.title,
+      events: e.detail.entities,
+    });
+  };
+
+  protected render(): TemplateResult {
+    if (!this.config || !this.hass) {
+      return html``;
+    }
+
+    const content = renderCalendar(this.hass, this._events, this.config);
+
+    return html`
+      <ha-card>
+        <div
+          class="add-event-btn"
+          @click=${this._openAddEventPopup}
+          style=${this.config.show_add_event ? "" : "display: none;"}
+        >
+          <ha-icon-button .path=${mdiPlus}></ha-icon-button>
+        </div>
+        ${content}
+      </ha-card>
+    `;
+  }
+
+  private _openAddEventPopup = async () => {
+    const addEventState = openAddEventPopup(this.hass, this.config);
+    this._showPopup("calendar-card-plus-popup", {
+      hass: this.hass,
+      config: this.config,
+      opener: this,
+      mode: "add-event",
+      addEventState,
+    });
+  };
+
+  private _showPopup(dialogTag: string, dialogParams: any): void {
+    this.dispatchEvent(
+      new CustomEvent("show-dialog", {
+        detail: {
+          dialogTag,
+          dialogImport: () => import("./popup-dialog"),
+          dialogParams: {
+            ...dialogParams,
+            onEventSaved: this._onEventSaved,
+          },
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private _onEventSaved = () => {
+    this._events = undefined;
+    this.requestUpdate();
+    this._fetchEvents();
+  };
+
+  static get styles(): CSSResultGroup {
+    return css`
+      :host {
+        display: block;
+      }
+      ha-card {
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .calendar-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .calendar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: var(--ha-card-border-radius, 12px);
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .calendar-item:last-child {
+        margin-bottom: 0px;
+      }
+      .calendar-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-color, #03a9f4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+      }
+      .calendar-icon ha-icon {
+        --mdc-icon-size: 20px;
+      }
+      .calendar-content {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex: 1;
+      }
+      .event-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--primary-text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .event-time {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--secondary-text-color);
+      }
+      .event-time ha-icon {
+        --mdc-icon-size: 14px;
+        color: var(--secondary-text-color);
+      }
+      .event-location,
+      .event-calendar {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.9em;
+        color: var(--secondary-text-color);
+        margin-top: 1px;
+      }
+      .event-location ha-icon,
+      .event-calendar ha-icon {
+        --mdc-icon-size: 14px;
+        color: var(--secondary-text-color);
+      }
+      .progress-bar {
+        margin-top: 4px;
+        height: 4px;
+        background-color: var(--secondary-background-color, #444);
+        border-radius: 2px;
+        overflow: hidden;
+        width: 100%;
+      }
+      .progress-fill {
+        height: 100%;
+        background-color: var(--primary-text-color, #fff);
+        border-radius: 2px;
+        opacity: 0.7;
+      }
+      .calendar-divider {
+        border-top: 1px solid var(--divider-color, #e0e0e0);
+        margin: 4px 12px;
+      }
+
+      .add-event-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 2;
+        color: var(--secondary-text-color);
+      }
+      .add-event-btn:hover {
+        color: var(--primary-text-color);
+      }
+      .calendar-item.grouped .calendar-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .calendar-item.grouped .event-entry {
+        display: flex;
+        flex-direction: column;
+      }
+      .calendar-item.grouped .calendar-icon {
+        align-self: center;
+      }
+    `;
+  }
+
+  public getCardSize(): number {
+    return 1;
+  }
+
+  public static async getConfigElement() {
+    await import("./editor");
+    return document.createElement("calendar-card-plus-editor");
+  }
+
+  public static getStubConfig(_hass: HomeAssistant): CalendarCardPlusConfig {
+    return {
+      type: "custom:calendar-card-plus",
+      exclude_entities: [],
+      unfold_events: false,
     };
-
-    static get styles(): CSSResultGroup {
-        return css`
-            :host {
-                display: block;
-            }
-            ha-card {
-                height: 100%;
-                box-sizing: border-box;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-            
-            .calendar-container {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                height: 100%;
-                width: 100%;
-                box-sizing: border-box;
-            }
-            .calendar-item {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                padding: 12px;
-                border-radius: var(--ha-card-border-radius, 12px);
-                cursor: pointer;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .calendar-item:last-child {
-                margin-bottom: 0px;
-            }
-            .calendar-icon {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                background-color: var(--primary-color, #03a9f4);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                flex-shrink: 0;
-            }
-            .calendar-icon ha-icon {
-                --mdc-icon-size: 20px;
-            }
-            .calendar-content {
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                flex: 1;
-            }
-            .event-title {
-                font-size: 14px;
-                font-weight: 500;
-                color: var(--primary-text-color);
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .event-time {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                font-size: 12px;
-                color: var(--secondary-text-color);
-            }
-            .event-time ha-icon {
-                --mdc-icon-size: 14px;
-                color: var(--secondary-text-color);
-            }
-            .event-location, .event-calendar {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                font-size: 0.9em;
-                color: var(--secondary-text-color);
-                margin-top: 1px;
-            }
-            .event-location ha-icon, .event-calendar ha-icon {
-                --mdc-icon-size: 14px;
-                color: var(--secondary-text-color);
-            }
-            .progress-bar {
-                margin-top: 4px;
-                height: 4px;
-                background-color: var(--secondary-background-color, #444);
-                border-radius: 2px;
-                overflow: hidden;
-                width: 100%;
-            }
-            .progress-fill {
-                height: 100%;
-                background-color: var(--primary-text-color, #fff);
-                border-radius: 2px;
-                opacity: 0.7;
-            }
-            .calendar-divider {
-                border-top: 1px solid var(--divider-color, #e0e0e0);
-                margin: 4px 12px;
-            }
-
-            .add-event-btn {
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                z-index: 2;
-                color: var(--secondary-text-color);
-            }
-            .add-event-btn:hover {
-                color: var(--primary-text-color);
-            }
-            .calendar-item.grouped .calendar-content {
-                display: flex;
-                flex-direction: column;
-                gap: 2px;
-            }
-            .calendar-item.grouped .event-entry {
-                display: flex;
-                flex-direction: column;
-            }
-            .calendar-item.grouped .calendar-icon {
-                align-self: center;
-            }
-        `;
-    }
-
-    public getCardSize(): number {
-        return 1;
-    }
-
-    public static async getConfigElement() {
-        await import('./editor');
-        return document.createElement('calendar-card-plus-editor');
-    }
-
-    public static getStubConfig(_hass: HomeAssistant): CalendarCardPlusConfig {
-         return {
-            type: 'custom:calendar-card-plus',
-            exclude_entities: [],
-            unfold_events: false
-         };
-    }
+  }
 }
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
-    type: 'calendar-card-plus',
-    name: 'Dynamic Calendar Card Plus',
-    preview: true,
-    description: 'A standalone calendar card with dynamic grid styling',
+  type: "calendar-card-plus",
+  name: "Dynamic Calendar Card Plus",
+  preview: true,
+  description: "A standalone calendar card with dynamic grid styling",
 });

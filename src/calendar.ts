@@ -2,6 +2,7 @@ import { html, TemplateResult } from "lit";
 import { CalendarEvent, CalendarCardPlusConfig } from "./types";
 import { HomeAssistant } from "./ha/types";
 import { localize } from "./localize";
+import { formatTime, formatDateNumeric, getLang } from "./format";
 
 export function renderCalendar(
   hass: HomeAssistant,
@@ -66,10 +67,7 @@ export function renderCalendar(
     const isAllDay = !event.start.dateTime;
 
     const duration = _formatDuration(hass, start, end, isAllDay);
-    const lang = hass.locale?.language || hass.language || navigator.language;
-    const formatTime = (d: Date) =>
-      d.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
-    const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+    const timeRange = `${formatTime(hass, start)} - ${formatTime(hass, end)}`;
 
     const showDate = config?.show_date ?? false;
     const showTime = config?.show_time ?? false;
@@ -84,13 +82,7 @@ export function renderCalendar(
       timeText = "";
     } else if (showDate || showTime) {
       if (isAllDay) {
-        const datePart = showDate
-          ? start.toLocaleDateString(lang, {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })
-          : "";
+        const datePart = showDate ? formatDateNumeric(hass, start) : "";
         if (showDate && showTime) {
           timeText = `${datePart}, ${allDayText}`;
         } else {
@@ -99,13 +91,7 @@ export function renderCalendar(
       } else {
         const parts: string[] = [];
         if (showDate) {
-          parts.push(
-            start.toLocaleDateString(lang, {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            }),
-          );
+          parts.push(formatDateNumeric(hass, start));
         }
         if (showTime) {
           parts.push(timeRange);
@@ -117,7 +103,7 @@ export function renderCalendar(
       const diffMins = Math.ceil(diffMs / 60000);
       timeText = _formatLocalizedDuration(hass, diffMins);
     } else {
-      timeText = isAllDay ? allDayText : formatTime(start);
+      timeText = isAllDay ? allDayText : formatTime(hass, start);
     }
 
     if (!event.is_empty && config?.show_duration) {
@@ -136,7 +122,7 @@ export function renderCalendar(
     }
 
     if (!event.is_empty && config?.show_weekday) {
-      const lang = hass.locale?.language || hass.language || navigator.language;
+      const lang = getLang(hass);
       const appendedText = config?.icon_show_weekday
         ? start.toLocaleDateString(lang, {
             month: config.show_weekday_long ? "long" : "short",
@@ -249,16 +235,7 @@ export function renderCalendar(
                   const end = new Date(event.end.dateTime || event.end.date!);
                   const isAllDay = !event.start.dateTime;
                   const duration = _formatDuration(hass, start, end, isAllDay);
-                  const lang =
-                    hass.locale?.language ||
-                    hass.language ||
-                    navigator.language;
-                  const formatTime = (d: Date) =>
-                    d.toLocaleTimeString(lang, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    });
-                  const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+                  const timeRange = `${formatTime(hass, start)} - ${formatTime(hass, end)}`;
 
                   const showDate = config?.show_date ?? false;
                   const showTime = config?.show_time ?? false;
@@ -273,11 +250,7 @@ export function renderCalendar(
                   } else if (showDate || showTime) {
                     if (isAllDay) {
                       const datePart = showDate
-                        ? start.toLocaleDateString(lang, {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })
+                        ? formatDateNumeric(hass, start)
                         : "";
                       if (showDate && showTime) {
                         timeText = `${datePart}, ${allDayText}`;
@@ -287,13 +260,7 @@ export function renderCalendar(
                     } else {
                       const parts: string[] = [];
                       if (showDate) {
-                        parts.push(
-                          start.toLocaleDateString(lang, {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }),
-                        );
+                        parts.push(formatDateNumeric(hass, start));
                       }
                       if (showTime) {
                         parts.push(timeRange);
@@ -301,7 +268,7 @@ export function renderCalendar(
                       timeText = parts.join(", ");
                     }
                   } else {
-                    timeText = isAllDay ? allDayText : formatTime(start);
+                    timeText = isAllDay ? allDayText : formatTime(hass, start);
                   }
 
                   if (!event.is_empty && config?.show_duration) {
@@ -311,6 +278,7 @@ export function renderCalendar(
                   }
 
                   if (!event.is_empty && config?.show_weekday) {
+                    const lang = getLang(hass);
                     const appendedText = config?.icon_show_weekday
                       ? start.toLocaleDateString(lang, {
                           month: config.show_weekday_long ? "long" : "short",
@@ -431,16 +399,7 @@ export function renderCalendar(
                   const end = new Date(event.end.dateTime || event.end.date!);
                   const isAllDay = !event.start.dateTime;
                   const duration = _formatDuration(hass, start, end, isAllDay);
-                  const lang =
-                    hass.locale?.language ||
-                    hass.language ||
-                    navigator.language;
-                  const formatTime = (d: Date) =>
-                    d.toLocaleTimeString(lang, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    });
-                  const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+                  const timeRange = `${formatTime(hass, start)} - ${formatTime(hass, end)}`;
 
                   const showDate = config?.show_date ?? false;
                   const showTime = config?.show_time ?? false;
@@ -455,11 +414,7 @@ export function renderCalendar(
                   } else if (showDate || showTime) {
                     if (isAllDay) {
                       const datePart = showDate
-                        ? start.toLocaleDateString(lang, {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })
+                        ? formatDateNumeric(hass, start)
                         : "";
                       if (showDate && showTime) {
                         timeText = `${datePart}, ${allDayText}`;
@@ -469,13 +424,7 @@ export function renderCalendar(
                     } else {
                       const parts: string[] = [];
                       if (showDate) {
-                        parts.push(
-                          start.toLocaleDateString(lang, {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }),
-                        );
+                        parts.push(formatDateNumeric(hass, start));
                       }
                       if (showTime) {
                         parts.push(timeRange);
@@ -483,7 +432,7 @@ export function renderCalendar(
                       timeText = parts.join(", ");
                     }
                   } else {
-                    timeText = isAllDay ? allDayText : formatTime(start);
+                    timeText = isAllDay ? allDayText : formatTime(hass, start);
                   }
 
                   if (!event.is_empty && config?.show_duration) {
@@ -493,6 +442,7 @@ export function renderCalendar(
                   }
 
                   if (!event.is_empty && config?.show_weekday) {
+                    const lang = getLang(hass);
                     const appendedText = config?.icon_show_weekday
                       ? start.toLocaleDateString(lang, {
                           month: config.show_weekday_long ? "long" : "short",
@@ -600,11 +550,7 @@ export function renderCalendar(
         let progress = -1;
 
         const duration = _formatDuration(hass, start, end, isAllDay);
-        const lang =
-          hass.locale?.language || hass.language || navigator.language;
-        const formatTime = (d: Date) =>
-          d.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
-        const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+        const timeRange = `${formatTime(hass, start)} - ${formatTime(hass, end)}`;
 
         const showDate = config?.show_date ?? false;
         const showTime = config?.show_time ?? false;
@@ -620,11 +566,7 @@ export function renderCalendar(
         } else if (showDate || showTime) {
           if (isAllDay) {
             const datePart = showDate
-              ? start.toLocaleDateString(lang, {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })
+              ? formatDateNumeric(hass, start)
               : "";
             if (showDate && showTime) {
               timeText = `${datePart}, ${allDayText}`;
@@ -634,13 +576,7 @@ export function renderCalendar(
           } else {
             const parts: string[] = [];
             if (showDate) {
-              parts.push(
-                start.toLocaleDateString(lang, {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                }),
-              );
+              parts.push(formatDateNumeric(hass, start));
             }
             if (showTime) {
               parts.push(timeRange);
@@ -652,7 +588,7 @@ export function renderCalendar(
           const diffMins = Math.ceil(diffMs / 60000);
           timeText = _formatLocalizedDuration(hass, diffMins);
         } else {
-          timeText = isAllDay ? allDayText : formatTime(start);
+          timeText = isAllDay ? allDayText : formatTime(hass, start);
         }
 
         if (!event.is_empty && config?.show_duration) {
@@ -678,8 +614,7 @@ export function renderCalendar(
         }
 
         if (!event.is_empty && config?.show_weekday) {
-          const lang =
-            hass.locale?.language || hass.language || navigator.language;
+          const lang = getLang(hass);
           const appendedText = config?.icon_show_weekday
             ? start.toLocaleDateString(lang, {
                 month: config.show_weekday_long ? "long" : "short",
@@ -920,7 +855,7 @@ export function _renderDynamicIcon(
   darkMode: boolean = false,
   iconShowWeekday: boolean = false,
 ): TemplateResult {
-  const lang = hass.locale?.language || hass.language || navigator.language;
+  const lang = getLang(hass);
   let topText: string;
   if (iconShowWeekday) {
     topText = date.toLocaleDateString(lang, { weekday: "short" }).toUpperCase();

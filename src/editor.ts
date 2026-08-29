@@ -4,6 +4,7 @@ import { HomeAssistant, LovelaceCardEditor } from "./ha/types";
 import { fireEvent } from "./ha/fire_event";
 import { CalendarCardPlusConfig } from "./types";
 import { localize } from "./localize";
+import { getLang } from "./format";
 
 @customElement("calendar-card-plus-editor")
 export class CalendarCardPlusEditor
@@ -722,11 +723,7 @@ export class CalendarCardPlusEditor
     darkMode: boolean = false,
     iconShowWeekday: boolean = false,
   ): TemplateResult {
-    const lang =
-      this.hass?.locale?.language ||
-      this.hass?.language ||
-      navigator.language ||
-      "en";
+    const lang = this.hass ? getLang(this.hass) : "en";
     let topText: string;
     if (iconShowWeekday) {
       topText = date

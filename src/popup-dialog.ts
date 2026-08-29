@@ -5,6 +5,7 @@ import { CalendarCardPlusConfig, CalendarEvent } from "./types";
 import { saveNewEvent, AddEventPopupState as AddEventState } from "./events";
 import { renderAddEventForm } from "./events";
 import { localize } from "./localize";
+import { formatTime, formatDateNumeric, getLang } from "./format";
 
 import {
   _resolveColor,
@@ -230,16 +231,7 @@ export class CalendarCardPlusPopup extends LitElement {
                   end,
                   isAllDay,
                 );
-                const lang =
-                  this.hass.locale?.language ||
-                  this.hass.language ||
-                  navigator.language;
-                const formatTime = (d: Date) =>
-                  d.toLocaleTimeString(lang, {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  });
-                const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+                const timeRange = `${formatTime(this.hass, start)} - ${formatTime(this.hass, end)}`;
 
                 const showDate = this.config.show_date ?? false;
                 const showTime = this.config.show_time ?? false;
@@ -254,11 +246,7 @@ export class CalendarCardPlusPopup extends LitElement {
                 } else if (showDate || showTime) {
                   if (isAllDay) {
                     const datePart = showDate
-                      ? start.toLocaleDateString(lang, {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                      ? formatDateNumeric(this.hass, start)
                       : "";
                     if (showDate && showTime) {
                       timeText = `${datePart}, ${allDayText}`;
@@ -268,13 +256,7 @@ export class CalendarCardPlusPopup extends LitElement {
                   } else {
                     const parts: string[] = [];
                     if (showDate) {
-                      parts.push(
-                        start.toLocaleDateString(lang, {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        }),
-                      );
+                      parts.push(formatDateNumeric(this.hass, start));
                     }
                     if (showTime) {
                       parts.push(timeRange);
@@ -282,7 +264,7 @@ export class CalendarCardPlusPopup extends LitElement {
                     timeText = parts.join(", ");
                   }
                 } else {
-                  timeText = isAllDay ? allDayText : formatTime(start);
+                  timeText = isAllDay ? allDayText : formatTime(this.hass, start);
                 }
 
                 if (!event.is_empty && this.config.show_duration) {
@@ -292,6 +274,7 @@ export class CalendarCardPlusPopup extends LitElement {
                 }
 
                 if (!event.is_empty && this.config.show_weekday) {
+                  const lang = getLang(this.hass);
                   const weekday = start.toLocaleDateString(lang, {
                     weekday: this.config.show_weekday_long ? "long" : "short",
                   });
@@ -402,16 +385,7 @@ export class CalendarCardPlusPopup extends LitElement {
                   end,
                   isAllDay,
                 );
-                const lang =
-                  this.hass.locale?.language ||
-                  this.hass.language ||
-                  navigator.language;
-                const formatTime = (d: Date) =>
-                  d.toLocaleTimeString(lang, {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  });
-                const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+                const timeRange = `${formatTime(this.hass, start)} - ${formatTime(this.hass, end)}`;
 
                 const showDate = this.config.show_date ?? false;
                 const showTime = this.config.show_time ?? false;
@@ -426,11 +400,7 @@ export class CalendarCardPlusPopup extends LitElement {
                 } else if (showDate || showTime) {
                   if (isAllDay) {
                     const datePart = showDate
-                      ? start.toLocaleDateString(lang, {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })
+                      ? formatDateNumeric(this.hass, start)
                       : "";
                     if (showDate && showTime) {
                       timeText = `${datePart}, ${allDayText}`;
@@ -440,13 +410,7 @@ export class CalendarCardPlusPopup extends LitElement {
                   } else {
                     const parts: string[] = [];
                     if (showDate) {
-                      parts.push(
-                        start.toLocaleDateString(lang, {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        }),
-                      );
+                      parts.push(formatDateNumeric(this.hass, start));
                     }
                     if (showTime) {
                       parts.push(timeRange);
@@ -454,7 +418,7 @@ export class CalendarCardPlusPopup extends LitElement {
                     timeText = parts.join(", ");
                   }
                 } else {
-                  timeText = isAllDay ? allDayText : formatTime(start);
+                  timeText = isAllDay ? allDayText : formatTime(this.hass, start);
                 }
 
                 if (!event.is_empty && this.config.show_duration) {
@@ -464,6 +428,7 @@ export class CalendarCardPlusPopup extends LitElement {
                 }
 
                 if (!event.is_empty && this.config.show_weekday) {
+                  const lang = getLang(this.hass);
                   const weekday = start.toLocaleDateString(lang, {
                     weekday: this.config.show_weekday_long ? "long" : "short",
                   });
@@ -550,12 +515,8 @@ export class CalendarCardPlusPopup extends LitElement {
       const now = new Date();
       const isAllDay = !event.start.dateTime;
 
-      const lang =
-        this.hass.locale?.language || this.hass.language || navigator.language;
-      const formatTime = (d: Date) =>
-        d.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
       const duration = _formatDuration(this.hass, start, end, isAllDay);
-      const timeRange = `${formatTime(start)} - ${formatTime(end)}`;
+      const timeRange = `${formatTime(this.hass, start)} - ${formatTime(this.hass, end)}`;
 
       const showDate = this.config.show_date ?? false;
       const showTime = this.config.show_time ?? false;
@@ -569,11 +530,7 @@ export class CalendarCardPlusPopup extends LitElement {
       } else if (showDate || showTime) {
         if (isAllDay) {
           const datePart = showDate
-            ? start.toLocaleDateString(lang, {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
+            ? formatDateNumeric(this.hass, start)
             : "";
           if (showDate && showTime) {
             timeText = `${datePart}, ${allDayText}`;
@@ -583,13 +540,7 @@ export class CalendarCardPlusPopup extends LitElement {
         } else {
           const parts: string[] = [];
           if (showDate) {
-            parts.push(
-              start.toLocaleDateString(lang, {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              }),
-            );
+            parts.push(formatDateNumeric(this.hass, start));
           }
           if (showTime) {
             parts.push(timeRange);
@@ -601,7 +552,7 @@ export class CalendarCardPlusPopup extends LitElement {
         const diffMins = Math.ceil(diffMs / 60000);
         timeText = _formatLocalizedDuration(this.hass, diffMins);
       } else {
-        timeText = isAllDay ? allDayText : formatTime(start);
+        timeText = isAllDay ? allDayText : formatTime(this.hass, start);
       }
 
       if (!event.is_empty && this.config.show_duration) {
@@ -616,6 +567,7 @@ export class CalendarCardPlusPopup extends LitElement {
       }
 
       if (!event.is_empty && this.config.show_weekday) {
+        const lang = getLang(this.hass);
         const weekday = start.toLocaleDateString(lang, {
           weekday: this.config.show_weekday_long ? "long" : "short",
         });
