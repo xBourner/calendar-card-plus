@@ -11,6 +11,13 @@ import "./popup-dialog";
 
 import { CalendarEvent } from "./types";
 
+function _localDayKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 @customElement("calendar-card-plus")
 export class CalendarCardPlus extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -103,10 +110,10 @@ export class CalendarCardPlus extends LitElement {
     const result: CalendarEvent[] = [...events];
     const dayMap = new Set<string>();
     events.forEach((e) => {
-      const dStr = e.start.date || e.start.dateTime;
-      if (dStr) {
-        const d = new Date(dStr);
-        dayMap.add(d.toISOString().split("T")[0]);
+      if (e.start.date) {
+        dayMap.add(e.start.date);
+      } else if (e.start.dateTime) {
+        dayMap.add(_localDayKey(new Date(e.start.dateTime)));
       }
     });
 
@@ -115,9 +122,11 @@ export class CalendarCardPlus extends LitElement {
     const last = new Date(end);
     last.setHours(0, 0, 0, 0);
 
+    const todayKey = _localDayKey(new Date());
+
     while (current <= last) {
-      const key = current.toISOString().split("T")[0];
-      if (!dayMap.has(key)) {
+      const key = _localDayKey(current);
+      if (key >= todayKey && !dayMap.has(key)) {
         result.push({
           start: { date: key },
           end: { date: key },

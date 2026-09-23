@@ -679,15 +679,25 @@ export class CalendarCardPlusEditor
       }
       .entity-info {
         flex: 1;
+        min-width: 0;
         display: flex;
         flex-direction: column;
       }
       .entity-name {
         font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .entity-id {
         font-size: 0.85em;
         color: var(--secondary-text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .entity-row-top ha-button {
+        flex-shrink: 0;
       }
       .action-hide {
         --mdc-theme-primary: var(--error-color, #db4437);
