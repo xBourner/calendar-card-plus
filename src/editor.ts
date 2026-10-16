@@ -4,7 +4,13 @@ import { HomeAssistant, LovelaceCardEditor } from "./ha/types";
 import { fireEvent } from "./ha/fire_event";
 import { CalendarCardPlusConfig } from "./types";
 import { localize } from "./localize";
-import { getLang } from "./format";
+import {
+  CREATE_EVENT,
+  DELETE_EVENT,
+  UPDATE_EVENT,
+  _renderDynamicIcon,
+  _resolveColor,
+} from "./calendar";
 
 @customElement("calendar-card-plus-editor")
 export class CalendarCardPlusEditor
@@ -22,7 +28,6 @@ export class CalendarCardPlusEditor
 
   public setConfig(config: CalendarCardPlusConfig): void {
     this._config = config;
-    this.requestUpdate();
   }
 
   protected render(): TemplateResult {
@@ -62,7 +67,8 @@ export class CalendarCardPlusEditor
               >
               <ha-switch
                 .checked=${unfold_events}
-                @change=${this._compactModeChanged}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "unfold_events")}
               ></ha-switch>
             </div>
             <div class="settings-row">
@@ -71,7 +77,8 @@ export class CalendarCardPlusEditor
               >
               <ha-switch
                 .checked=${this._config.show_divider ?? false}
-                @change=${this._calendarDividerChanged}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "show_divider")}
               ></ha-switch>
             </div>
             <div class="settings-row">
@@ -116,7 +123,8 @@ export class CalendarCardPlusEditor
               >
               <ha-switch
                 .checked=${upcoming_events}
-                @change=${this._calendarShowAllChanged}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "upcoming_events")}
               ></ha-switch>
             </div>
             <div class="settings-row">
@@ -130,6 +138,25 @@ export class CalendarCardPlusEditor
               ></ha-switch>
             </div>
           </div>
+
+          ${this._config.show_empty_days
+            ? html`
+                <div
+                  class="settings-row full-width"
+                  style="margin-bottom: 16px;"
+                >
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{ text: {} }}
+                    .value=${this._config.empty_text || ""}
+                    .label=${localize(this.hass, "editor_empty_text")}
+                    .placeholder=${localize(this.hass, "empty")}
+                    .configValue=${"empty_text"}
+                    @value-changed=${this._valueChanged}
+                  ></ha-selector>
+                </div>
+              `
+            : ""}
 
           ${unfold_events
             ? html`
@@ -356,10 +383,10 @@ export class CalendarCardPlusEditor
 
                 const configColor =
                   this._config.calendar_colors?.[entity.entity_id] || "";
-
-                const renderColor = this._toCssColor(
-                  configColor || this._config.calendar_icon_color || "#fa3e3e",
-                );
+                const writable =
+                  ((entity.attributes.supported_features ?? 0) &
+                    (CREATE_EVENT | UPDATE_EVENT | DELETE_EVENT)) !==
+                  0;
 
                 return html`
                   <div class="entity-row ${isIncluded ? "" : "disabled"}">
@@ -368,9 +395,10 @@ export class CalendarCardPlusEditor
                         class="entity-icon dynamic"
                         style="background: transparent;"
                       >
-                        ${this._renderDynamicIcon(
+                        ${_renderDynamicIcon(
+                          this.hass!,
                           new Date(),
-                          renderColor,
+                          _resolveColor(entity.entity_id, this._config),
                           this._config.dark_mode ?? false,
                           this._config.icon_show_weekday ?? false,
                         )}
@@ -388,12 +416,34 @@ export class CalendarCardPlusEditor
                         variant="brand"
                         class="${isIncluded ? "action-hide" : "action-show"}"
                         @click=${(e: Event) =>
-                          this._calendarToggleEntity(e, entity.entity_id)}
+                          this._toggleListEntry(
+                            e,
+                            "exclude_entities",
+                            entity.entity_id,
+                          )}
                       >
                         ${isIncluded
                           ? this.hass?.localize("ui.common.hide") || "Hide"
                           : this.hass?.localize("ui.common.show") || "Show"}
                       </ha-button>
+                    </div>
+                    <div class="settings-row">
+                      <span class="label"
+                        >${localize(this.hass!, "editor_read_only")}</span
+                      >
+                      <ha-switch
+                        .checked=${!writable ||
+                        (this._config.read_only_calendars ?? []).includes(
+                          entity.entity_id,
+                        )}
+                        .disabled=${!writable}
+                        @change=${(e: Event) =>
+                          this._toggleListEntry(
+                            e,
+                            "read_only_calendars",
+                            entity.entity_id,
+                          )}
+                      ></ha-switch>
                     </div>
                     <div class="entity-row-bottom">
                       <ha-selector
@@ -404,7 +454,11 @@ export class CalendarCardPlusEditor
                           "ui.panel.lovelace.editor.card.tile.color",
                         ) || "Color"}
                         @value-changed=${(e: CustomEvent) =>
-                          this._calendarColorChanged(e, entity.entity_id)}
+                          this._mapValueChanged(
+                            e,
+                            "calendar_colors",
+                            entity.entity_id,
+                          )}
                       ></ha-selector>
                       <ha-selector
                         .hass=${this.hass}
@@ -417,8 +471,9 @@ export class CalendarCardPlusEditor
                           "editor_background_color",
                         )}
                         @value-changed=${(e: CustomEvent) =>
-                          this._calendarBackgroundColorChanged(
+                          this._mapValueChanged(
                             e,
+                            "calendar_background_colors",
                             entity.entity_id,
                           )}
                       ></ha-selector>
@@ -432,7 +487,6 @@ export class CalendarCardPlusEditor
                       <ha-button
                         @click=${() => {
                           this._showAllCalendars = !this._showAllCalendars;
-                          this.requestUpdate();
                         }}
                       >
                         ${this._showAllCalendars
@@ -456,74 +510,37 @@ export class CalendarCardPlusEditor
       .map((eid) => this.hass?.states[eid]);
   }
 
-  private _calendarToggleEntity(ev: Event, entityId: string) {
+  private _setConfig(config: CalendarCardPlusConfig) {
+    this._config = config;
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  /** Adds or removes entityId from a list option, e.g. exclude_entities. */
+  private _toggleListEntry(ev: Event, key: string, entityId: string) {
     ev.stopPropagation();
-
-    const exclude = [...(this._config.exclude_entities ?? [])];
-    const index = exclude.indexOf(entityId);
-
-    if (index === -1) {
-      exclude.push(entityId);
-    } else {
-      exclude.splice(index, 1);
-    }
-
-    this._config = {
+    const list: string[] = this._config[key] ?? [];
+    this._setConfig({
       ...this._config,
-      exclude_entities: exclude,
-    };
-    fireEvent(this, "config-changed", { config: this._config });
-  }
-
-  private _calendarShowAllChanged(ev: Event) {
-    const checked = (ev.target as any).checked;
-    this._config = {
-      ...this._config,
-      upcoming_events: checked,
-    };
-    fireEvent(this, "config-changed", { config: this._config });
-  }
-
-  private _compactModeChanged(ev: Event) {
-    const checked = (ev.target as any).checked;
-    this._config = {
-      ...this._config,
-      unfold_events: checked,
-    };
-    fireEvent(this, "config-changed", { config: this._config });
-  }
-
-  private _calendarDividerChanged(ev: Event) {
-    const checked = (ev.target as any).checked;
-    this._config = {
-      ...this._config,
-      show_divider: checked,
-    };
-    fireEvent(this, "config-changed", { config: this._config });
+      [key]: list.includes(entityId)
+        ? list.filter((e) => e !== entityId)
+        : [...list, entityId],
+    });
   }
 
   private _toggleBooleanConfig(ev: Event, key: string) {
-    const checked = (ev.target as any).checked;
-    this._config = {
-      ...this._config,
-      [key]: checked,
-    };
-    fireEvent(this, "config-changed", { config: this._config });
+    this._setConfig({ ...this._config, [key]: (ev.target as any).checked });
   }
 
   private _valueChanged(ev: CustomEvent): void {
     if (!this._config || !this.hass) {
       return;
     }
-    const target = ev.target as any;
-    const configValue = target.configValue;
-
+    const configValue = (ev.target as any).configValue;
     if (!configValue) {
       return;
     }
 
     const value = ev.detail?.value;
-
     if (this._config[configValue] === value) {
       return;
     }
@@ -534,57 +551,23 @@ export class CalendarCardPlusEditor
     } else {
       newConfig[configValue] = value;
     }
-
-    this._config = newConfig;
-    fireEvent(this, "config-changed", { config: this._config });
+    this._setConfig(newConfig);
   }
 
-  private _calendarColorChanged(ev: CustomEvent, entityId: string) {
+  /** Sets entityId's value in a per-calendar map option, e.g. calendar_colors. */
+  private _mapValueChanged(ev: CustomEvent, key: string, entityId: string) {
     const value = ev.detail.value;
-    const currentColors = { ...(this._config.calendar_colors || {}) };
+    const map = { ...(this._config[key] || {}) };
 
     if (value === undefined || value === null || value === "") {
-      delete currentColors[entityId];
+      delete map[entityId];
     } else {
-      currentColors[entityId] = value;
+      map[entityId] = value;
     }
 
-    if (Object.keys(currentColors).length === 0) {
-      const newConfig = { ...this._config };
-      delete newConfig.calendar_colors;
-      this._config = newConfig;
-    } else {
-      this._config = {
-        ...this._config,
-        calendar_colors: currentColors,
-      };
-    }
-    fireEvent(this, "config-changed", { config: this._config });
-  }
-
-  private _calendarBackgroundColorChanged(ev: CustomEvent, entityId: string) {
-    const value = ev.detail.value;
-    const currentColors = {
-      ...(this._config.calendar_background_colors || {}),
-    };
-
-    if (value === undefined || value === null || value === "") {
-      delete currentColors[entityId];
-    } else {
-      currentColors[entityId] = value;
-    }
-
-    if (Object.keys(currentColors).length === 0) {
-      const newConfig = { ...this._config };
-      delete newConfig.calendar_background_colors;
-      this._config = newConfig;
-    } else {
-      this._config = {
-        ...this._config,
-        calendar_background_colors: currentColors,
-      };
-    }
-    fireEvent(this, "config-changed", { config: this._config });
+    const newConfig = { ...this._config, [key]: map };
+    if (Object.keys(map).length === 0) delete newConfig[key];
+    this._setConfig(newConfig);
   }
 
   static get styles() {
@@ -593,14 +576,6 @@ export class CalendarCardPlusEditor
         display: flex;
         flex-direction: column;
         gap: 16px;
-      }
-      .ha-select {
-        padding: 8px;
-        border-radius: 4px;
-        border: 1px solid var(--divider-color, #eee);
-        background: var(--card-background-color, #fff);
-        color: var(--primary-text-color);
-        width: 50%;
       }
       .settings-grid {
         display: grid;
@@ -709,87 +684,6 @@ export class CalendarCardPlusEditor
         margin-bottom: 0px;
         margin-top: 8px;
       }
-      ha-textfield {
-        width: 100%;
-      }
-    `;
-  }
-
-  private _toCssColor(color: string): string {
-    if (
-      color.startsWith("#") ||
-      color.startsWith("rgb") ||
-      color.startsWith("hsl") ||
-      color.startsWith("var")
-    ) {
-      return color;
-    }
-    return `var(--${color}-color)`;
-  }
-
-  private _renderDynamicIcon(
-    date: Date,
-    color: string,
-    darkMode: boolean = false,
-    iconShowWeekday: boolean = false,
-  ): TemplateResult {
-    const lang = this.hass ? getLang(this.hass) : "en";
-    let topText: string;
-    if (iconShowWeekday) {
-      topText = date
-        .toLocaleDateString(lang, { weekday: "short" })
-        .toUpperCase();
-    } else {
-      topText = date.toLocaleDateString(lang, { month: "short" }).toUpperCase();
-    }
-    const day = date.getDate();
-
-    const bgColor = darkMode ? "#222222" : "white";
-    const dayColor = darkMode ? "white" : "#333";
-    const monthColor = darkMode ? "#222222" : "white";
-
-    return html`
-      <svg
-        viewBox="0 0 100 100"
-        class="dynamic-calendar-icon"
-        style="width: 100%; height: 100%; display: block;"
-      >
-        <rect
-          x="0"
-          y="0"
-          width="100"
-          height="100"
-          rx="20"
-          ry="20"
-          fill="${bgColor}"
-        ></rect>
-        <path
-          d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z"
-          fill="${color}"
-        ></path>
-        <text
-          x="50"
-          y="23"
-          font-family="sans-serif"
-          font-size="22"
-          font-weight="bold"
-          fill="${monthColor}"
-          text-anchor="middle"
-        >
-          ${topText}
-        </text>
-        <text
-          x="50"
-          y="82"
-          font-family="sans-serif"
-          font-size="52"
-          font-weight="bold"
-          fill="${dayColor}"
-          text-anchor="middle"
-        >
-          ${day}
-        </text>
-      </svg>
     `;
   }
 }

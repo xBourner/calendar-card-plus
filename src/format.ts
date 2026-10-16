@@ -1,4 +1,4 @@
-import { HomeAssistant } from "./ha/types";
+import type { HomeAssistant } from "./ha/types";
 
 const WEEKDAYS_LONG = [
   "sunday",
@@ -98,4 +98,39 @@ export function formatDateNumeric(hass: HomeAssistant, date: Date): string {
   };
 
   return formats[df] ?? formatter.format(date);
+}
+
+const pad = (n: number) => `${n}`.padStart(2, "0");
+
+export const localDayKey = (d: Date): string =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+export const localTimeKey = (d: Date): string =>
+  `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+/** The day an event is shown on: its start, but never before today (running multi-day events). */
+export function dayOrToday(d: Date, now = new Date()): Date {
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  return d < today ? today : d;
+}
+
+// Date-only strings are local days; new Date("YYYY-MM-DD") would parse as UTC midnight.
+export function parseEventDate(value: string): Date {
+  if (value.includes("T")) return new Date(value);
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** Form range check on "YYYY-MM-DD" / "HH:MM" keys; they sort as plain strings. All-day may end on its start day. */
+export function endAfterStart(
+  allDay: boolean,
+  startDate = "",
+  endDate = "",
+  startTime = "",
+  endTime = "",
+): boolean {
+  return allDay
+    ? endDate >= startDate
+    : `${endDate}T${endTime}` > `${startDate}T${startTime}`;
 }

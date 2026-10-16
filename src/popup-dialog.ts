@@ -1,33 +1,30 @@
-import { LitElement, html, css, TemplateResult, nothing } from "lit";
+import { LitElement, html, css, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant } from "./ha/types";
+import { fireEvent } from "./ha/fire_event";
 import { CalendarCardPlusConfig, CalendarEvent } from "./types";
-import { saveNewEvent, AddEventPopupState as AddEventState } from "./events";
-import { renderAddEventForm } from "./events";
-import { localize } from "./localize";
-import { formatTime, formatDateNumeric, getLang } from "./format";
-
 import {
-  _resolveColor,
-  _renderDynamicIcon,
-  _resolveBackgroundColor,
-  _formatDuration,
-  _formatLocalizedDuration,
-  _groupEventsByDate,
-  _groupEventsByDateAndCalendar,
-} from "./calendar";
+  EventFormState,
+  deleteEvent,
+  editEventState,
+  renderEventForm,
+  saveEvent,
+} from "./events";
+import { canEditEvent, eventStyles, renderEventList } from "./calendar";
+
+export type PopupMode = "detail" | "add-event" | "edit-event";
 
 @customElement("calendar-card-plus-popup")
 export class CalendarCardPlusPopup extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) public config!: CalendarCardPlusConfig;
   @property({ type: Boolean }) public open = false;
-  @property({ type: String }) public mode: "detail" | "add-event" = "detail";
+  @property({ type: String }) public mode: PopupMode = "detail";
 
   @property({ type: String }) public detailTitle = "";
   @property({ type: Array }) public detailEvents: CalendarEvent[] = [];
 
-  @state() private _addEventState: AddEventState = { open: false };
+  @state() private _formState: EventFormState = {};
   private _opener: HTMLElement | null = null;
   private _onEventSaved: (() => void) | null = null;
 
@@ -35,10 +32,10 @@ export class CalendarCardPlusPopup extends LitElement {
     hass: HomeAssistant;
     config: CalendarCardPlusConfig;
     opener: HTMLElement;
-    mode: "detail" | "add-event";
+    mode: PopupMode;
     title?: string;
     events?: CalendarEvent[];
-    addEventState?: AddEventState;
+    formState?: EventFormState;
     onEventSaved?: () => void;
   }) {
     this.hass = params.hass;
@@ -47,12 +44,11 @@ export class CalendarCardPlusPopup extends LitElement {
     this.mode = params.mode;
     if (params.title) this.detailTitle = params.title;
     if (params.events) this.detailEvents = params.events;
-    if (params.addEventState) this._addEventState = params.addEventState;
+    if (params.formState) this._formState = params.formState;
     if (params.onEventSaved) this._onEventSaved = params.onEventSaved;
 
     this.open = true;
     window.history.pushState({ calendarCardPlusPopup: true }, "");
-    this.requestUpdate();
     await this.updateComplete;
 
     const ad = this.renderRoot.querySelector("ha-adaptive-dialog");
@@ -84,44 +80,25 @@ export class CalendarCardPlusPopup extends LitElement {
   private _close = () => {
     if (!this.open) return;
     this.open = false;
-    this.requestUpdate();
 
     const detail = { dialog: this };
-    this.dispatchEvent(
-      new CustomEvent("closed", { bubbles: true, composed: true, detail }),
-    );
-    this.dispatchEvent(
-      new CustomEvent("dialog-closed", {
-        bubbles: true,
-        composed: true,
-        detail,
-      }),
-    );
-    this.dispatchEvent(
-      new CustomEvent("popup-closed", {
-        bubbles: true,
-        composed: true,
-        detail,
-      }),
-    );
+    for (const type of ["closed", "dialog-closed", "popup-closed"]) {
+      this.dispatchEvent(
+        new CustomEvent(type, { bubbles: true, composed: true, detail }),
+      );
+    }
   };
 
-  private _onDialogClosed = (ev?: Event) => {
-    if (ev && ev.type !== "click") {
-      const target = ev.target as HTMLElement | null;
-      if (
-        target &&
-        target.tagName !== "HA-ADAPTIVE-DIALOG" &&
-        target.tagName !== "HA-DIALOG"
-      ) {
-        return;
-      }
+  private _onDialogClosed = (ev: Event) => {
+    const target = ev.target as HTMLElement | null;
+    if (
+      target &&
+      target.tagName !== "HA-ADAPTIVE-DIALOG" &&
+      target.tagName !== "HA-DIALOG"
+    ) {
+      return;
     }
-
-    this._close();
-    if (window.history.state?.calendarCardPlusPopup) {
-      window.history.back();
-    }
+    this._closeDialog();
   };
 
   private _closeDialog = () => {
@@ -132,36 +109,59 @@ export class CalendarCardPlusPopup extends LitElement {
     }
   };
 
-  private _updateAddEventState(newState: Partial<AddEventState>) {
-    this._addEventState = { ...this._addEventState, ...newState };
-    this.requestUpdate();
+  private _updateFormState = (newState: Partial<EventFormState>) => {
+    this._formState = { ...this._formState, ...newState };
+  };
+
+  private async _run(action: () => Promise<void>) {
+    try {
+      await action();
+      this.dispatchEvent(
+        new CustomEvent("event-saved", { bubbles: true, composed: true }),
+      );
+      this._onEventSaved?.();
+      this._closeDialog();
+    } catch (err: any) {
+      this.hass.callService("persistent_notification", "create", {
+        title: "Calendar Card Plus",
+        message: "Error saving event: " + (err?.message ?? err),
+      });
+    }
   }
 
-  private async _handleSave() {
-    await saveNewEvent(
-      this.hass,
-      this._addEventState,
-      () => {
-        this.dispatchEvent(
-          new CustomEvent("event-saved", { bubbles: true, composed: true }),
-        );
-        if (this._onEventSaved) this._onEventSaved();
-        this._closeDialog();
-      },
-      (err) => {
-        this.hass.callService("persistent_notification", "create", {
-          title: "Calendar Card Plus",
-          message: "Error saving event: " + err.message,
-        });
-      },
-    );
-  }
+  private _handleSave = () =>
+    this._run(() => saveEvent(this.hass, this._formState));
 
-  protected render(): TemplateResult | typeof nothing {
-    const isAddMode = this.mode === "add-event";
-    const title = isAddMode
-      ? this.hass?.localize("ui.components.calendar.event.add") || "Add Event"
-      : this.detailTitle;
+  private _handleDelete = (future: boolean) => {
+    const prompt =
+      this.hass.localize(
+        "ui.components.calendar.event.confirm_delete.prompt",
+      ) || "Do you want to delete this event?";
+    if (!window.confirm(prompt)) return;
+    this._run(() => deleteEvent(this.hass, this._formState, future));
+  };
+
+  private _openEvent = (event: CalendarEvent) => {
+    if (canEditEvent(this.hass, this.config, event)) {
+      this._formState = editEventState(event);
+      this.mode = "edit-event";
+      return;
+    }
+    fireEvent(this._opener ?? window, "hass-more-info", {
+      entityId: event.entity_id,
+    });
+  };
+
+  protected render(): TemplateResult {
+    const isForm = this.mode !== "detail";
+    const title =
+      this.mode === "add-event"
+        ? this.hass?.localize("ui.components.calendar.event.add") ||
+          "Add Event"
+        : this.mode === "edit-event"
+          ? this.hass?.localize("ui.components.calendar.event.edit") ||
+            "Edit Event"
+          : this.detailTitle;
 
     return html`
       <ha-adaptive-dialog
@@ -172,483 +172,34 @@ export class CalendarCardPlusPopup extends LitElement {
         @ha-dialog-closed=${this._onDialogClosed}
         flexcontent
       >
-        <div class="dialog-content scrollable ha-scrollbar">
-          ${isAddMode
-            ? renderAddEventForm(
+        <div
+          class="dialog-content scrollable ha-scrollbar ${this.config
+            ?.show_divider && !isForm
+            ? "plain"
+            : ""}"
+        >
+          ${isForm
+            ? renderEventForm(
                 this.hass,
                 this.config,
-                this._addEventState,
-                this._updateAddEventState.bind(this),
-                this._closeDialog.bind(this),
-                this._handleSave.bind(this),
+                this._formState,
+                this._updateFormState,
+                this._closeDialog,
+                this._handleSave,
+                this._handleDelete,
               )
-            : this._renderDetailContent()}
+            : renderEventList(
+                this.hass,
+                this.detailEvents,
+                this.config,
+                this._openEvent,
+              )}
         </div>
       </ha-adaptive-dialog>
     `;
   }
 
-  private _renderDetailContent(): TemplateResult[] {
-    if (this.config.group_by_date_and_calendar) {
-      const groups = _groupEventsByDateAndCalendar(this.detailEvents);
-      return groups.map((group) => {
-        const iconDate = group.date;
-        const iconColor = _resolveColor(group.events[0].entity_id, this.config);
-        const dynamicIcon = _renderDynamicIcon(
-          this.hass,
-          iconDate,
-          iconColor,
-          this.config.dark_mode ?? false,
-        );
-
-        const bgColor = _resolveBackgroundColor(
-          group.events[0].entity_id,
-          this.config,
-        );
-        const groupStyle = bgColor
-          ? `background-color: ${bgColor}; border: none;`
-          : "";
-
-        return html`
-          <div
-            class="calendar-item grouped detail"
-            style="align-items: center; ${groupStyle}"
-          >
-            <div class="calendar-icon dynamic">${dynamicIcon}</div>
-            <div class="calendar-content">
-              ${group.events.map((event) => {
-                const title = event.is_empty
-                  ? localize(this.hass, "empty")
-                  : event.summary;
-                const start = new Date(
-                  event.start.dateTime || event.start.date!,
-                );
-                const end = new Date(event.end.dateTime || event.end.date!);
-                const isAllDay = !event.start.dateTime;
-                const duration = _formatDuration(
-                  this.hass,
-                  start,
-                  end,
-                  isAllDay,
-                );
-                const timeRange = `${formatTime(this.hass, start)} - ${formatTime(this.hass, end)}`;
-
-                const showDate = this.config.show_date ?? false;
-                const showTime = this.config.show_time ?? false;
-                const allDayText =
-                  this.hass.localize(
-                    "component.calendar.entity_component._.state_attributes.all_day.name",
-                  ) || "All day";
-
-                let timeText = "";
-                if (event.is_empty) {
-                  timeText = "";
-                } else if (showDate || showTime) {
-                  if (isAllDay) {
-                    const datePart = showDate
-                      ? formatDateNumeric(this.hass, start)
-                      : "";
-                    if (showDate && showTime) {
-                      timeText = `${datePart}, ${allDayText}`;
-                    } else {
-                      timeText = datePart || allDayText;
-                    }
-                  } else {
-                    const parts: string[] = [];
-                    if (showDate) {
-                      parts.push(formatDateNumeric(this.hass, start));
-                    }
-                    if (showTime) {
-                      parts.push(timeRange);
-                    }
-                    timeText = parts.join(", ");
-                  }
-                } else {
-                  timeText = isAllDay ? allDayText : formatTime(this.hass, start);
-                }
-
-                if (!event.is_empty && this.config.show_duration) {
-                  if (!timeText.endsWith(duration)) {
-                    timeText += ` • ${duration}`;
-                  }
-                }
-
-                if (!event.is_empty && this.config.show_weekday) {
-                  const lang = getLang(this.hass);
-                  const weekday = start.toLocaleDateString(lang, {
-                    weekday: this.config.show_weekday_long ? "long" : "short",
-                  });
-                  if (!timeText.includes(weekday)) {
-                    timeText += ` • ${weekday}`;
-                  }
-                }
-
-                return html`
-                  <div
-                    class="event-entry"
-                    @click=${() =>
-                      event.is_empty
-                        ? null
-                        : this._handleMoreInfo(event.entity_id)}
-                    style="margin-bottom: 4px; ${event.is_empty
-                      ? "opacity: 0.7; cursor: default;"
-                      : ""}"
-                  >
-                    <div class="event-title">${title}</div>
-                    <div
-                      class="event-time"
-                      style="display: flex; align-items: center; gap: 4px;"
-                    >
-                      ${!event.is_empty && (showDate || showTime)
-                        ? html`<ha-icon
-                            icon="mdi:clock-time-four-outline"
-                            style="--mdc-icon-size: 14px;"
-                          ></ha-icon>`
-                        : ""}
-                      ${timeText}
-                    </div>
-                    ${!event.is_empty &&
-                    this.config.show_location &&
-                    event.location
-                      ? html`
-                          <div class="event-location">
-                            <ha-icon
-                              icon="mdi:map-marker"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>
-                            ${event.location}
-                          </div>
-                        `
-                      : ""}
-                    ${this.config.show_calendar_name && event.calendar_name
-                      ? html`
-                          <div class="event-calendar">
-                            <ha-icon
-                              icon="mdi:calendar-blank-multiple"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>
-                            ${event.calendar_name}
-                          </div>
-                        `
-                      : ""}
-                  </div>
-                `;
-              })}
-            </div>
-          </div>
-          ${this.config.show_divider
-            ? html`<div class="calendar-divider"></div>`
-            : ""}
-        `;
-      });
-    }
-
-    if (this.config.group_by_date) {
-      const groups = _groupEventsByDate(this.detailEvents);
-      return groups.map((group) => {
-        const iconDate = group.date;
-        const iconColor = _resolveColor(group.events[0].entity_id, this.config);
-        const dynamicIcon = _renderDynamicIcon(
-          this.hass,
-          iconDate,
-          iconColor,
-          this.config.dark_mode ?? false,
-        );
-
-        const bgColor = _resolveBackgroundColor(
-          group.events[0].entity_id,
-          this.config,
-        );
-        const groupStyle = bgColor
-          ? `background-color: ${bgColor}; border: none;`
-          : "";
-
-        return html`
-          <div
-            class="calendar-item grouped detail"
-            style="align-items: center; ${groupStyle}"
-          >
-            <div class="calendar-icon dynamic">${dynamicIcon}</div>
-            <div class="calendar-content">
-              ${group.events.map((event) => {
-                const title = event.is_empty
-                  ? localize(this.hass, "empty")
-                  : event.summary;
-                const start = new Date(
-                  event.start.dateTime || event.start.date!,
-                );
-                const end = new Date(event.end.dateTime || event.end.date!);
-                const isAllDay = !event.start.dateTime;
-                const duration = _formatDuration(
-                  this.hass,
-                  start,
-                  end,
-                  isAllDay,
-                );
-                const timeRange = `${formatTime(this.hass, start)} - ${formatTime(this.hass, end)}`;
-
-                const showDate = this.config.show_date ?? false;
-                const showTime = this.config.show_time ?? false;
-                const allDayText =
-                  this.hass.localize(
-                    "component.calendar.entity_component._.state_attributes.all_day.name",
-                  ) || "All day";
-
-                let timeText = "";
-                if (event.is_empty) {
-                  timeText = "";
-                } else if (showDate || showTime) {
-                  if (isAllDay) {
-                    const datePart = showDate
-                      ? formatDateNumeric(this.hass, start)
-                      : "";
-                    if (showDate && showTime) {
-                      timeText = `${datePart}, ${allDayText}`;
-                    } else {
-                      timeText = datePart || allDayText;
-                    }
-                  } else {
-                    const parts: string[] = [];
-                    if (showDate) {
-                      parts.push(formatDateNumeric(this.hass, start));
-                    }
-                    if (showTime) {
-                      parts.push(timeRange);
-                    }
-                    timeText = parts.join(", ");
-                  }
-                } else {
-                  timeText = isAllDay ? allDayText : formatTime(this.hass, start);
-                }
-
-                if (!event.is_empty && this.config.show_duration) {
-                  if (!timeText.endsWith(duration)) {
-                    timeText += ` • ${duration}`;
-                  }
-                }
-
-                if (!event.is_empty && this.config.show_weekday) {
-                  const lang = getLang(this.hass);
-                  const weekday = start.toLocaleDateString(lang, {
-                    weekday: this.config.show_weekday_long ? "long" : "short",
-                  });
-                  if (!timeText.includes(weekday)) {
-                    timeText += ` • ${weekday}`;
-                  }
-                }
-
-                return html`
-                  <div
-                    class="event-entry"
-                    @click=${() =>
-                      event.is_empty
-                        ? null
-                        : this._handleMoreInfo(event.entity_id)}
-                    style="margin-bottom: 4px; ${event.is_empty
-                      ? "opacity: 0.7; cursor: default;"
-                      : ""}"
-                  >
-                    <div class="event-title">${title}</div>
-                    <div
-                      class="event-time"
-                      style="display: flex; align-items: center; gap: 4px;"
-                    >
-                      ${!event.is_empty && (showDate || showTime)
-                        ? html`<ha-icon
-                            icon="mdi:clock-time-four-outline"
-                            style="--mdc-icon-size: 14px;"
-                          ></ha-icon>`
-                        : ""}
-                      ${timeText}
-                    </div>
-                    ${!event.is_empty &&
-                    this.config.show_location &&
-                    event.location
-                      ? html`
-                          <div class="event-location">
-                            <ha-icon
-                              icon="mdi:map-marker"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>
-                            ${event.location}
-                          </div>
-                        `
-                      : ""}
-                    ${this.config.show_calendar_name && event.calendar_name
-                      ? html`
-                          <div class="event-calendar">
-                            <ha-icon
-                              icon="mdi:calendar-blank-multiple"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>
-                            ${event.calendar_name}
-                          </div>
-                        `
-                      : ""}
-                  </div>
-                `;
-              })}
-            </div>
-          </div>
-          ${this.config.show_divider
-            ? html`<div class="calendar-divider"></div>`
-            : ""}
-        `;
-      });
-    }
-
-    return this.detailEvents.map((event, index) => {
-      const title = event.is_empty
-        ? localize(this.hass, "empty")
-        : event.summary;
-      let timeText = "";
-
-      let start: Date;
-      let end: Date;
-      try {
-        start = new Date(event.start.dateTime || event.start.date!);
-        end = new Date(event.end.dateTime || event.end.date!);
-      } catch (e) {
-        return html`<div class="error">Date Error</div>`;
-      }
-
-      const now = new Date();
-      const isAllDay = !event.start.dateTime;
-
-      const duration = _formatDuration(this.hass, start, end, isAllDay);
-      const timeRange = `${formatTime(this.hass, start)} - ${formatTime(this.hass, end)}`;
-
-      const showDate = this.config.show_date ?? false;
-      const showTime = this.config.show_time ?? false;
-      const allDayText =
-        this.hass.localize(
-          "component.calendar.entity_component._.state_attributes.all_day.name",
-        ) || "All day";
-
-      if (event.is_empty) {
-        timeText = "";
-      } else if (showDate || showTime) {
-        if (isAllDay) {
-          const datePart = showDate
-            ? formatDateNumeric(this.hass, start)
-            : "";
-          if (showDate && showTime) {
-            timeText = `${datePart}, ${allDayText}`;
-          } else {
-            timeText = datePart || allDayText;
-          }
-        } else {
-          const parts: string[] = [];
-          if (showDate) {
-            parts.push(formatDateNumeric(this.hass, start));
-          }
-          if (showTime) {
-            parts.push(timeRange);
-          }
-          timeText = parts.join(", ");
-        }
-      } else if (start > now) {
-        const diffMs = start.getTime() - now.getTime();
-        const diffMins = Math.ceil(diffMs / 60000);
-        timeText = _formatLocalizedDuration(this.hass, diffMins);
-      } else {
-        timeText = isAllDay ? allDayText : formatTime(this.hass, start);
-      }
-
-      if (!event.is_empty && this.config.show_duration) {
-        if (timeText) {
-          if (timeText.endsWith(duration)) {
-          } else {
-            timeText += ` • ${duration}`;
-          }
-        } else {
-          timeText = duration;
-        }
-      }
-
-      if (!event.is_empty && this.config.show_weekday) {
-        const lang = getLang(this.hass);
-        const weekday = start.toLocaleDateString(lang, {
-          weekday: this.config.show_weekday_long ? "long" : "short",
-        });
-        timeText += ` • ${weekday}`;
-      }
-
-      const isActive = !event.is_empty && start <= now && end >= now;
-      const iconDate = isActive ? now : start;
-      const iconColor = event.is_empty
-        ? "var(--disabled-text-color, #bdbdbb)"
-        : _resolveColor(event.entity_id, this.config);
-
-      const dynamicIcon = _renderDynamicIcon(
-        this.hass,
-        iconDate,
-        iconColor,
-        this.config.dark_mode ?? false,
-      );
-
-      const showDivider = this.config.show_divider && index > 0;
-
-      const bgColor = _resolveBackgroundColor(event.entity_id, this.config);
-      const itemStyle = bgColor
-        ? `background-color: ${bgColor}; border: none;`
-        : "";
-
-      return html`
-        ${showDivider ? html`<div class="calendar-divider"></div>` : ""}
-        <div
-          class="calendar-item detail"
-          style="${itemStyle} ${event.is_empty
-            ? "cursor: default; opacity: 0.7;"
-            : ""}"
-          @click=${() =>
-            event.is_empty ? null : this._handleMoreInfo(event.entity_id)}
-        >
-          <div class="calendar-icon dynamic">${dynamicIcon}</div>
-          <div class="calendar-content">
-            <div class="event-title">${title}</div>
-            <div class="event-time">
-              ${!event.is_empty && (showDate || showTime)
-                ? html`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>`
-                : ""}
-              ${timeText}
-            </div>
-            ${!event.is_empty && this.config.show_location && event.location
-              ? html`
-                  <div class="event-location">
-                    <ha-icon icon="mdi:map-marker"></ha-icon>
-                    ${event.location}
-                  </div>
-                `
-              : ""}
-            ${this.config.show_calendar_name && event.calendar_name
-              ? html`
-                  <div class="event-calendar">
-                    <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
-                    ${event.calendar_name}
-                  </div>
-                `
-              : ""}
-          </div>
-        </div>
-      `;
-    });
-  }
-
-  private _handleMoreInfo(entityId: string) {
-    const event = new CustomEvent("hass-more-info", {
-      bubbles: true,
-      composed: true,
-      detail: { entityId },
-    });
-    if (this._opener) {
-      this._opener.dispatchEvent(event);
-    } else {
-      window.dispatchEvent(event);
-    }
-  }
-
-  static styles = css`
+  static styles = [eventStyles, css`
     :host {
       display: block;
     }
@@ -662,28 +213,9 @@ export class CalendarCardPlusPopup extends LitElement {
       --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height) !important;
     }
 
-    .dialog-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .dialog-title {
-      font-size: 1.1em;
-      font-weight: 500;
-      flex: 1;
-    }
-
     .dialog-content {
       padding: 0 8px 8px 8px;
       min-width: 320px;
-    }
-
-    .dialog-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      padding: 8px 16px 16px;
     }
 
     .calendar-item {
@@ -709,6 +241,17 @@ export class CalendarCardPlusPopup extends LitElement {
     }
 
     .calendar-item.detail:hover {
+      background-color: var(--secondary-background-color);
+    }
+
+    /* "show divider": plain rows separated by lines, same as in the card */
+    .plain .calendar-item.detail {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      margin-bottom: 0;
+    }
+    .plain .calendar-item.detail:hover {
       background-color: var(--secondary-background-color);
     }
 
@@ -740,29 +283,6 @@ export class CalendarCardPlusPopup extends LitElement {
       gap: 4px;
       font-size: 0.9em;
       color: var(--secondary-text-color);
-    }
-    .event-time ha-icon {
-      --mdc-icon-size: 14px;
-      color: var(--secondary-text-color);
-    }
-    .event-location,
-    .event-calendar {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.9em;
-      color: var(--secondary-text-color);
-      margin-top: 1px;
-    }
-    .event-location ha-icon,
-    .event-calendar ha-icon {
-      --mdc-icon-size: 14px;
-      color: var(--secondary-text-color);
-    }
-
-    .calendar-divider {
-      border-top: 1px solid var(--divider-color, #e0e0e0);
-      margin: 4px 12px;
     }
 
     .add-event-form {
@@ -805,6 +325,11 @@ export class CalendarCardPlusPopup extends LitElement {
       appearance: auto;
     }
 
+    .add-event-form select.field-input:disabled {
+      cursor: default;
+      opacity: 0.7;
+    }
+
     .row-flex {
       display: flex;
       align-items: center;
@@ -823,22 +348,19 @@ export class CalendarCardPlusPopup extends LitElement {
 
     .dialog-actions {
       display: flex;
-      justify-content: flex-end;
+      flex-wrap: wrap;
       gap: 8px;
       margin-top: 8px;
     }
 
-    .calendar-item.grouped .calendar-content {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    .dialog-actions .spacer {
+      flex: 1;
     }
-    .calendar-item.grouped .event-entry {
-      display: flex;
-      flex-direction: column;
+
+    .dialog-actions .delete {
+      --ha-button-theme-color: var(--error-color, #db4437);
+      --mdc-theme-primary: var(--error-color, #db4437);
+      color: var(--error-color, #db4437);
     }
-    .calendar-item.grouped .calendar-icon {
-      align-self: center;
-    }
-  `;
+  `];
 }

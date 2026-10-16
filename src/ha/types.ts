@@ -29,12 +29,3 @@ export interface LovelaceCardEditor extends HTMLElement {
   setConfig(config: LovelaceCardConfig): void;
 }
 
-export interface ActionConfig {
-  action: "more-info" | "toggle" | "navigate" | "url" | "call-service" | "none" | "fire-dom-event";
-  navigation_path?: string;
-  url_path?: string;
-  service?: string;
-  data?: any;
-  confirmation?: any;
-}
-

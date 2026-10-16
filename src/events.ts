@@ -1,50 +1,68 @@
-import { html, TemplateResult } from "lit";
+import { html, nothing, TemplateResult } from "lit";
 import { HomeAssistant } from "./ha/types";
-import { CalendarCardPlusConfig } from "./types";
+import { CalendarCardPlusConfig, CalendarEvent } from "./types";
+import {
+  CREATE_EVENT,
+  DELETE_EVENT,
+  UPDATE_EVENT,
+  eventEnd,
+  eventStart,
+  getCalendars,
+  supportsFeature,
+} from "./calendar";
+import {
+  endAfterStart,
+  localDayKey,
+  localTimeKey,
+  parseEventDate,
+} from "./format";
 
-export interface AddEventPopupState {
-  open: boolean;
+export interface EventFormState {
   calendar_id?: string;
   name?: string;
   start_date?: string;
   start_time?: string;
   end_date?: string;
   end_time?: string;
+  /** all-day end date is inclusive here, HA expects it exclusive */
   all_day?: boolean;
   location?: string;
   description?: string;
   recurrence?: string;
+  // set when editing an existing event
+  uid?: string;
+  recurrence_id?: string;
+  rrule?: string;
 }
 
-export function openAddEventPopup(
+const FREQUENCIES = ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"];
+
+export const creatableCalendars = (
   hass: HomeAssistant,
   config: CalendarCardPlusConfig,
-): AddEventPopupState {
-  const calendars = Object.keys(hass.states)
-    .filter((eid) => eid.startsWith("calendar."))
-    .filter((eid) => !config.exclude_entities?.includes(eid));
+) =>
+  getCalendars(hass, config).filter((c) =>
+    supportsFeature(hass, config, c, CREATE_EVENT),
+  );
 
-  const defaultCalendar = calendars.length > 0 ? calendars[0] : undefined;
+const isRecurring = (s: EventFormState) => !!(s.rrule || s.recurrence_id);
 
-  const now = new Date();
-  const start = new Date(now);
+export function newEventState(
+  hass: HomeAssistant,
+  config: CalendarCardPlusConfig,
+): EventFormState {
+  const start = new Date();
   start.setHours(start.getHours() + 1, 0, 0, 0);
   const end = new Date(start);
   end.setHours(end.getHours() + 1, 0, 0, 0);
 
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  const fmtDate = (d: Date) =>
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  const fmtTime = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-
   return {
-    open: true,
-    calendar_id: defaultCalendar,
+    calendar_id: creatableCalendars(hass, config)[0],
     name: "",
-    start_date: fmtDate(start),
-    start_time: fmtTime(start),
-    end_date: fmtDate(end),
-    end_time: fmtTime(end),
+    start_date: localDayKey(start),
+    start_time: localTimeKey(start),
+    end_date: localDayKey(end),
+    end_time: localTimeKey(end),
     location: "",
     description: "",
     recurrence: "none",
@@ -52,123 +70,155 @@ export function openAddEventPopup(
   };
 }
 
-export async function saveNewEvent(
+export function editEventState(event: CalendarEvent): EventFormState {
+  const start = eventStart(event);
+  const end = eventEnd(event);
+  const allDay = !event.start.dateTime;
+  if (allDay) end.setDate(end.getDate() - 1);
+
+  return {
+    calendar_id: event.entity_id,
+    name: event.summary,
+    start_date: localDayKey(start),
+    start_time: localTimeKey(start),
+    end_date: localDayKey(end < start ? start : end),
+    end_time: localTimeKey(end),
+    all_day: allDay,
+    location: event.location ?? "",
+    description: event.description ?? "",
+    recurrence: "none",
+    uid: event.uid,
+    recurrence_id: event.recurrence_id,
+    rrule: event.rrule,
+  };
+}
+
+/** Creates or updates the event. Throws on failure. */
+export async function saveEvent(
   hass: HomeAssistant,
-  popupState: AddEventPopupState,
-  onSuccess: () => void,
-  onError: (err: any) => void,
-) {
-  if (
-    !popupState.calendar_id ||
-    !popupState.name ||
-    !popupState.start_date ||
-    !popupState.end_date
-  ) {
+  s: EventFormState,
+): Promise<void> {
+  if (!s.calendar_id || !s.name || !s.start_date || !s.end_date) {
+    throw new Error("Title, calendar, start and end date are required");
+  }
+  if (!endAfterStart(!!s.all_day, s.start_date, s.end_date, s.start_time, s.end_time)) {
+    throw new Error("End must be after start");
+  }
+
+  const data: Record<string, string> = { summary: s.name };
+  if (s.location) data.location = s.location;
+  if (s.description) data.description = s.description;
+
+  let start: string;
+  let end: string;
+  if (s.all_day) {
+    const endDay = parseEventDate(s.end_date);
+    endDay.setDate(endDay.getDate() + 1);
+    start = s.start_date;
+    end = localDayKey(endDay);
+  } else {
+    // send with offset: the card shows browser-local times, HA would read a naive time in its own zone
+    start = new Date(`${s.start_date}T${s.start_time || "09:00"}`).toISOString();
+    end = new Date(`${s.end_date}T${s.end_time || "10:00"}`).toISOString();
+  }
+
+  const rrule =
+    !isRecurring(s) && FREQUENCIES.includes(s.recurrence ?? "")
+      ? `FREQ=${s.recurrence}`
+      : undefined;
+
+  if (s.uid) {
+    await hass.callWS({
+      type: "calendar/event/update",
+      entity_id: s.calendar_id,
+      uid: s.uid,
+      ...(s.recurrence_id ? { recurrence_id: s.recurrence_id } : {}),
+      event: {
+        ...data,
+        dtstart: start,
+        dtend: end,
+        ...(rrule ? { rrule } : {}),
+      },
+    });
     return;
   }
 
-  try {
-    const svcData: any = {
-      entity_id: popupState.calendar_id,
-      summary: popupState.name,
-    };
-
-    if (popupState.all_day) {
-      let endStr = popupState.end_date;
-      if (popupState.start_date === endStr) {
-        const parts = endStr.split("-");
-        const d = new Date(
-          Number(parts[0]),
-          Number(parts[1]) - 1,
-          Number(parts[2]),
-        );
-        d.setDate(d.getDate() + 1);
-        const pad = (n: number) => n.toString().padStart(2, "0");
-        endStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-      }
-      svcData.start_date = popupState.start_date;
-      svcData.end_date = endStr;
-    } else {
-      const startTime = popupState.start_time || "09:00";
-      const endTime = popupState.end_time || "10:00";
-      svcData.start_date_time = `${popupState.start_date} ${startTime}:00`;
-      svcData.end_date_time = `${popupState.end_date} ${endTime}:00`;
-      if (popupState.location) svcData.location = popupState.location;
-      if (popupState.description) svcData.description = popupState.description;
-    }
-
-    if (popupState.recurrence && popupState.recurrence !== "none") {
-      const freqMap: Record<string, string> = {
-        DAILY: "FREQ=DAILY",
-        WEEKLY: "FREQ=WEEKLY",
-        MONTHLY: "FREQ=MONTHLY",
-        YEARLY: "FREQ=YEARLY",
-      };
-      if (freqMap[popupState.recurrence]) {
-        svcData.rrule = freqMap[popupState.recurrence];
-      }
-    }
-
-    await hass.callService("calendar", "create_event", svcData);
-    onSuccess();
-  } catch (err: any) {
-    onError(err);
-  }
+  await hass.callService("calendar", "create_event", {
+    entity_id: s.calendar_id,
+    ...data,
+    ...(s.all_day
+      ? { start_date: start, end_date: end }
+      : { start_date_time: start, end_date_time: end }),
+    ...(rrule ? { rrule } : {}),
+  });
 }
 
-export function renderAddEventForm(
+/** Deletes the event; for recurring events either this occurrence or this and all future ones. Throws on failure. */
+export function deleteEvent(
+  hass: HomeAssistant,
+  s: EventFormState,
+  future = false,
+): Promise<void> {
+  return hass.callWS({
+    type: "calendar/event/delete",
+    entity_id: s.calendar_id,
+    uid: s.uid,
+    ...(s.recurrence_id ? { recurrence_id: s.recurrence_id } : {}),
+    ...(future ? { recurrence_range: "THISANDFUTURE" } : {}),
+  });
+}
+
+export function renderEventForm(
   hass: HomeAssistant,
   config: CalendarCardPlusConfig,
-  popupState: AddEventPopupState,
-  updateState: (newState: Partial<AddEventPopupState>) => void,
+  s: EventFormState,
+  updateState: (newState: Partial<EventFormState>) => void,
   onClose: () => void,
   onSave: () => void,
+  onDelete: (future: boolean) => void,
 ): TemplateResult {
-  const calendars = Object.keys(hass.states)
-    .filter((eid) => eid.startsWith("calendar."))
-    .filter((eid) => !config.exclude_entities?.includes(eid));
-
-  const isAllDay = popupState.all_day || false;
+  const isEdit = !!s.uid;
+  const calendars = isEdit
+    ? [s.calendar_id!]
+    : creatableCalendars(hass, config);
+  const canUpdate =
+    !isEdit || supportsFeature(hass, config, s.calendar_id!, UPDATE_EVENT);
+  const canDelete =
+    isEdit && supportsFeature(hass, config, s.calendar_id!, DELETE_EVENT);
+  const isAllDay = s.all_day || false;
+  const t = (key: string, fallback: string) =>
+    hass.localize(`ui.components.calendar.event.${key}`) || fallback;
 
   return html`
     <div class="add-event-form">
       <div class="field">
-        <label class="field-label"
-          >${hass.localize("ui.components.calendar.event.summary") ||
-          "Title"}</label
-        >
+        <label class="field-label">${t("summary", "Title")}</label>
         <input
           type="text"
           class="field-input"
-          .value=${popupState.name || ""}
+          .value=${s.name || ""}
           @input=${(e: Event) =>
             updateState({ name: (e.target as HTMLInputElement).value })}
         />
       </div>
 
       <div class="field">
-        <label class="field-label"
-          >${hass.localize("ui.components.calendar.event.location") ||
-          "Location"}</label
-        >
+        <label class="field-label">${t("location", "Location")}</label>
         <input
           type="text"
           class="field-input"
-          .value=${popupState.location || ""}
+          .value=${s.location || ""}
           @input=${(e: Event) =>
             updateState({ location: (e.target as HTMLInputElement).value })}
         />
       </div>
 
       <div class="field">
-        <label class="field-label"
-          >${hass.localize("ui.components.calendar.event.description") ||
-          "Description"}</label
-        >
+        <label class="field-label">${t("description", "Description")}</label>
         <input
           type="text"
           class="field-input"
-          .value=${popupState.description || ""}
+          .value=${s.description || ""}
           @input=${(e: Event) =>
             updateState({ description: (e.target as HTMLInputElement).value })}
         />
@@ -181,7 +231,8 @@ export function renderAddEventForm(
         >
         <select
           class="field-input"
-          .value=${popupState.calendar_id || ""}
+          ?disabled=${isEdit}
+          .value=${s.calendar_id || ""}
           @change=${(e: Event) =>
             updateState({ calendar_id: (e.target as HTMLSelectElement).value })}
         >
@@ -191,7 +242,7 @@ export function renderAddEventForm(
               </option>`
             : calendars.map(
                 (c) => html`
-                  <option value=${c} ?selected=${c === popupState.calendar_id}>
+                  <option value=${c} ?selected=${c === s.calendar_id}>
                     ${hass.states[c]?.attributes?.friendly_name || c}
                   </option>
                 `,
@@ -200,10 +251,7 @@ export function renderAddEventForm(
       </div>
 
       <div class="row-flex">
-        <ha-formfield
-          .label=${hass.localize("ui.components.calendar.event.all_day") ||
-          "All Day"}
-        >
+        <ha-formfield .label=${t("all_day", "All Day")}>
           <ha-switch
             .checked=${isAllDay}
             @change=${(e: any) => updateState({ all_day: e.target.checked })}
@@ -211,111 +259,110 @@ export function renderAddEventForm(
         </ha-formfield>
       </div>
 
-      <div class="field">
-        <label class="field-label"
-          >${hass.localize("ui.components.calendar.event.start") ||
-          "Start"}</label
-        >
-        <div class="date-row">
-          <input
-            type="date"
-            class="field-input"
-            .value=${popupState.start_date || ""}
-            @change=${(e: Event) =>
-              updateState({ start_date: (e.target as HTMLInputElement).value })}
-          />
-          ${!isAllDay
-            ? html`
-                <input
-                  type="time"
-                  class="field-input"
-                  .value=${popupState.start_time || "09:00"}
-                  @change=${(e: Event) =>
-                    updateState({
-                      start_time: (e.target as HTMLInputElement).value,
-                    })}
-                />
-              `
-            : ""}
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label"
-          >${hass.localize("ui.components.calendar.event.end") || "End"}</label
-        >
-        <div class="date-row">
-          <input
-            type="date"
-            class="field-input"
-            .value=${popupState.end_date || ""}
-            @change=${(e: Event) =>
-              updateState({ end_date: (e.target as HTMLInputElement).value })}
-          />
-          ${!isAllDay
-            ? html`
-                <input
-                  type="time"
-                  class="field-input"
-                  .value=${popupState.end_time || "10:00"}
-                  @change=${(e: Event) =>
-                    updateState({
-                      end_time: (e.target as HTMLInputElement).value,
-                    })}
-                />
-              `
-            : ""}
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label"
-          >${hass.localize("ui.components.calendar.event.repeat.label") ||
-          "Repeat"}</label
-        >
-        <select
-          class="field-input"
-          .value=${popupState.recurrence || "none"}
-          @change=${(e: Event) =>
-            updateState({ recurrence: (e.target as HTMLSelectElement).value })}
-        >
-          <option value="none">
-            ${hass.localize("ui.components.calendar.event.repeat.freq.none") ||
-            "None"}
-          </option>
-          <option value="DAILY">
-            ${hass.localize("ui.components.calendar.event.repeat.freq.daily") ||
-            "Daily"}
-          </option>
-          <option value="WEEKLY">
-            ${hass.localize(
-              "ui.components.calendar.event.repeat.freq.weekly",
-            ) || "Weekly"}
-          </option>
-          <option value="MONTHLY">
-            ${hass.localize(
-              "ui.components.calendar.event.repeat.freq.monthly",
-            ) || "Monthly"}
-          </option>
-          <option value="YEARLY">
-            ${hass.localize(
-              "ui.components.calendar.event.repeat.freq.yearly",
-            ) || "Yearly"}
-          </option>
-        </select>
-      </div>
+      ${(["start", "end"] as const).map(
+        (which) => html`
+          <div class="field">
+            <label class="field-label"
+              >${t(which, which === "start" ? "Start" : "End")}</label
+            >
+            <div class="date-row">
+              <input
+                type="date"
+                class="field-input"
+                .value=${s[`${which}_date`] || ""}
+                @change=${(e: Event) =>
+                  updateState({
+                    [`${which}_date`]: (e.target as HTMLInputElement).value,
+                  })}
+              />
+              ${!isAllDay
+                ? html`
+                    <input
+                      type="time"
+                      class="field-input"
+                      .value=${s[`${which}_time`] ||
+                      (which === "start" ? "09:00" : "10:00")}
+                      @change=${(e: Event) =>
+                        updateState({
+                          [`${which}_time`]: (e.target as HTMLInputElement)
+                            .value,
+                        })}
+                    />
+                  `
+                : nothing}
+            </div>
+          </div>
+        `,
+      )}
+      ${isRecurring(s)
+        ? nothing
+        : html`
+            <div class="field">
+              <label class="field-label"
+                >${t("repeat.label", "Repeat")}</label
+              >
+              <select
+                class="field-input"
+                .value=${s.recurrence || "none"}
+                @change=${(e: Event) =>
+                  updateState({
+                    recurrence: (e.target as HTMLSelectElement).value,
+                  })}
+              >
+                ${["none", ...FREQUENCIES].map(
+                  (f) => html`
+                    <option value=${f} ?selected=${f === (s.recurrence || "none")}>
+                      ${t(
+                        `repeat.freq.${f.toLowerCase()}`,
+                        f.charAt(0) + f.slice(1).toLowerCase(),
+                      )}
+                    </option>
+                  `,
+                )}
+              </select>
+            </div>
+          `}
 
       <div class="dialog-actions">
+        ${canDelete
+          ? isRecurring(s)
+            ? html`
+                <ha-button class="delete" @click=${() => onDelete(false)}>
+                  ${t("confirm_delete.delete_this", "Delete only this event")}
+                </ha-button>
+                <ha-button class="delete" @click=${() => onDelete(true)}>
+                  ${t("confirm_delete.delete_future", "Delete all future events")}
+                </ha-button>
+              `
+            : html`
+                <ha-button class="delete" @click=${() => onDelete(false)}>
+                  ${hass.localize("ui.common.delete") || "Delete"}
+                </ha-button>
+              `
+          : nothing}
+        <span class="spacer"></span>
         <ha-button @click=${onClose}>
           ${hass.localize("ui.common.cancel") || "Cancel"}
         </ha-button>
-        <ha-button
-          unelevated
-          @click=${onSave}
-          ?disabled=${!popupState.name || !popupState.calendar_id}
-        >
-          ${hass.localize("ui.common.save") || "Save"}
-        </ha-button>
+        ${canUpdate
+          ? html`
+              <ha-button
+                unelevated
+                @click=${onSave}
+                ?disabled=${!s.name ||
+                !s.calendar_id ||
+                !endAfterStart(
+                  !!s.all_day,
+                  s.start_date,
+                  s.end_date,
+                  s.start_time,
+                  s.end_time,
+                )}
+              >
+                ${hass.localize("ui.common.save") || "Save"}
+              </ha-button>
+            `
+          : nothing}
       </div>
     </div>
   `;

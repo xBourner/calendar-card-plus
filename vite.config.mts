@@ -5,15 +5,13 @@ export default defineConfig({
     lib: {
       entry: 'src/card.ts',
       formats: ['es'],
-      fileName: (format) => `calendar-card-plus.js`,
+      fileName: () => 'calendar-card-plus.js',
     },
     outDir: 'dist',
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        inlineDynamicImports: true,
+        codeSplitting: false,
       },
-      external: [
-      ],
     },
   },
 });

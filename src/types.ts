@@ -31,6 +31,8 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   group_by_date?: boolean;
   group_by_date_and_calendar?: boolean;
   show_empty_days?: boolean;
+  empty_text?: string;
+  read_only_calendars?: string[];
 }
 
 export interface CalendarEvent {

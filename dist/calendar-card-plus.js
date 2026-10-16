@@ -1,1947 +1,1512 @@
-var et = Object.defineProperty;
-var tt = (a, e, t) => e in a ? et(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
-var E = (a, e, t) => tt(a, typeof e != "symbol" ? e + "" : e, t);
-var it = "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
-async function at(a, e, t, i) {
-  const s = encodeURI(`?start=${e.toISOString()}&end=${t.toISOString()}`), o = i.map(async (d) => {
-    try {
-      const r = await a.callApi("GET", `calendars/${d}${s}`);
-      if (!Array.isArray(r))
-        throw new Error("Response is not an array");
-      return r.map((l) => {
-        var f, h, $, w, m, p;
-        const _ = ((f = l.start) == null ? void 0 : f.dateTime) || ((h = l.start) == null ? void 0 : h.date) || l.start, v = (($ = l.end) == null ? void 0 : $.dateTime) || ((w = l.end) == null ? void 0 : w.date) || l.end;
-        return {
-          ...l,
-          start: { dateTime: _.includes("T") ? _ : void 0, date: _.includes("T") ? void 0 : _ },
-          end: { dateTime: v.includes("T") ? v : void 0, date: v.includes("T") ? void 0 : v },
-          summary: l.summary || l.title || "Unknown Event",
-          entity_id: d,
-          calendar_name: ((p = (m = a.states[d]) == null ? void 0 : m.attributes) == null ? void 0 : p.friendly_name) || d
-        };
-      });
-    } catch {
-      const c = a.states[d];
-      return c && c.attributes.start_time && c.attributes.end_time ? [{
-        start: { dateTime: c.attributes.start_time.replace(" ", "T") },
-        end: { dateTime: c.attributes.end_time.replace(" ", "T") },
-        summary: c.attributes.message || c.attributes.friendly_name,
-        location: c.attributes.location,
-        description: c.attributes.description,
-        entity_id: d,
-        calendar_name: c.attributes.friendly_name || d
-      }] : [];
-    }
-  });
-  return (await Promise.all(o)).flat();
+//#region \0rolldown/runtime.js
+var e = Object.defineProperty, t = (e, t, n) => () => {
+	if (n) throw n[0];
+	try {
+		return e && (t = e(e = 0)), t;
+	} catch (e) {
+		throw n = [e], e;
+	}
+}, n = (t, n) => {
+	let r = {};
+	for (var i in t) e(r, i, {
+		get: t[i],
+		enumerable: !0
+	});
+	return n || e(r, Symbol.toStringTag, { value: "Module" }), r;
+}, r = "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
+//#endregion
+//#region src/ha/data/calendar.ts
+async function i(e, t, n, r) {
+	let i = encodeURI(`?start=${t.toISOString()}&end=${n.toISOString()}`), a = r.map(async (t) => {
+		try {
+			let n = await e.callApi("GET", `calendars/${t}${i}`);
+			if (!Array.isArray(n)) throw Error("Response is not an array");
+			return n.map((n) => {
+				let r = n.start?.dateTime || n.start?.date || n.start, i = n.end?.dateTime || n.end?.date || n.end;
+				return {
+					...n,
+					start: {
+						dateTime: r.includes("T") ? r : void 0,
+						date: r.includes("T") ? void 0 : r
+					},
+					end: {
+						dateTime: i.includes("T") ? i : void 0,
+						date: i.includes("T") ? void 0 : i
+					},
+					summary: n.summary || n.title || "Unknown Event",
+					entity_id: t,
+					calendar_name: e.states[t]?.attributes?.friendly_name || t
+				};
+			});
+		} catch {
+			let n = e.states[t];
+			return n && n.attributes.start_time && n.attributes.end_time ? [{
+				start: { dateTime: n.attributes.start_time.replace(" ", "T") },
+				end: { dateTime: n.attributes.end_time.replace(" ", "T") },
+				summary: n.attributes.message || n.attributes.friendly_name,
+				location: n.attributes.location,
+				description: n.attributes.description,
+				entity_id: t,
+				calendar_name: n.attributes.friendly_name || t
+			}] : [];
+		}
+	});
+	return (await Promise.all(a)).flat();
 }
-/**
- * @license
- * Copyright 2019 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const ue = globalThis, ze = ue.ShadowRoot && (ue.ShadyCSS === void 0 || ue.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ae = Symbol(), Me = /* @__PURE__ */ new WeakMap();
-let Ze = class {
-  constructor(e, t, i) {
-    if (this._$cssResult$ = !0, i !== Ae) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
-    this.cssText = e, this.t = t;
-  }
-  get styleSheet() {
-    let e = this.o;
-    const t = this.t;
-    if (ze && e === void 0) {
-      const i = t !== void 0 && t.length === 1;
-      i && (e = Me.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), i && Me.set(t, e));
-    }
-    return e;
-  }
-  toString() {
-    return this.cssText;
-  }
-};
-const st = (a) => new Ze(typeof a == "string" ? a : a + "", void 0, Ae), Ee = (a, ...e) => {
-  const t = a.length === 1 ? a[0] : e.reduce((i, s, o) => i + ((n) => {
-    if (n._$cssResult$ === !0) return n.cssText;
-    if (typeof n == "number") return n;
-    throw Error("Value passed to 'css' function must be a 'css' function result: " + n + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
-  })(s) + a[o + 1], a[0]);
-  return new Ze(t, a, Ae);
-}, ot = (a, e) => {
-  if (ze) a.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
-  else for (const t of e) {
-    const i = document.createElement("style"), s = ue.litNonce;
-    s !== void 0 && i.setAttribute("nonce", s), i.textContent = t.cssText, a.appendChild(i);
-  }
-}, Pe = ze ? (a) => a : (a) => a instanceof CSSStyleSheet ? ((e) => {
-  let t = "";
-  for (const i of e.cssRules) t += i.cssText;
-  return st(t);
-})(a) : a;
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const { is: nt, defineProperty: rt, getOwnPropertyDescriptor: dt, getOwnPropertyNames: lt, getOwnPropertySymbols: ct, getPrototypeOf: _t } = Object, V = globalThis, je = V.trustedTypes, ht = je ? je.emptyScript : "", we = V.reactiveElementPolyfillSupport, oe = (a, e) => a, me = { toAttribute(a, e) {
-  switch (e) {
-    case Boolean:
-      a = a ? ht : null;
-      break;
-    case Object:
-    case Array:
-      a = a == null ? a : JSON.stringify(a);
-  }
-  return a;
-}, fromAttribute(a, e) {
-  let t = a;
-  switch (e) {
-    case Boolean:
-      t = a !== null;
-      break;
-    case Number:
-      t = a === null ? null : Number(a);
-      break;
-    case Object:
-    case Array:
-      try {
-        t = JSON.parse(a);
-      } catch {
-        t = null;
-      }
-  }
-  return t;
-} }, Te = (a, e) => !nt(a, e), Le = { attribute: !0, type: String, converter: me, reflect: !1, useDefault: !1, hasChanged: Te };
-Symbol.metadata ?? (Symbol.metadata = Symbol("metadata")), V.litPropertyMetadata ?? (V.litPropertyMetadata = /* @__PURE__ */ new WeakMap());
-let X = class extends HTMLElement {
-  static addInitializer(e) {
-    this._$Ei(), (this.l ?? (this.l = [])).push(e);
-  }
-  static get observedAttributes() {
-    return this.finalize(), this._$Eh && [...this._$Eh.keys()];
-  }
-  static createProperty(e, t = Le) {
-    if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
-      const i = Symbol(), s = this.getPropertyDescriptor(e, i, t);
-      s !== void 0 && rt(this.prototype, e, s);
-    }
-  }
-  static getPropertyDescriptor(e, t, i) {
-    const { get: s, set: o } = dt(this.prototype, e) ?? { get() {
-      return this[t];
-    }, set(n) {
-      this[t] = n;
-    } };
-    return { get: s, set(n) {
-      const d = s == null ? void 0 : s.call(this);
-      o == null || o.call(this, n), this.requestUpdate(e, d, i);
-    }, configurable: !0, enumerable: !0 };
-  }
-  static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? Le;
-  }
-  static _$Ei() {
-    if (this.hasOwnProperty(oe("elementProperties"))) return;
-    const e = _t(this);
-    e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
-  }
-  static finalize() {
-    if (this.hasOwnProperty(oe("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(oe("properties"))) {
-      const t = this.properties, i = [...lt(t), ...ct(t)];
-      for (const s of i) this.createProperty(s, t[s]);
-    }
-    const e = this[Symbol.metadata];
-    if (e !== null) {
-      const t = litPropertyMetadata.get(e);
-      if (t !== void 0) for (const [i, s] of t) this.elementProperties.set(i, s);
-    }
-    this._$Eh = /* @__PURE__ */ new Map();
-    for (const [t, i] of this.elementProperties) {
-      const s = this._$Eu(t, i);
-      s !== void 0 && this._$Eh.set(s, t);
-    }
-    this.elementStyles = this.finalizeStyles(this.styles);
-  }
-  static finalizeStyles(e) {
-    const t = [];
-    if (Array.isArray(e)) {
-      const i = new Set(e.flat(1 / 0).reverse());
-      for (const s of i) t.unshift(Pe(s));
-    } else e !== void 0 && t.push(Pe(e));
-    return t;
-  }
-  static _$Eu(e, t) {
-    const i = t.attribute;
-    return i === !1 ? void 0 : typeof i == "string" ? i : typeof e == "string" ? e.toLowerCase() : void 0;
-  }
-  constructor() {
-    super(), this._$Ep = void 0, this.isUpdatePending = !1, this.hasUpdated = !1, this._$Em = null, this._$Ev();
-  }
-  _$Ev() {
-    var e;
-    this._$ES = new Promise((t) => this.enableUpdating = t), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), (e = this.constructor.l) == null || e.forEach((t) => t(this));
-  }
-  addController(e) {
-    var t;
-    (this._$EO ?? (this._$EO = /* @__PURE__ */ new Set())).add(e), this.renderRoot !== void 0 && this.isConnected && ((t = e.hostConnected) == null || t.call(e));
-  }
-  removeController(e) {
-    var t;
-    (t = this._$EO) == null || t.delete(e);
-  }
-  _$E_() {
-    const e = /* @__PURE__ */ new Map(), t = this.constructor.elementProperties;
-    for (const i of t.keys()) this.hasOwnProperty(i) && (e.set(i, this[i]), delete this[i]);
-    e.size > 0 && (this._$Ep = e);
-  }
-  createRenderRoot() {
-    const e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return ot(e, this.constructor.elementStyles), e;
-  }
-  connectedCallback() {
-    var e;
-    this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this.enableUpdating(!0), (e = this._$EO) == null || e.forEach((t) => {
-      var i;
-      return (i = t.hostConnected) == null ? void 0 : i.call(t);
-    });
-  }
-  enableUpdating(e) {
-  }
-  disconnectedCallback() {
-    var e;
-    (e = this._$EO) == null || e.forEach((t) => {
-      var i;
-      return (i = t.hostDisconnected) == null ? void 0 : i.call(t);
-    });
-  }
-  attributeChangedCallback(e, t, i) {
-    this._$AK(e, i);
-  }
-  _$ET(e, t) {
-    var o;
-    const i = this.constructor.elementProperties.get(e), s = this.constructor._$Eu(e, i);
-    if (s !== void 0 && i.reflect === !0) {
-      const n = (((o = i.converter) == null ? void 0 : o.toAttribute) !== void 0 ? i.converter : me).toAttribute(t, i.type);
-      this._$Em = e, n == null ? this.removeAttribute(s) : this.setAttribute(s, n), this._$Em = null;
-    }
-  }
-  _$AK(e, t) {
-    var o, n;
-    const i = this.constructor, s = i._$Eh.get(e);
-    if (s !== void 0 && this._$Em !== s) {
-      const d = i.getPropertyOptions(s), r = typeof d.converter == "function" ? { fromAttribute: d.converter } : ((o = d.converter) == null ? void 0 : o.fromAttribute) !== void 0 ? d.converter : me;
-      this._$Em = s;
-      const c = r.fromAttribute(t, d.type);
-      this[s] = c ?? ((n = this._$Ej) == null ? void 0 : n.get(s)) ?? c, this._$Em = null;
-    }
-  }
-  requestUpdate(e, t, i, s = !1, o) {
-    var n;
-    if (e !== void 0) {
-      const d = this.constructor;
-      if (s === !1 && (o = this[e]), i ?? (i = d.getPropertyOptions(e)), !((i.hasChanged ?? Te)(o, t) || i.useDefault && i.reflect && o === ((n = this._$Ej) == null ? void 0 : n.get(e)) && !this.hasAttribute(d._$Eu(e, i)))) return;
-      this.C(e, t, i);
-    }
-    this.isUpdatePending === !1 && (this._$ES = this._$EP());
-  }
-  C(e, t, { useDefault: i, reflect: s, wrapped: o }, n) {
-    i && !(this._$Ej ?? (this._$Ej = /* @__PURE__ */ new Map())).has(e) && (this._$Ej.set(e, n ?? t ?? this[e]), o !== !0 || n !== void 0) || (this._$AL.has(e) || (this.hasUpdated || i || (t = void 0), this._$AL.set(e, t)), s === !0 && this._$Em !== e && (this._$Eq ?? (this._$Eq = /* @__PURE__ */ new Set())).add(e));
-  }
-  async _$EP() {
-    this.isUpdatePending = !0;
-    try {
-      await this._$ES;
-    } catch (t) {
-      Promise.reject(t);
-    }
-    const e = this.scheduleUpdate();
-    return e != null && await e, !this.isUpdatePending;
-  }
-  scheduleUpdate() {
-    return this.performUpdate();
-  }
-  performUpdate() {
-    var i;
-    if (!this.isUpdatePending) return;
-    if (!this.hasUpdated) {
-      if (this.renderRoot ?? (this.renderRoot = this.createRenderRoot()), this._$Ep) {
-        for (const [o, n] of this._$Ep) this[o] = n;
-        this._$Ep = void 0;
-      }
-      const s = this.constructor.elementProperties;
-      if (s.size > 0) for (const [o, n] of s) {
-        const { wrapped: d } = n, r = this[o];
-        d !== !0 || this._$AL.has(o) || r === void 0 || this.C(o, void 0, n, r);
-      }
-    }
-    let e = !1;
-    const t = this._$AL;
-    try {
-      e = this.shouldUpdate(t), e ? (this.willUpdate(t), (i = this._$EO) == null || i.forEach((s) => {
-        var o;
-        return (o = s.hostUpdate) == null ? void 0 : o.call(s);
-      }), this.update(t)) : this._$EM();
-    } catch (s) {
-      throw e = !1, this._$EM(), s;
-    }
-    e && this._$AE(t);
-  }
-  willUpdate(e) {
-  }
-  _$AE(e) {
-    var t;
-    (t = this._$EO) == null || t.forEach((i) => {
-      var s;
-      return (s = i.hostUpdated) == null ? void 0 : s.call(i);
-    }), this.hasUpdated || (this.hasUpdated = !0, this.firstUpdated(e)), this.updated(e);
-  }
-  _$EM() {
-    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = !1;
-  }
-  get updateComplete() {
-    return this.getUpdateComplete();
-  }
-  getUpdateComplete() {
-    return this._$ES;
-  }
-  shouldUpdate(e) {
-    return !0;
-  }
-  update(e) {
-    this._$Eq && (this._$Eq = this._$Eq.forEach((t) => this._$ET(t, this[t]))), this._$EM();
-  }
-  updated(e) {
-  }
-  firstUpdated(e) {
-  }
-};
-X.elementStyles = [], X.shadowRootOptions = { mode: "open" }, X[oe("elementProperties")] = /* @__PURE__ */ new Map(), X[oe("finalized")] = /* @__PURE__ */ new Map(), we == null || we({ ReactiveElement: X }), (V.reactiveElementVersions ?? (V.reactiveElementVersions = [])).push("2.1.2");
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const ne = globalThis, Be = (a) => a, pe = ne.trustedTypes, Ne = pe ? pe.createPolicy("lit-html", { createHTML: (a) => a }) : void 0, We = "$lit$", U = `lit$${Math.random().toFixed(9).slice(2)}$`, Ge = "?" + U, ut = `<${Ge}>`, Y = document, re = () => Y.createComment(""), de = (a) => a === null || typeof a != "object" && typeof a != "function", De = Array.isArray, mt = (a) => De(a) || typeof (a == null ? void 0 : a[Symbol.iterator]) == "function", fe = `[ 	
-\f\r]`, se = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Oe = /-->/g, He = />/g, I = RegExp(`>|${fe}(?:([^\\s"'>=/]+)(${fe}*=${fe}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Ue = /'/g, Ve = /"/g, qe = /^(?:script|style|textarea|title)$/i, pt = (a) => (e, ...t) => ({ _$litType$: a, strings: e, values: t }), u = pt(1), ee = Symbol.for("lit-noChange"), S = Symbol.for("lit-nothing"), Re = /* @__PURE__ */ new WeakMap(), K = Y.createTreeWalker(Y, 129);
-function Fe(a, e) {
-  if (!De(a) || !a.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return Ne !== void 0 ? Ne.createHTML(e) : e;
+//#endregion
+//#region node_modules/@lit/reactive-element/css-tag.js
+var a, o, s, c, l, u, d, f, ee, te = t((() => {
+	a = globalThis, o = a.ShadowRoot && (a.ShadyCSS === void 0 || a.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s = Symbol(), c = /* @__PURE__ */ new WeakMap(), l = class {
+		constructor(e, t, n) {
+			if (this._$cssResult$ = !0, n !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+			this.cssText = e, this.t = t;
+		}
+		get styleSheet() {
+			let e = this.o, t = this.t;
+			if (o && e === void 0) {
+				let n = t !== void 0 && t.length === 1;
+				n && (e = c.get(t)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), n && c.set(t, e));
+			}
+			return e;
+		}
+		toString() {
+			return this.cssText;
+		}
+	}, u = (e) => new l(typeof e == "string" ? e : e + "", void 0, s), d = (e, ...t) => {
+		let n = e.length === 1 ? e[0] : t.reduce((t, n, r) => t + ((e) => {
+			if (!0 === e._$cssResult$) return e.cssText;
+			if (typeof e == "number") return e;
+			throw Error("Value passed to 'css' function must be a 'css' function result: " + e + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+		})(n) + e[r + 1], e[0]);
+		return new l(n, e, s);
+	}, f = (e, t) => {
+		if (o) e.adoptedStyleSheets = t.map((e) => e instanceof CSSStyleSheet ? e : e.styleSheet);
+		else for (let n of t) {
+			let t = document.createElement("style"), r = a.litNonce;
+			r !== void 0 && t.setAttribute("nonce", r), t.textContent = n.cssText, e.appendChild(t);
+		}
+	}, ee = o ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((e) => {
+		let t = "";
+		for (let n of e.cssRules) t += n.cssText;
+		return u(t);
+	})(e) : e;
+})), ne, re, ie, ae, oe, se, p, ce, le, ue, m, h, g, de, _, v = t((() => {
+	te(), {is: ne, defineProperty: re, getOwnPropertyDescriptor: ie, getOwnPropertyNames: ae, getOwnPropertySymbols: oe, getPrototypeOf: se} = Object, p = globalThis, ce = p.trustedTypes, le = ce ? ce.emptyScript : "", ue = p.reactiveElementPolyfillSupport, m = (e, t) => e, h = {
+		toAttribute(e, t) {
+			switch (t) {
+				case Boolean:
+					e = e ? le : null;
+					break;
+				case Object:
+				case Array: e = e == null ? e : JSON.stringify(e);
+			}
+			return e;
+		},
+		fromAttribute(e, t) {
+			let n = e;
+			switch (t) {
+				case Boolean:
+					n = e !== null;
+					break;
+				case Number:
+					n = e === null ? null : Number(e);
+					break;
+				case Object:
+				case Array: try {
+					n = JSON.parse(e);
+				} catch {
+					n = null;
+				}
+			}
+			return n;
+		}
+	}, g = (e, t) => !ne(e, t), de = {
+		attribute: !0,
+		type: String,
+		converter: h,
+		reflect: !1,
+		useDefault: !1,
+		hasChanged: g
+	}, Symbol.metadata ??= Symbol("metadata"), p.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap(), _ = class extends HTMLElement {
+		static addInitializer(e) {
+			this._$Ei(), (this.l ??= []).push(e);
+		}
+		static get observedAttributes() {
+			return this.finalize(), this._$Eh && [...this._$Eh.keys()];
+		}
+		static createProperty(e, t = de) {
+			if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
+				let n = Symbol(), r = this.getPropertyDescriptor(e, n, t);
+				r !== void 0 && re(this.prototype, e, r);
+			}
+		}
+		static getPropertyDescriptor(e, t, n) {
+			let { get: r, set: i } = ie(this.prototype, e) ?? {
+				get() {
+					return this[t];
+				},
+				set(e) {
+					this[t] = e;
+				}
+			};
+			return {
+				get: r,
+				set(t) {
+					let a = r?.call(this);
+					i?.call(this, t), this.requestUpdate(e, a, n);
+				},
+				configurable: !0,
+				enumerable: !0
+			};
+		}
+		static getPropertyOptions(e) {
+			return this.elementProperties.get(e) ?? de;
+		}
+		static _$Ei() {
+			if (this.hasOwnProperty(m("elementProperties"))) return;
+			let e = se(this);
+			e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
+		}
+		static finalize() {
+			if (this.hasOwnProperty(m("finalized"))) return;
+			if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(m("properties"))) {
+				let e = this.properties, t = [...ae(e), ...oe(e)];
+				for (let n of t) this.createProperty(n, e[n]);
+			}
+			let e = this[Symbol.metadata];
+			if (e !== null) {
+				let t = litPropertyMetadata.get(e);
+				if (t !== void 0) for (let [e, n] of t) this.elementProperties.set(e, n);
+			}
+			this._$Eh = /* @__PURE__ */ new Map();
+			for (let [e, t] of this.elementProperties) {
+				let n = this._$Eu(e, t);
+				n !== void 0 && this._$Eh.set(n, e);
+			}
+			this.elementStyles = this.finalizeStyles(this.styles);
+		}
+		static finalizeStyles(e) {
+			let t = [];
+			if (Array.isArray(e)) {
+				let n = new Set(e.flat(1 / 0).reverse());
+				for (let e of n) t.unshift(ee(e));
+			} else e !== void 0 && t.push(ee(e));
+			return t;
+		}
+		static _$Eu(e, t) {
+			let n = t.attribute;
+			return !1 === n ? void 0 : typeof n == "string" ? n : typeof e == "string" ? e.toLowerCase() : void 0;
+		}
+		constructor() {
+			super(), this._$Ep = void 0, this.isUpdatePending = !1, this.hasUpdated = !1, this._$Em = null, this._$Ev();
+		}
+		_$Ev() {
+			this._$ES = new Promise((e) => this.enableUpdating = e), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((e) => e(this));
+		}
+		addController(e) {
+			(this._$EO ??= /* @__PURE__ */ new Set()).add(e), this.renderRoot !== void 0 && this.isConnected && e.hostConnected?.();
+		}
+		removeController(e) {
+			this._$EO?.delete(e);
+		}
+		_$E_() {
+			let e = /* @__PURE__ */ new Map(), t = this.constructor.elementProperties;
+			for (let n of t.keys()) this.hasOwnProperty(n) && (e.set(n, this[n]), delete this[n]);
+			e.size > 0 && (this._$Ep = e);
+		}
+		createRenderRoot() {
+			let e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
+			return f(e, this.constructor.elementStyles), e;
+		}
+		connectedCallback() {
+			this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((e) => e.hostConnected?.());
+		}
+		enableUpdating(e) {}
+		disconnectedCallback() {
+			this._$EO?.forEach((e) => e.hostDisconnected?.());
+		}
+		attributeChangedCallback(e, t, n) {
+			this._$AK(e, n);
+		}
+		_$ET(e, t) {
+			let n = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, n);
+			if (r !== void 0 && !0 === n.reflect) {
+				let i = (n.converter?.toAttribute === void 0 ? h : n.converter).toAttribute(t, n.type);
+				this._$Em = e, i == null ? this.removeAttribute(r) : this.setAttribute(r, i), this._$Em = null;
+			}
+		}
+		_$AK(e, t) {
+			let n = this.constructor, r = n._$Eh.get(e);
+			if (r !== void 0 && this._$Em !== r) {
+				let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? h : e.converter;
+				this._$Em = r;
+				let a = i.fromAttribute(t, e.type);
+				this[r] = a ?? this._$Ej?.get(r) ?? a, this._$Em = null;
+			}
+		}
+		requestUpdate(e, t, n, r = !1, i) {
+			if (e !== void 0) {
+				let a = this.constructor;
+				if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? g)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
+				this.C(e, t, n);
+			}
+			!1 === this.isUpdatePending && (this._$ES = this._$EP());
+		}
+		C(e, t, { useDefault: n, reflect: r, wrapped: i }, a) {
+			n && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(e) && (this._$Ej.set(e, a ?? t ?? this[e]), !0 !== i || a !== void 0) || (this._$AL.has(e) || (this.hasUpdated || n || (t = void 0), this._$AL.set(e, t)), !0 === r && this._$Em !== e && (this._$Eq ??= /* @__PURE__ */ new Set()).add(e));
+		}
+		async _$EP() {
+			this.isUpdatePending = !0;
+			try {
+				await this._$ES;
+			} catch (e) {
+				Promise.reject(e);
+			}
+			let e = this.scheduleUpdate();
+			return e != null && await e, !this.isUpdatePending;
+		}
+		scheduleUpdate() {
+			return this.performUpdate();
+		}
+		performUpdate() {
+			if (!this.isUpdatePending) return;
+			if (!this.hasUpdated) {
+				if (this.renderRoot ??= this.createRenderRoot(), this._$Ep) {
+					for (let [e, t] of this._$Ep) this[e] = t;
+					this._$Ep = void 0;
+				}
+				let e = this.constructor.elementProperties;
+				if (e.size > 0) for (let [t, n] of e) {
+					let { wrapped: e } = n, r = this[t];
+					!0 !== e || this._$AL.has(t) || r === void 0 || this.C(t, void 0, n, r);
+				}
+			}
+			let e = !1, t = this._$AL;
+			try {
+				e = this.shouldUpdate(t), e ? (this.willUpdate(t), this._$EO?.forEach((e) => e.hostUpdate?.()), this.update(t)) : this._$EM();
+			} catch (t) {
+				throw e = !1, this._$EM(), t;
+			}
+			e && this._$AE(t);
+		}
+		willUpdate(e) {}
+		_$AE(e) {
+			this._$EO?.forEach((e) => e.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = !0, this.firstUpdated(e)), this.updated(e);
+		}
+		_$EM() {
+			this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = !1;
+		}
+		get updateComplete() {
+			return this.getUpdateComplete();
+		}
+		getUpdateComplete() {
+			return this._$ES;
+		}
+		shouldUpdate(e) {
+			return !0;
+		}
+		update(e) {
+			this._$Eq &&= this._$Eq.forEach((e) => this._$ET(e, this[e])), this._$EM();
+		}
+		updated(e) {}
+		firstUpdated(e) {}
+	}, _.elementStyles = [], _.shadowRootOptions = { mode: "open" }, _[m("elementProperties")] = /* @__PURE__ */ new Map(), _[m("finalized")] = /* @__PURE__ */ new Map(), ue?.({ ReactiveElement: _ }), (p.reactiveElementVersions ??= []).push("2.1.2");
+}));
+//#endregion
+//#region node_modules/lit-html/lit-html.js
+function fe(e, t) {
+	if (!T(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+	return he === void 0 ? t : he.createHTML(t);
 }
-const vt = (a, e) => {
-  const t = a.length - 1, i = [];
-  let s, o = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", n = se;
-  for (let d = 0; d < t; d++) {
-    const r = a[d];
-    let c, l, _ = -1, v = 0;
-    for (; v < r.length && (n.lastIndex = v, l = n.exec(r), l !== null); ) v = n.lastIndex, n === se ? l[1] === "!--" ? n = Oe : l[1] !== void 0 ? n = He : l[2] !== void 0 ? (qe.test(l[2]) && (s = RegExp("</" + l[2], "g")), n = I) : l[3] !== void 0 && (n = I) : n === I ? l[0] === ">" ? (n = s ?? se, _ = -1) : l[1] === void 0 ? _ = -2 : (_ = n.lastIndex - l[2].length, c = l[1], n = l[3] === void 0 ? I : l[3] === '"' ? Ve : Ue) : n === Ve || n === Ue ? n = I : n === Oe || n === He ? n = se : (n = I, s = void 0);
-    const f = n === I && a[d + 1].startsWith("/>") ? " " : "";
-    o += n === se ? r + ut : _ >= 0 ? (i.push(c), r.slice(0, _) + We + r.slice(_) + U + f) : r + U + (_ === -2 ? d : f);
-  }
-  return [Fe(a, o + (a[t] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), i];
-};
-class le {
-  constructor({ strings: e, _$litType$: t }, i) {
-    let s;
-    this.parts = [];
-    let o = 0, n = 0;
-    const d = e.length - 1, r = this.parts, [c, l] = vt(e, t);
-    if (this.el = le.createElement(c, i), K.currentNode = this.el.content, t === 2 || t === 3) {
-      const _ = this.el.content.firstChild;
-      _.replaceWith(..._.childNodes);
-    }
-    for (; (s = K.nextNode()) !== null && r.length < d; ) {
-      if (s.nodeType === 1) {
-        if (s.hasAttributes()) for (const _ of s.getAttributeNames()) if (_.endsWith(We)) {
-          const v = l[n++], f = s.getAttribute(_).split(U), h = /([.?@])?(.*)/.exec(v);
-          r.push({ type: 1, index: o, name: h[2], strings: f, ctor: h[1] === "." ? gt : h[1] === "?" ? wt : h[1] === "@" ? ft : ve }), s.removeAttribute(_);
-        } else _.startsWith(U) && (r.push({ type: 6, index: o }), s.removeAttribute(_));
-        if (qe.test(s.tagName)) {
-          const _ = s.textContent.split(U), v = _.length - 1;
-          if (v > 0) {
-            s.textContent = pe ? pe.emptyScript : "";
-            for (let f = 0; f < v; f++) s.append(_[f], re()), K.nextNode(), r.push({ type: 2, index: ++o });
-            s.append(_[v], re());
-          }
-        }
-      } else if (s.nodeType === 8) if (s.data === Ge) r.push({ type: 2, index: o });
-      else {
-        let _ = -1;
-        for (; (_ = s.data.indexOf(U, _ + 1)) !== -1; ) r.push({ type: 7, index: o }), _ += U.length - 1;
-      }
-      o++;
-    }
-  }
-  static createElement(e, t) {
-    const i = Y.createElement("template");
-    return i.innerHTML = e, i;
-  }
+function y(e, t, n = e, r) {
+	if (t === A) return t;
+	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = w(t) ? void 0 : t._$litDirective$;
+	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = y(e, i._$AS(e, t.values), i, r)), t;
 }
-function te(a, e, t = a, i) {
-  var n, d;
-  if (e === ee) return e;
-  let s = i !== void 0 ? (n = t._$Co) == null ? void 0 : n[i] : t._$Cl;
-  const o = de(e) ? void 0 : e._$litDirective$;
-  return (s == null ? void 0 : s.constructor) !== o && ((d = s == null ? void 0 : s._$AO) == null || d.call(s, !1), o === void 0 ? s = void 0 : (s = new o(a), s._$AT(a, t, i)), i !== void 0 ? (t._$Co ?? (t._$Co = []))[i] = s : t._$Cl = s), s !== void 0 && (e = te(a, s._$AS(a, e.values), s, i)), e;
+var pe, me, b, he, ge, x, _e, ve, S, C, w, T, ye, be, E, xe, Se, D, Ce, we, Te, O, k, A, j, Ee, M, De, Oe, ke, Ae, N, je, Me, Ne, Pe, Fe, Ie, Le = t((() => {
+	pe = globalThis, me = (e) => e, b = pe.trustedTypes, he = b ? b.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, ge = "$lit$", x = `lit$${Math.random().toFixed(9).slice(2)}$`, _e = "?" + x, ve = `<${_e}>`, S = document, C = () => S.createComment(""), w = (e) => e === null || typeof e != "object" && typeof e != "function", T = Array.isArray, ye = (e) => T(e) || typeof e?.[Symbol.iterator] == "function", be = "[ 	\n\f\r]", E = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, xe = /-->/g, Se = />/g, D = RegExp(`>|${be}(?:([^\\s"'>=/]+)(${be}*=${be}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), Ce = /'/g, we = /"/g, Te = /^(?:script|style|textarea|title)$/i, O = (e) => (t, ...n) => ({
+		_$litType$: e,
+		strings: t,
+		values: n
+	}), k = O(1), O(2), O(3), A = Symbol.for("lit-noChange"), j = Symbol.for("lit-nothing"), Ee = /* @__PURE__ */ new WeakMap(), M = S.createTreeWalker(S, 129), De = (e, t) => {
+		let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = E;
+		for (let t = 0; t < n; t++) {
+			let n = e[t], s, c, l = -1, u = 0;
+			for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === E ? c[1] === "!--" ? o = xe : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = D) : (Te.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = D) : o = Se : o === D ? c[0] === ">" ? (o = i ?? E, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? D : c[3] === "\"" ? we : Ce) : o === we || o === Ce ? o = D : o === xe || o === Se ? o = E : (o = D, i = void 0);
+			let d = o === D && e[t + 1].startsWith("/>") ? " " : "";
+			a += o === E ? n + ve : l >= 0 ? (r.push(s), n.slice(0, l) + ge + n.slice(l) + x + d) : n + x + (l === -2 ? t : d);
+		}
+		return [fe(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
+	}, Oe = class e {
+		constructor({ strings: t, _$litType$: n }, r) {
+			let i;
+			this.parts = [];
+			let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = De(t, n);
+			if (this.el = e.createElement(l, r), M.currentNode = this.el.content, n === 2 || n === 3) {
+				let e = this.el.content.firstChild;
+				e.replaceWith(...e.childNodes);
+			}
+			for (; (i = M.nextNode()) !== null && c.length < s;) {
+				if (i.nodeType === 1) {
+					if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(ge)) {
+						let t = u[o++], n = i.getAttribute(e).split(x), r = /([.?@])?(.*)/.exec(t);
+						c.push({
+							type: 1,
+							index: a,
+							name: r[2],
+							strings: n,
+							ctor: r[1] === "." ? je : r[1] === "?" ? Me : r[1] === "@" ? Ne : N
+						}), i.removeAttribute(e);
+					} else e.startsWith(x) && (c.push({
+						type: 6,
+						index: a
+					}), i.removeAttribute(e));
+					if (Te.test(i.tagName)) {
+						let e = i.textContent.split(x), t = e.length - 1;
+						if (t > 0) {
+							i.textContent = b ? b.emptyScript : "";
+							for (let n = 0; n < t; n++) i.append(e[n], C()), M.nextNode(), c.push({
+								type: 2,
+								index: ++a
+							});
+							i.append(e[t], C());
+						}
+					}
+				} else if (i.nodeType === 8) {
+					if (i.data === _e) c.push({
+						type: 2,
+						index: a
+					});
+					else {
+						let e = -1;
+						for (; (e = i.data.indexOf(x, e + 1)) !== -1;) c.push({
+							type: 7,
+							index: a
+						}), e += x.length - 1;
+					}
+				}
+				a++;
+			}
+		}
+		static createElement(e, t) {
+			let n = S.createElement("template");
+			return n.innerHTML = e, n;
+		}
+	}, ke = class {
+		constructor(e, t) {
+			this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
+		}
+		get parentNode() {
+			return this._$AM.parentNode;
+		}
+		get _$AU() {
+			return this._$AM._$AU;
+		}
+		u(e) {
+			let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? S).importNode(t, !0);
+			M.currentNode = r;
+			let i = M.nextNode(), a = 0, o = 0, s = n[0];
+			for (; s !== void 0;) {
+				if (a === s.index) {
+					let t;
+					s.type === 2 ? t = new Ae(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Pe(i, this, e)), this._$AV.push(t), s = n[++o];
+				}
+				a !== s?.index && (i = M.nextNode(), a++);
+			}
+			return M.currentNode = S, r;
+		}
+		p(e) {
+			let t = 0;
+			for (let n of this._$AV) n !== void 0 && (n.strings === void 0 ? n._$AI(e[t]) : (n._$AI(e, n, t), t += n.strings.length - 2)), t++;
+		}
+	}, Ae = class e {
+		get _$AU() {
+			return this._$AM?._$AU ?? this._$Cv;
+		}
+		constructor(e, t, n, r) {
+			this.type = 2, this._$AH = j, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
+		}
+		get parentNode() {
+			let e = this._$AA.parentNode, t = this._$AM;
+			return t !== void 0 && e?.nodeType === 11 && (e = t.parentNode), e;
+		}
+		get startNode() {
+			return this._$AA;
+		}
+		get endNode() {
+			return this._$AB;
+		}
+		_$AI(e, t = this) {
+			e = y(this, e, t), w(e) ? e === j || e == null || e === "" ? (this._$AH !== j && this._$AR(), this._$AH = j) : e !== this._$AH && e !== A && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? ye(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
+		}
+		O(e) {
+			return this._$AA.parentNode.insertBefore(e, this._$AB);
+		}
+		T(e) {
+			this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
+		}
+		_(e) {
+			this._$AH !== j && w(this._$AH) ? this._$AA.nextSibling.data = e : this.T(S.createTextNode(e)), this._$AH = e;
+		}
+		$(e) {
+			let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = Oe.createElement(fe(n.h, n.h[0]), this.options)), n);
+			if (this._$AH?._$AD === r) this._$AH.p(t);
+			else {
+				let e = new ke(r, this), n = e.u(this.options);
+				e.p(t), this.T(n), this._$AH = e;
+			}
+		}
+		_$AC(e) {
+			let t = Ee.get(e.strings);
+			return t === void 0 && Ee.set(e.strings, t = new Oe(e)), t;
+		}
+		k(t) {
+			T(this._$AH) || (this._$AH = [], this._$AR());
+			let n = this._$AH, r, i = 0;
+			for (let a of t) i === n.length ? n.push(r = new e(this.O(C()), this.O(C()), this, this.options)) : r = n[i], r._$AI(a), i++;
+			i < n.length && (this._$AR(r && r._$AB.nextSibling, i), n.length = i);
+		}
+		_$AR(e = this._$AA.nextSibling, t) {
+			for (this._$AP?.(!1, !0, t); e !== this._$AB;) {
+				let t = me(e).nextSibling;
+				me(e).remove(), e = t;
+			}
+		}
+		setConnected(e) {
+			this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
+		}
+	}, N = class {
+		get tagName() {
+			return this.element.tagName;
+		}
+		get _$AU() {
+			return this._$AM._$AU;
+		}
+		constructor(e, t, n, r, i) {
+			this.type = 1, this._$AH = j, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = j;
+		}
+		_$AI(e, t = this, n, r) {
+			let i = this.strings, a = !1;
+			if (i === void 0) e = y(this, e, t, 0), a = !w(e) || e !== this._$AH && e !== A, a && (this._$AH = e);
+			else {
+				let r = e, o, s;
+				for (e = i[0], o = 0; o < i.length - 1; o++) s = y(this, r[n + o], t, o), s === A && (s = this._$AH[o]), a ||= !w(s) || s !== this._$AH[o], s === j ? e = j : e !== j && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
+			}
+			a && !r && this.j(e);
+		}
+		j(e) {
+			e === j ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+		}
+	}, je = class extends N {
+		constructor() {
+			super(...arguments), this.type = 3;
+		}
+		j(e) {
+			this.element[this.name] = e === j ? void 0 : e;
+		}
+	}, Me = class extends N {
+		constructor() {
+			super(...arguments), this.type = 4;
+		}
+		j(e) {
+			this.element.toggleAttribute(this.name, !!e && e !== j);
+		}
+	}, Ne = class extends N {
+		constructor(e, t, n, r, i) {
+			super(e, t, n, r, i), this.type = 5;
+		}
+		_$AI(e, t = this) {
+			if ((e = y(this, e, t, 0) ?? j) === A) return;
+			let n = this._$AH, r = e === j && n !== j || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== j && (n === j || r);
+			r && this.element.removeEventListener(this.name, this, n), i && this.element.addEventListener(this.name, this, e), this._$AH = e;
+		}
+		handleEvent(e) {
+			typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
+		}
+	}, Pe = class {
+		constructor(e, t, n) {
+			this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = n;
+		}
+		get _$AU() {
+			return this._$AM._$AU;
+		}
+		_$AI(e) {
+			y(this, e);
+		}
+	}, Fe = pe.litHtmlPolyfillSupport, Fe?.(Oe, Ae), (pe.litHtmlVersions ??= []).push("3.3.2"), Ie = (e, t, n) => {
+		let r = n?.renderBefore ?? t, i = r._$litPart$;
+		if (i === void 0) {
+			let e = n?.renderBefore ?? null;
+			r._$litPart$ = i = new Ae(t.insertBefore(C(), e), e, void 0, n ?? {});
+		}
+		return i._$AI(e), i;
+	};
+})), P, F, Re, ze = t((() => {
+	v(), v(), Le(), Le(), P = globalThis, F = class extends _ {
+		constructor() {
+			super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
+		}
+		createRenderRoot() {
+			let e = super.createRenderRoot();
+			return this.renderOptions.renderBefore ??= e.firstChild, e;
+		}
+		update(e) {
+			let t = this.render();
+			this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ie(t, this.renderRoot, this.renderOptions);
+		}
+		connectedCallback() {
+			super.connectedCallback(), this._$Do?.setConnected(!0);
+		}
+		disconnectedCallback() {
+			super.disconnectedCallback(), this._$Do?.setConnected(!1);
+		}
+		render() {
+			return A;
+		}
+	}, F._$litElement$ = !0, F.finalized = !0, P.litElementHydrateSupport?.({ LitElement: F }), Re = P.litElementPolyfillSupport, Re?.({ LitElement: F }), (P.litElementVersions ??= []).push("4.2.2");
+})), Be = t((() => {})), I = t((() => {
+	v(), Le(), ze(), Be();
+})), L, Ve = t((() => {
+	L = (e) => (t, n) => {
+		n === void 0 ? customElements.define(e, t) : n.addInitializer(() => {
+			customElements.define(e, t);
+		});
+	};
+}));
+//#endregion
+//#region node_modules/@lit/reactive-element/decorators/property.js
+function R(e) {
+	return (t, n) => typeof n == "object" ? Ue(e, t, n) : ((e, t, n) => {
+		let r = t.hasOwnProperty(n);
+		return t.constructor.createProperty(n, e), r ? Object.getOwnPropertyDescriptor(t, n) : void 0;
+	})(e, t, n);
 }
-class yt {
-  constructor(e, t) {
-    this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
-  }
-  get parentNode() {
-    return this._$AM.parentNode;
-  }
-  get _$AU() {
-    return this._$AM._$AU;
-  }
-  u(e) {
-    const { el: { content: t }, parts: i } = this._$AD, s = ((e == null ? void 0 : e.creationScope) ?? Y).importNode(t, !0);
-    K.currentNode = s;
-    let o = K.nextNode(), n = 0, d = 0, r = i[0];
-    for (; r !== void 0; ) {
-      if (n === r.index) {
-        let c;
-        r.type === 2 ? c = new _e(o, o.nextSibling, this, e) : r.type === 1 ? c = new r.ctor(o, r.name, r.strings, this, e) : r.type === 6 && (c = new $t(o, this, e)), this._$AV.push(c), r = i[++d];
-      }
-      n !== (r == null ? void 0 : r.index) && (o = K.nextNode(), n++);
-    }
-    return K.currentNode = Y, s;
-  }
-  p(e) {
-    let t = 0;
-    for (const i of this._$AV) i !== void 0 && (i.strings !== void 0 ? (i._$AI(e, i, t), t += i.strings.length - 2) : i._$AI(e[t])), t++;
-  }
+var He, Ue, We = t((() => {
+	v(), He = {
+		attribute: !0,
+		type: String,
+		converter: h,
+		reflect: !1,
+		hasChanged: g
+	}, Ue = (e = He, t, n) => {
+		let { kind: r, metadata: i } = n, a = globalThis.litPropertyMetadata.get(i);
+		if (a === void 0 && globalThis.litPropertyMetadata.set(i, a = /* @__PURE__ */ new Map()), r === "setter" && ((e = Object.create(e)).wrapped = !0), a.set(n.name, e), r === "accessor") {
+			let { name: r } = n;
+			return {
+				set(n) {
+					let i = t.get.call(this);
+					t.set.call(this, n), this.requestUpdate(r, i, e, !0, n);
+				},
+				init(t) {
+					return t !== void 0 && this.C(r, void 0, e, t), t;
+				}
+			};
+		}
+		if (r === "setter") {
+			let { name: r } = n;
+			return function(n) {
+				let i = this[r];
+				t.call(this, n), this.requestUpdate(r, i, e, !0, n);
+			};
+		}
+		throw Error("Unsupported decorator location: " + r);
+	};
+}));
+//#endregion
+//#region node_modules/@lit/reactive-element/decorators/state.js
+function z(e) {
+	return R({
+		...e,
+		state: !0,
+		attribute: !1
+	});
 }
-class _e {
-  get _$AU() {
-    var e;
-    return ((e = this._$AM) == null ? void 0 : e._$AU) ?? this._$Cv;
-  }
-  constructor(e, t, i, s) {
-    this.type = 2, this._$AH = S, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = i, this.options = s, this._$Cv = (s == null ? void 0 : s.isConnected) ?? !0;
-  }
-  get parentNode() {
-    let e = this._$AA.parentNode;
-    const t = this._$AM;
-    return t !== void 0 && (e == null ? void 0 : e.nodeType) === 11 && (e = t.parentNode), e;
-  }
-  get startNode() {
-    return this._$AA;
-  }
-  get endNode() {
-    return this._$AB;
-  }
-  _$AI(e, t = this) {
-    e = te(this, e, t), de(e) ? e === S || e == null || e === "" ? (this._$AH !== S && this._$AR(), this._$AH = S) : e !== this._$AH && e !== ee && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : mt(e) ? this.k(e) : this._(e);
-  }
-  O(e) {
-    return this._$AA.parentNode.insertBefore(e, this._$AB);
-  }
-  T(e) {
-    this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
-  }
-  _(e) {
-    this._$AH !== S && de(this._$AH) ? this._$AA.nextSibling.data = e : this.T(Y.createTextNode(e)), this._$AH = e;
-  }
-  $(e) {
-    var o;
-    const { values: t, _$litType$: i } = e, s = typeof i == "number" ? this._$AC(e) : (i.el === void 0 && (i.el = le.createElement(Fe(i.h, i.h[0]), this.options)), i);
-    if (((o = this._$AH) == null ? void 0 : o._$AD) === s) this._$AH.p(t);
-    else {
-      const n = new yt(s, this), d = n.u(this.options);
-      n.p(t), this.T(d), this._$AH = n;
-    }
-  }
-  _$AC(e) {
-    let t = Re.get(e.strings);
-    return t === void 0 && Re.set(e.strings, t = new le(e)), t;
-  }
-  k(e) {
-    De(this._$AH) || (this._$AH = [], this._$AR());
-    const t = this._$AH;
-    let i, s = 0;
-    for (const o of e) s === t.length ? t.push(i = new _e(this.O(re()), this.O(re()), this, this.options)) : i = t[s], i._$AI(o), s++;
-    s < t.length && (this._$AR(i && i._$AB.nextSibling, s), t.length = s);
-  }
-  _$AR(e = this._$AA.nextSibling, t) {
-    var i;
-    for ((i = this._$AP) == null ? void 0 : i.call(this, !1, !0, t); e !== this._$AB; ) {
-      const s = Be(e).nextSibling;
-      Be(e).remove(), e = s;
-    }
-  }
-  setConnected(e) {
-    var t;
-    this._$AM === void 0 && (this._$Cv = e, (t = this._$AP) == null || t.call(this, e));
-  }
+var Ge = t((() => {
+	We();
+})), Ke = t((() => {})), qe = t((() => {})), Je = t((() => {})), Ye = t((() => {})), Xe = t((() => {})), Ze = t((() => {})), Qe = t((() => {
+	Ve(), We(), Ge(), Ke(), qe(), Je(), Ye(), Xe(), Ze();
+})), B, $e = t((() => {
+	B = (e, t, n, r) => {
+		r ||= {}, n ??= {};
+		let i = new Event(t, {
+			bubbles: r.bubbles === void 0 || r.bubbles,
+			cancelable: !!r.cancelable,
+			composed: r.composed === void 0 || r.composed
+		});
+		return i.detail = n, e.dispatchEvent(i), i;
+	};
+}));
+//#endregion
+//#region src/localize.ts
+function V(e, t, n, r) {
+	let i = e.locale?.language || e.language || "en", a;
+	if (H[i] && H[i][t]) a = H[i][t];
+	else if (H.en && H.en[t]) a = H.en[t];
+	else return t;
+	return n && r && (a = a.replace(n, r)), a;
 }
-class ve {
-  get tagName() {
-    return this.element.tagName;
-  }
-  get _$AU() {
-    return this._$AM._$AU;
-  }
-  constructor(e, t, i, s, o) {
-    this.type = 1, this._$AH = S, this._$AN = void 0, this.element = e, this.name = t, this._$AM = s, this.options = o, i.length > 2 || i[0] !== "" || i[1] !== "" ? (this._$AH = Array(i.length - 1).fill(new String()), this.strings = i) : this._$AH = S;
-  }
-  _$AI(e, t = this, i, s) {
-    const o = this.strings;
-    let n = !1;
-    if (o === void 0) e = te(this, e, t, 0), n = !de(e) || e !== this._$AH && e !== ee, n && (this._$AH = e);
-    else {
-      const d = e;
-      let r, c;
-      for (e = o[0], r = 0; r < o.length - 1; r++) c = te(this, d[i + r], t, r), c === ee && (c = this._$AH[r]), n || (n = !de(c) || c !== this._$AH[r]), c === S ? e = S : e !== S && (e += (c ?? "") + o[r + 1]), this._$AH[r] = c;
-    }
-    n && !s && this.j(e);
-  }
-  j(e) {
-    e === S ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
-  }
+var H, et = t((() => {
+	H = {
+		en: {
+			starts_in_min: "Starts in {x} minute",
+			starts_in_mins: "Starts in {x} minutes",
+			starts_in_hour: "Starts in {x} hour",
+			starts_in_hours: "Starts in {x} hours",
+			starts_in_day: "Starts in {x} day",
+			starts_in_days: "Starts in {x} days",
+			starts_in_week: "Starts in {x} week",
+			starts_in_weeks: "Starts in {x} weeks",
+			loading: "Loading events...",
+			no_events: "No active events",
+			more_events: "+{x} more",
+			editor_show_upcoming: "Show upcoming events",
+			editor_unfold_events: "Unfold Events",
+			editor_configuration: "Configuration",
+			editor_text_visibility: "Text Visibility",
+			editor_show_divider: "Show Divider",
+			editor_show_weekday: "Show Weekday",
+			editor_show_weekday_long: "Use long weekday (e.g. Monday)",
+			editor_show_month: "Show Month",
+			editor_show_month_long: "Use long month (e.g. December)",
+			editor_icon_show_weekday: "Swap Month and Weekday",
+			editor_show_add_event: "Show 'Add Event' Button",
+			popup_upcoming_events: "Upcoming events",
+			editor_show_more: "Show More",
+			editor_show_less: "Show Less",
+			editor_background_color: "Background Color",
+			editor_show_location: "Show Location",
+			editor_show_duration: "Show Duration",
+			editor_show_time: "Show Time",
+			duration_min: "min",
+			duration_hour: "h",
+			duration_day: "day",
+			duration_days: "days",
+			editor_max_lines: "Max. displayed events",
+			group_by_date: "Group by Day",
+			group_by_date_and_calendar: "Group by Day and Calendar",
+			empty: "Empty",
+			editor_show_empty_days: "Show Empty Days",
+			editor_empty_text: "Text for empty days",
+			editor_read_only: "Read only"
+		},
+		de: {
+			starts_in_min: "Beginnt in {x} Minute",
+			starts_in_mins: "Beginnt in {x} Minuten",
+			starts_in_hour: "Beginnt in {x} Stunde",
+			starts_in_hours: "Beginnt in {x} Stunden",
+			starts_in_day: "Beginnt in {x} Tag",
+			starts_in_days: "Beginnt in {x} Tagen",
+			starts_in_week: "Beginnt in {x} Woche",
+			starts_in_weeks: "Beginnt in {x} Wochen",
+			loading: "Lade Termine...",
+			no_events: "Keine aktiven Termine",
+			more_events: "+{x} weitere",
+			editor_show_upcoming: "Zeige bevorstehende Ereignisse",
+			editor_unfold_events: "Ereignisse ausklappen",
+			editor_configuration: "Konfiguration",
+			editor_text_visibility: "Text & Sichtbarkeit",
+			editor_show_divider: "Zeige Trenner",
+			editor_show_weekday: "Zeige Wochentag",
+			editor_show_weekday_long: "Ausgeschrieben (z.B. Montag)",
+			editor_show_month: "Zeige Monat",
+			editor_show_month_long: "Ausgeschrieben (z.B. Dezember)",
+			editor_icon_show_weekday: "Monat und Wochentag tauschen",
+			editor_show_add_event: "Zeige 'Neuer Termin' Button",
+			popup_upcoming_events: "Bevorstehende Ereignisse",
+			editor_show_more: "Mehr anzeigen",
+			editor_show_less: "Weniger anzeigen",
+			editor_background_color: "Hintergrundfarbe",
+			editor_show_location: "Zeige Ort",
+			editor_show_duration: "Zeige Dauer",
+			editor_show_time: "Zeige Zeit",
+			duration_min: "Minuten",
+			duration_hour: "h",
+			duration_day: "Tag",
+			duration_days: "Tage",
+			editor_max_lines: "Max. angezeigte Termine",
+			group_by_date: "Nach Tag gruppieren",
+			group_by_date_and_calendar: "Nach Tag und Kalender gruppieren",
+			empty: "Leer",
+			editor_show_empty_days: "Zeige leere Tage",
+			editor_empty_text: "Text für leere Tage",
+			editor_read_only: "Nur lesen"
+		},
+		fr: {
+			starts_in_min: "Commence dans {x} minute",
+			starts_in_mins: "Commence dans {x} minutes",
+			starts_in_hour: "Commence dans {x} heure",
+			starts_in_hours: "Commence dans {x} heures",
+			starts_in_day: "Commence dans {x} jour",
+			starts_in_days: "Commence dans {x} jours",
+			starts_in_week: "Commence dans {x} semaine",
+			starts_in_weeks: "Commence dans {x} semaines",
+			loading: "Chargement...",
+			no_events: "Pas d'événement",
+			more_events: "+{x} autres",
+			editor_show_upcoming: "Afficher les événements futurs",
+			editor_unfold_events: "Déplier les événements",
+			editor_configuration: "Configuration",
+			editor_text_visibility: "Visibilité du texte",
+			editor_show_divider: "Afficher le séparateur",
+			editor_show_weekday: "Afficher le jour de la semaine",
+			editor_show_weekday_long: "Format long (ex. Lundi)",
+			editor_show_month: "Afficher le mois",
+			editor_show_month_long: "Format long (ex. Décembre)",
+			editor_icon_show_weekday: "Permuter Mois et Jour de semaine",
+			editor_show_add_event: "Afficher bouton 'Nouvel événement'",
+			popup_upcoming_events: "Événements à venir",
+			editor_show_more: "Afficher plus",
+			editor_show_less: "Afficher moins",
+			editor_background_color: "Couleur de fond",
+			editor_show_location: "Afficher le lieu",
+			editor_show_duration: "Afficher la durée",
+			editor_show_time: "Montrer les heures",
+			duration_min: "min",
+			duration_hour: "h",
+			duration_day: "jour",
+			duration_days: "jours",
+			editor_max_lines: "Nombre max. d'événements",
+			group_by_date: "Grouper par jour",
+			group_by_date_and_calendar: "Grouper par jour et calendrier",
+			empty: "Aucun événement",
+			editor_show_empty_days: "Montrer les jours vides",
+			editor_empty_text: "Texte pour les jours vides",
+			editor_read_only: "Lecture seule"
+		},
+		it: {
+			starts_in_min: "Inizia tra {x} minuto",
+			starts_in_mins: "Inizia tra {x} minuti",
+			starts_in_hour: "Inizia tra {x} ora",
+			starts_in_hours: "Inizia tra {x} ore",
+			starts_in_day: "Inizia tra {x} giorno",
+			starts_in_days: "Inizia tra {x} giorni",
+			starts_in_week: "Inizia tra {x} settimana",
+			starts_in_weeks: "Inizia tra {x} settimane",
+			loading: "Caricamento...",
+			no_events: "Nessun evento",
+			more_events: "+{x} altri",
+			editor_show_upcoming: "Mostra prossimi eventi",
+			editor_unfold_events: "Espandi gli eventi",
+			editor_configuration: "Configurazione",
+			editor_text_visibility: "Visibilità testo",
+			editor_show_divider: "Mostra divisore",
+			editor_show_weekday: "Mostra giorno della settimana",
+			editor_show_weekday_long: "Usa nome completo (es. Lunedì)",
+			editor_show_month: "Mostra mese",
+			editor_show_month_long: "Usa nome completo (es. Dicembre)",
+			editor_icon_show_weekday: "Scambia Mese e Giorno della settimana",
+			editor_show_add_event: "Mostra pulsante Aggiungi",
+			popup_upcoming_events: "Prossimi eventi",
+			editor_show_more: "Mostra di più",
+			editor_show_less: "Mostra meno",
+			editor_background_color: "Colore di sfondo",
+			editor_show_location: "Mostra luogo",
+			editor_show_duration: "Mostra durata",
+			editor_show_time: "Mostra tempo",
+			duration_min: "min",
+			duration_hour: "h",
+			duration_day: "giorno",
+			duration_days: "giorni",
+			editor_max_lines: "Numero massimo di eventi",
+			group_by_date: "Raggruppa per giorno",
+			group_by_date_and_calendar: "Raggruppa per giorno e calendario",
+			empty: "Vuoto",
+			editor_show_empty_days: "Mostra giorni vuoti",
+			editor_empty_text: "Testo per i giorni vuoti",
+			editor_read_only: "Sola lettura"
+		},
+		es: {
+			starts_in_min: "Empieza en {x} minuto",
+			starts_in_mins: "Empieza en {x} minutos",
+			starts_in_hour: "Empieza en {x} hora",
+			starts_in_hours: "Empieza en {x} horas",
+			starts_in_day: "Empieza en {x} día",
+			starts_in_days: "Empieza en {x} días",
+			starts_in_week: "Empieza en {x} semana",
+			starts_in_weeks: "Empieza en {x} semanas",
+			loading: "Cargando...",
+			no_events: "No hay eventos",
+			more_events: "+{x} más",
+			editor_show_upcoming: "Mostrar próximos eventos",
+			editor_unfold_events: "Desplegar eventos",
+			editor_configuration: "Configuración",
+			editor_text_visibility: "Visibilidad de texto",
+			editor_show_divider: "Mostrar divisor",
+			editor_show_weekday: "Mostrar día de la semana",
+			editor_show_weekday_long: "Formato largo (ej. Lunes)",
+			editor_show_month: "Mostrar mes",
+			editor_show_month_long: "Formato largo (ej. Diciembre)",
+			editor_icon_show_weekday: "Intercambiar Mes y Día de la semana",
+			editor_show_add_event: "Mostrar botón Añadir Evento",
+			popup_upcoming_events: "Próximos eventos",
+			editor_show_more: "Mostrar más",
+			editor_show_less: "Mostrar menos",
+			editor_background_color: "Color de fondo",
+			editor_show_location: "Mostrar ubicación",
+			editor_show_duration: "Mostrar duración",
+			editor_show_time: "Mostrar tiempo",
+			duration_min: "min",
+			duration_hour: "h",
+			duration_day: "día",
+			duration_days: "días",
+			editor_max_lines: "Número máximo de eventos",
+			group_by_date: "Agrupar por día",
+			group_by_date_and_calendar: "Agrupar por día y calendario",
+			empty: "Vacío",
+			editor_show_empty_days: "Mostrar días vacíos",
+			editor_empty_text: "Texto para días vacíos",
+			editor_read_only: "Solo lectura"
+		},
+		nl: {
+			starts_in_min: "Begint over {x} minuut",
+			starts_in_mins: "Begint over {x} minuten",
+			starts_in_hour: "Begint over {x} uur",
+			starts_in_hours: "Begint over {x} uur",
+			starts_in_day: "Begint over {x} dag",
+			starts_in_days: "Begint over {x} dagen",
+			starts_in_week: "Begint over {x} week",
+			starts_in_weeks: "Begint over {x} weken",
+			loading: "Laden...",
+			no_events: "Geen evenementen",
+			more_events: "+{x} meer",
+			editor_show_upcoming: "Toon aankomende evenementen",
+			editor_unfold_events: "Evenementen uitvouwen",
+			editor_configuration: "Configuratie",
+			editor_text_visibility: "Zichtbaarheid tekst",
+			editor_show_divider: "Toon verdeler",
+			editor_show_weekday: "Toon weekdag",
+			editor_show_weekday_long: "Gebruik lange notatie (bijv. Maandag)",
+			editor_show_month: "Toon maand",
+			editor_show_month_long: "Lange notatie (bijv. December)",
+			editor_icon_show_weekday: "Maand en weekdag omwisselen",
+			editor_show_add_event: "Toon Toevoegen knop",
+			popup_upcoming_events: "Aankomende evenementen",
+			editor_show_more: "Toon meer",
+			editor_show_less: "Toon minder",
+			editor_background_color: "Achtergrondkleur",
+			editor_show_location: "Toon locatie",
+			editor_show_duration: "Toon duur",
+			editor_show_time: "Toon tijd",
+			duration_min: "min",
+			duration_hour: "u",
+			duration_day: "dag",
+			duration_days: "dagen",
+			editor_max_lines: "Max. weergegeven evenementen",
+			group_by_date: "Groepeer per dag",
+			group_by_date_and_calendar: "Groepeer per dag en kalender",
+			empty: "Leeg",
+			editor_show_empty_days: "Toon lege dagen",
+			editor_empty_text: "Tekst voor lege dagen",
+			editor_read_only: "Alleen lezen"
+		},
+		pt: {
+			starts_in_min: "Começa em {x} minuto",
+			starts_in_mins: "Começa em {x} minutos",
+			starts_in_hour: "Começa em {x} hora",
+			starts_in_hours: "Começa em {x} horas",
+			starts_in_day: "Começa em {x} dia",
+			starts_in_days: "Começa em {x} dias",
+			starts_in_week: "Começa em {x} semana",
+			starts_in_weeks: "Começa em {x} semanas",
+			loading: "A carregar...",
+			no_events: "Sem eventos",
+			more_events: "+{x} mais",
+			editor_show_upcoming: "Mostrar próximos eventos",
+			editor_unfold_events: "Desdobrar eventos",
+			editor_configuration: "Configuração",
+			editor_text_visibility: "Visibilidade do texto",
+			editor_show_divider: "Mostrar divisor",
+			editor_show_weekday: "Mostrar dia da semana",
+			editor_show_weekday_long: "Formato longo (ex. Segunda-feira)",
+			editor_show_month: "Mostrar mês",
+			editor_show_month_long: "Formato longo (ex. Dezembro)",
+			editor_icon_show_weekday: "Trocar Mês e Dia da semana",
+			editor_show_add_event: "Mostrar botão Adicionar",
+			popup_upcoming_events: "Próximos eventos",
+			editor_show_more: "Mostrar mais",
+			editor_show_less: "Mostrar menos",
+			editor_background_color: "Cor de fundo",
+			editor_show_location: "Mostrar local",
+			editor_show_duration: "Mostrar duração",
+			editor_show_time: "Mostrar hora",
+			duration_min: "min",
+			duration_hour: "h",
+			duration_day: "dia",
+			duration_days: "dias",
+			editor_max_lines: "Máximo de eventos exibidos",
+			group_by_date: "Agrupar por dia",
+			group_by_date_and_calendar: "Agrupar por dia e calendário",
+			empty: "Vazio",
+			editor_show_empty_days: "Mostrar dias vazios",
+			editor_empty_text: "Texto para dias vazios",
+			editor_read_only: "Somente leitura"
+		},
+		ru: {
+			starts_in_min: "Начнется через {x} минуту",
+			starts_in_mins: "Начнется через {x} мин.",
+			starts_in_hour: "Начнется через {x} час",
+			starts_in_hours: "Начнется через {x} ч.",
+			starts_in_day: "Начнется через {x} день",
+			starts_in_days: "Начнется через {x} дн.",
+			starts_in_week: "Начнется через {x} неделю",
+			starts_in_weeks: "Начнется через {x} нед.",
+			loading: "Загрузка...",
+			no_events: "Нет событий",
+			more_events: "ещё +{x}",
+			editor_show_upcoming: "Показать предстоящие события",
+			editor_unfold_events: "Развернуть события",
+			editor_configuration: "Конфигурация",
+			editor_text_visibility: "Видимость текста",
+			editor_show_divider: "Показать разделитель",
+			editor_show_weekday: "Показать день недели",
+			editor_show_weekday_long: "Использовать полное название (напр. Понедельник)",
+			editor_show_month: "Показать месяц",
+			editor_show_month_long: "Использовать полное название (напр. Декабрь)",
+			editor_icon_show_weekday: "Поменять местами Месяц и День недели",
+			editor_show_add_event: "Показать кнопку Добавить",
+			popup_upcoming_events: "Предстоящие события",
+			editor_show_more: "Показать больше",
+			editor_show_less: "Показать меньше",
+			editor_background_color: "Цвет фона",
+			editor_show_location: "Показать место",
+			editor_show_duration: "Показать продолжительность",
+			editor_show_time: "Показать время",
+			duration_min: "мин",
+			duration_hour: "ч",
+			duration_day: "день",
+			duration_days: "дней",
+			editor_max_lines: "Максимум отобр. событий",
+			group_by_date: "Группировать по дням",
+			group_by_date_and_calendar: "Группировать по дням и календарю",
+			empty: "Пусто",
+			editor_show_empty_days: "Показать пустые дни",
+			editor_empty_text: "Текст для пустых дней",
+			editor_read_only: "Только чтение"
+		},
+		pl: {
+			starts_in_min: "Rozpoczyna się za {x} minutę",
+			starts_in_mins: "Rozpoczyna się za {x} min.",
+			starts_in_hour: "Rozpoczyna się za {x} godzinę",
+			starts_in_hours: "Rozpoczyna się za {x} godz.",
+			starts_in_day: "Rozpoczyna się za {x} dzień",
+			starts_in_days: "Rozpoczyna się za {x} dni",
+			starts_in_week: "Rozpoczyna się za {x} tydzień",
+			starts_in_weeks: "Rozpoczyna się za {x} tyg.",
+			loading: "Ładowanie...",
+			no_events: "Brak wydarzeń",
+			more_events: "+{x} więcej",
+			editor_show_upcoming: "Pokaż nadchodzące wydarzenia",
+			editor_unfold_events: "Rozwiń wydarzenia",
+			editor_configuration: "Konfiguracja",
+			editor_text_visibility: "Widoczność tekstu",
+			editor_show_divider: "Pokaż dzielnik",
+			editor_show_weekday: "Pokaż dzień tygodnia",
+			editor_show_weekday_long: "Użyj pełnej nazwy (np. Poniedziałek)",
+			editor_show_month: "Pokaż miesiąc",
+			editor_show_month_long: "Użyj pełnej nazwy (np. Grudzień)",
+			editor_icon_show_weekday: "Zamień Miesiąc i Dzień tygodnia",
+			editor_show_add_event: "Pokaż przycisk Dodaj",
+			popup_upcoming_events: "Nadchodzące wydarzenia",
+			editor_show_more: "Pokaż więcej",
+			editor_show_less: "Pokaż mniej",
+			editor_background_color: "Kolor tła",
+			editor_show_location: "Pokaż lokalizację",
+			editor_show_duration: "Pokaż czas trwania",
+			editor_show_time: "Pokaż czas",
+			duration_min: "min",
+			duration_hour: "godz",
+			duration_day: "dzień",
+			duration_days: "dni",
+			editor_max_lines: "Maks. wyświetlane wydarzenia",
+			group_by_date: "Grupuj według dnia",
+			group_by_date_and_calendar: "Grupuj według dnia i kalendarza",
+			empty: "Pusty",
+			editor_show_empty_days: "Pokaż puste dni",
+			editor_empty_text: "Tekst dla pustych dni",
+			editor_read_only: "Tylko do odczytu"
+		},
+		sv: {
+			starts_in_min: "Börjar om {x} minut",
+			starts_in_mins: "Börjar om {x} minuter",
+			starts_in_hour: "Börjar om {x} timme",
+			starts_in_hours: "Börjar om {x} timmar",
+			starts_in_day: "Börjar om {x} dag",
+			starts_in_days: "Börjar om {x} dagar",
+			starts_in_week: "Börjar om {x} vecka",
+			starts_in_weeks: "Börjar om {x} veckor",
+			loading: "Laddar...",
+			no_events: "Inga händelser",
+			more_events: "+{x} till",
+			editor_show_upcoming: "Visa kommande händelser",
+			editor_unfold_events: "Fäll ut evenemang",
+			editor_configuration: "Konfiguration",
+			editor_text_visibility: "Textsynlighet",
+			editor_show_divider: "Visa avdelare",
+			editor_show_weekday: "Visa veckodag",
+			editor_show_weekday_long: "Använd långt format (t.ex. Måndag)",
+			editor_show_month: "Visa månad",
+			editor_show_month_long: "Använd långt format (t.ex. December)",
+			editor_icon_show_weekday: "Byt plats mellan Månad och Veckodag",
+			editor_show_add_event: "Visa Lägg till-knapp",
+			popup_upcoming_events: "Kommande händelser",
+			editor_show_more: "Visa mer",
+			editor_show_less: "Visa mindre",
+			editor_background_color: "Bakgrundsfärg",
+			editor_show_location: "Visa plats",
+			editor_show_duration: "Visa varaktighet",
+			editor_show_time: "Visa tid",
+			duration_min: "min",
+			duration_hour: "h",
+			duration_day: "dag",
+			duration_days: "dagar",
+			editor_max_lines: "Max. visade händelser",
+			group_by_date: "Gruppera per dag",
+			group_by_date_and_calendar: "Gruppera per dag och kalender",
+			empty: "Tom",
+			editor_show_empty_days: "Visa tomma dagar",
+			editor_empty_text: "Text för tomma dagar",
+			editor_read_only: "Skrivskyddad"
+		},
+		da: {
+			starts_in_min: "Starter om {x} minut",
+			starts_in_mins: "Starter om {x} minutter",
+			starts_in_hour: "Starter om {x} time",
+			starts_in_hours: "Starter om {x} timer",
+			starts_in_day: "Starter om {x} dag",
+			starts_in_days: "Starter om {x} dage",
+			starts_in_week: "Starter om {x} uge",
+			starts_in_weeks: "Starter om {x} uger",
+			loading: "Indlæser...",
+			no_events: "Ingen begivenheder",
+			more_events: "+{x} mere",
+			editor_show_upcoming: "Vis kommende begivenheder",
+			editor_unfold_events: "Udfold begivenheder",
+			editor_configuration: "Konfiguration",
+			editor_text_visibility: "Tekst og synlighed",
+			editor_show_divider: "Vis skillelinje",
+			editor_show_weekday: "Vis ugedag",
+			editor_show_weekday_long: "Brug langt format (f.eks. Mandag)",
+			editor_show_month: "Vis måned",
+			editor_show_month_long: "Brug langt format (f.eks. December)",
+			editor_icon_show_weekday: "Skift Måned og Ugedag",
+			editor_show_add_event: "Vis Tilføj-knap",
+			popup_upcoming_events: "Kommende begivenheder",
+			editor_show_more: "Vis mere",
+			editor_show_less: "Vis mindre",
+			editor_background_color: "Baggrundsfarve",
+			editor_show_location: "Vis sted",
+			editor_show_duration: "Vis varighed",
+			editor_show_time: "Vis tid",
+			duration_min: "min",
+			duration_hour: "t",
+			duration_day: "dag",
+			duration_days: "dage",
+			editor_max_lines: "Maks. viste begivenheder",
+			group_by_date: "Gruppér efter dag",
+			group_by_date_and_calendar: "Gruppér efter dag og kalender",
+			empty: "Tom",
+			editor_show_empty_days: "Vis tomme dage",
+			editor_empty_text: "Tekst for tomme dage",
+			editor_read_only: "Skrivebeskyttet"
+		},
+		no: {
+			starts_in_min: "Starter om {x} minutt",
+			starts_in_mins: "Starter om {x} minutter",
+			starts_in_hour: "Starter om {x} time",
+			starts_in_hours: "Starter om {x} timer",
+			starts_in_day: "Starter om {x} dag",
+			starts_in_days: "Starter om {x} dager",
+			starts_in_week: "Starter om {x} uke",
+			starts_in_weeks: "Starter om {x} uker",
+			loading: "Laster...",
+			no_events: "Ingen hendelser",
+			more_events: "+{x} til",
+			editor_show_upcoming: "Vis kommende hendelser",
+			editor_unfold_events: "Brett ut hendelser",
+			editor_configuration: "Konfigurasjon",
+			editor_text_visibility: "Tekstsynlighet",
+			editor_show_divider: "Vis skillelinje",
+			editor_show_weekday: "Vis ukedag",
+			editor_show_weekday_long: "Bruk langt format (f.eks. Mandag)",
+			editor_show_month: "Vis måned",
+			editor_show_month_long: "Bruk langt format (f.eks. Desember)",
+			editor_icon_show_weekday: "Bytt Måned og Ukedag",
+			editor_show_add_event: "Vis Legg til-knapp",
+			popup_upcoming_events: "Kommende hendelser",
+			editor_show_more: "Vis mer",
+			editor_show_less: "Vis mindre",
+			editor_background_color: "Bakgrunnsfarge",
+			editor_show_location: "Vis sted",
+			editor_show_duration: "Vis varighet",
+			editor_show_time: "Vis tid",
+			duration_min: "min",
+			duration_hour: "t",
+			duration_day: "dag",
+			duration_days: "dager",
+			editor_max_lines: "Maks. viste hendelser",
+			group_by_date: "Grupper etter dag",
+			group_by_date_and_calendar: "Grupper etter dag og kalender",
+			empty: "Tom",
+			editor_show_empty_days: "Vis tomme dager",
+			editor_empty_text: "Tekst for tomme dager",
+			editor_read_only: "Skrivebeskyttet"
+		},
+		fi: {
+			starts_in_min: "Alkaa {x} minuutin kuluttua",
+			starts_in_mins: "Alkaa {x} minuutin kuluttua",
+			starts_in_hour: "Alkaa {x} tunnin kuluttua",
+			starts_in_hours: "Alkaa {x} tunnin kuluttua",
+			starts_in_day: "Alkaa {x} päivän kuluttua",
+			starts_in_days: "Alkaa {x} päivän kuluttua",
+			starts_in_week: "Alkaa {x} viikon kuluttua",
+			starts_in_weeks: "Alkaa {x} viikon kuluttua",
+			loading: "Ladataan...",
+			no_events: "Ei tapahtumia",
+			more_events: "+{x} lisää",
+			editor_show_upcoming: "Näytä tulevat tapahtumat",
+			editor_unfold_events: "Avaa tapahtumat",
+			editor_configuration: "Määritys",
+			editor_text_visibility: "Tekstin näkyvyys",
+			editor_show_divider: "Näytä jakaja",
+			editor_show_weekday: "Näytä viikonpäivä",
+			editor_show_weekday_long: "Käytä pitkää nimeä (esim. Maanantai)",
+			editor_show_month: "Näytä kuukausi",
+			editor_show_month_long: "Käytä pitkää nimeä (esim. Joulukuu)",
+			editor_icon_show_weekday: "Vaihda Kuukausi ja Viikonpäivä",
+			editor_show_add_event: "Näytä Lisää-painike",
+			popup_upcoming_events: "Tulevat tapahtumat",
+			editor_show_more: "Näytä enemmän",
+			editor_show_less: "Näytä vähemmän",
+			editor_background_color: "Taustaväri",
+			editor_show_location: "Näytä sijainti",
+			editor_show_duration: "Näytä kesto",
+			editor_show_time: "Näytä aika",
+			duration_min: "min",
+			duration_hour: "t",
+			duration_day: "päivä",
+			duration_days: "päivää",
+			editor_max_lines: "Näytettävien tapahtumien enimmäismäärä",
+			group_by_date: "Ryhmittele päivän mukaan",
+			group_by_date_and_calendar: "Ryhmittele päivän ja kalenterin mukaan",
+			empty: "Tyhjä",
+			editor_show_empty_days: "Näytä tyhjät päivät",
+			editor_empty_text: "Teksti tyhjille päiville",
+			editor_read_only: "Vain luku"
+		},
+		cs: {
+			starts_in_min: "Začíná za {x} minutu",
+			starts_in_mins: "Začíná za {x} minut",
+			starts_in_hour: "Začíná za {x} hodinu",
+			starts_in_hours: "Začíná za {x} hodin",
+			starts_in_day: "Začíná za {x} den",
+			starts_in_days: "Začíná za {x} dní",
+			starts_in_week: "Začíná za {x} týden",
+			starts_in_weeks: "Začíná za {x} týdnů",
+			loading: "Načítání...",
+			no_events: "Žádné události",
+			more_events: "+{x} další",
+			editor_show_upcoming: "Zobrazit nadcházející události",
+			editor_unfold_events: "Rozvinout události",
+			editor_configuration: "Konfigurace",
+			editor_text_visibility: "Viditelnost textu",
+			editor_show_divider: "Zobrazit dělič",
+			editor_show_weekday: "Zobrazit den v týdnu",
+			editor_show_weekday_long: "Použít celý název (např. Pondělí)",
+			editor_show_month: "Zobrazit měsíc",
+			editor_show_month_long: "Použít celý název (např. Prosinec)",
+			editor_icon_show_weekday: "Vyměnit Měsíc a Den v týdnu",
+			editor_show_add_event: "Zobrazit tlačítko Přidat",
+			popup_upcoming_events: "Nadcházející události",
+			editor_show_more: "Zobrazit více",
+			editor_show_less: "Zobrazit méně",
+			editor_background_color: "Barva pozadí",
+			editor_show_location: "Zobrazit místo",
+			editor_show_duration: "Zobrazit dobu trvání",
+			editor_show_time: "Zobrazit čas",
+			duration_min: "min",
+			duration_hour: "h",
+			duration_day: "den",
+			duration_days: "dní",
+			editor_max_lines: "Max. zobrazované události",
+			group_by_date: "Seskupit podle dne",
+			group_by_date_and_calendar: "Seskupit podle dne a kalendáře",
+			empty: "Prázdné",
+			editor_show_empty_days: "Zobrazit prázdné dny",
+			editor_empty_text: "Text pro prázdné dny",
+			editor_read_only: "Pouze pro čtení"
+		},
+		hu: {
+			starts_in_min: "Kezdés {x} perc múlva",
+			starts_in_mins: "Kezdés {x} perc múlva",
+			starts_in_hour: "Kezdés {x} óra múlva",
+			starts_in_hours: "Kezdés {x} óra múlva",
+			starts_in_day: "Kezdés {x} nap múlva",
+			starts_in_days: "Kezdés {x} nap múlva",
+			starts_in_week: "Kezdés {x} hét múlva",
+			starts_in_weeks: "Kezdés {x} hét múlva",
+			loading: "Betöltés...",
+			no_events: "Nincs esemény",
+			more_events: "+{x} további",
+			editor_show_upcoming: "Közelgő események megjelenítése",
+			editor_unfold_events: "Események kibontása",
+			editor_configuration: "Konfiguráció",
+			editor_text_visibility: "Szöveg láthatósága",
+			editor_show_divider: "Osztó megjelenítése",
+			editor_show_weekday: "Hét napjának mutatása",
+			editor_show_weekday_long: "Hosszú formátum (pl. Hétfő)",
+			editor_show_month: "Hó megjelenítése",
+			editor_show_month_long: "Hosszú formátum (pl. December)",
+			editor_icon_show_weekday: "Hó és Hét napja felcserélése",
+			editor_show_add_event: "Hozzáadás gomb mutatása",
+			popup_upcoming_events: "Közelgő események",
+			editor_show_more: "Több mutatása",
+			editor_show_less: "Kevesebb mutatása",
+			editor_background_color: "Háttérszín",
+			editor_show_location: "Helyszín mutatása",
+			editor_show_duration: "Időtartam mutatása",
+			editor_show_time: "Idő mutatása",
+			duration_min: "perc",
+			duration_hour: "ó",
+			duration_day: "nap",
+			duration_days: "nap",
+			editor_max_lines: "Max. megjelenített események",
+			group_by_date: "Csoportosítás nap szerint",
+			group_by_date_and_calendar: "Csoportosítás nap és naptár szerint",
+			empty: "Üres",
+			editor_show_empty_days: "Üres napok mutatása",
+			editor_empty_text: "Szöveg üres napokhoz",
+			editor_read_only: "Csak olvasható"
+		}
+	};
+}));
+//#endregion
+//#region src/format.ts
+function tt(e) {
+	return e.locale?.language || e.language || navigator.language || "en";
 }
-class gt extends ve {
-  constructor() {
-    super(...arguments), this.type = 3;
-  }
-  j(e) {
-    this.element[this.name] = e === S ? void 0 : e;
-  }
+function nt(e) {
+	let t = e.locale?.time_format;
+	if (!t || t === "language" || t === "system") {
+		let n = t === "language" ? e.locale?.language || e.language : void 0;
+		return (/* @__PURE__ */ new Date("January 1, 2023 22:00:00")).toLocaleString(n).includes("10");
+	}
+	return t === "12";
 }
-class wt extends ve {
-  constructor() {
-    super(...arguments), this.type = 4;
-  }
-  j(e) {
-    this.element.toggleAttribute(this.name, !!e && e !== S);
-  }
+function rt(e, t) {
+	let n = tt(e), r = nt(e), i = e.locale?.time_format === "system";
+	return new Intl.DateTimeFormat(i ? void 0 : n, {
+		hour: "numeric",
+		minute: "2-digit",
+		hourCycle: r ? "h12" : "h23"
+	}).format(t);
 }
-class ft extends ve {
-  constructor(e, t, i, s, o) {
-    super(e, t, i, s, o), this.type = 5;
-  }
-  _$AI(e, t = this) {
-    if ((e = te(this, e, t, 0) ?? S) === ee) return;
-    const i = this._$AH, s = e === S && i !== S || e.capture !== i.capture || e.once !== i.once || e.passive !== i.passive, o = e !== S && (i === S || s);
-    s && this.element.removeEventListener(this.name, this, i), o && this.element.addEventListener(this.name, this, e), this._$AH = e;
-  }
-  handleEvent(e) {
-    var t;
-    typeof this._$AH == "function" ? this._$AH.call(((t = this.options) == null ? void 0 : t.host) ?? this.element, e) : this._$AH.handleEvent(e);
-  }
+function it(e, t) {
+	let n = tt(e), r = e.locale?.date_format, i = r === "system", a = new Intl.DateTimeFormat(i ? void 0 : n, {
+		year: "numeric",
+		month: "numeric",
+		day: "numeric"
+	});
+	if (!r || r === "language" || r === "system") return a.format(t);
+	let o = a.formatToParts(t), s = o.find((e) => e.type === "literal")?.value ?? "/", c = o.find((e) => e.type === "day")?.value ?? "", l = o.find((e) => e.type === "month")?.value ?? "", u = o.find((e) => e.type === "year")?.value ?? "", d = o[o.length - 1], f = d?.type === "literal" ? d?.value : "";
+	return {
+		DMY: `${c}${s}${l}${s}${u}${f}`,
+		MDY: `${l}${s}${c}${s}${u}${f}`,
+		YMD: `${u}${s}${l}${s}${c}${f}`
+	}[r] ?? a.format(t);
 }
-class $t {
-  constructor(e, t, i) {
-    this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = i;
-  }
-  get _$AU() {
-    return this._$AM._$AU;
-  }
-  _$AI(e) {
-    te(this, e);
-  }
+function at(e, t = /* @__PURE__ */ new Date()) {
+	let n = new Date(t);
+	return n.setHours(0, 0, 0, 0), e < n ? n : e;
 }
-const $e = ne.litHtmlPolyfillSupport;
-$e == null || $e(le, _e), (ne.litHtmlVersions ?? (ne.litHtmlVersions = [])).push("3.3.2");
-const xt = (a, e, t) => {
-  const i = (t == null ? void 0 : t.renderBefore) ?? e;
-  let s = i._$litPart$;
-  if (s === void 0) {
-    const o = (t == null ? void 0 : t.renderBefore) ?? null;
-    i._$litPart$ = s = new _e(e.insertBefore(re(), o), o, void 0, t ?? {});
-  }
-  return s._$AI(a), s;
-};
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const q = globalThis;
-class F extends X {
-  constructor() {
-    super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
-  }
-  createRenderRoot() {
-    var t;
-    const e = super.createRenderRoot();
-    return (t = this.renderOptions).renderBefore ?? (t.renderBefore = e.firstChild), e;
-  }
-  update(e) {
-    const t = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = xt(t, this.renderRoot, this.renderOptions);
-  }
-  connectedCallback() {
-    var e;
-    super.connectedCallback(), (e = this._$Do) == null || e.setConnected(!0);
-  }
-  disconnectedCallback() {
-    var e;
-    super.disconnectedCallback(), (e = this._$Do) == null || e.setConnected(!1);
-  }
-  render() {
-    return ee;
-  }
+function ot(e) {
+	if (e.includes("T")) return new Date(e);
+	let [t, n, r] = e.split("-").map(Number);
+	return new Date(t, n - 1, r);
 }
-var Ke;
-F._$litElement$ = !0, F.finalized = !0, (Ke = q.litElementHydrateSupport) == null || Ke.call(q, { LitElement: F });
-const xe = q.litElementPolyfillSupport;
-xe == null || xe({ LitElement: F });
-(q.litElementVersions ?? (q.litElementVersions = [])).push("4.2.2");
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const Se = (a) => (e, t) => {
-  t !== void 0 ? t.addInitializer(() => {
-    customElements.define(a, e);
-  }) : customElements.define(a, e);
-};
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const bt = { attribute: !0, type: String, converter: me, reflect: !1, hasChanged: Te }, kt = (a = bt, e, t) => {
-  const { kind: i, metadata: s } = t;
-  let o = globalThis.litPropertyMetadata.get(s);
-  if (o === void 0 && globalThis.litPropertyMetadata.set(s, o = /* @__PURE__ */ new Map()), i === "setter" && ((a = Object.create(a)).wrapped = !0), o.set(t.name, a), i === "accessor") {
-    const { name: n } = t;
-    return { set(d) {
-      const r = e.get.call(this);
-      e.set.call(this, d), this.requestUpdate(n, r, a, !0, d);
-    }, init(d) {
-      return d !== void 0 && this.C(n, void 0, a, d), d;
-    } };
-  }
-  if (i === "setter") {
-    const { name: n } = t;
-    return function(d) {
-      const r = this[n];
-      e.call(this, d), this.requestUpdate(n, r, a, !0, d);
-    };
-  }
-  throw Error("Unsupported decorator location: " + i);
-};
-function N(a) {
-  return (e, t) => typeof t == "object" ? kt(a, e, t) : ((i, s, o) => {
-    const n = s.hasOwnProperty(o);
-    return s.constructor.createProperty(o, i), n ? Object.getOwnPropertyDescriptor(s, o) : void 0;
-  })(a, e, t);
+function st(e, t = "", n = "", r = "", i = "") {
+	return e ? n >= t : `${n}T${i}` > `${t}T${r}`;
 }
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-function he(a) {
-  return N({ ...a, state: !0, attribute: !1 });
+var U, W, G, ct = t((() => {
+	U = (e) => `${e}`.padStart(2, "0"), W = (e) => `${e.getFullYear()}-${U(e.getMonth() + 1)}-${U(e.getDate())}`, G = (e) => `${U(e.getHours())}:${U(e.getMinutes())}`;
+}));
+//#endregion
+//#region src/calendar.ts
+function lt(e, t) {
+	return Object.keys(e.states).filter((e) => e.startsWith("calendar.") && !t.exclude_entities?.includes(e));
 }
-const Q = {
-  en: {
-    starts_in_min: "Starts in {x} minute",
-    starts_in_mins: "Starts in {x} minutes",
-    starts_in_hour: "Starts in {x} hour",
-    starts_in_hours: "Starts in {x} hours",
-    starts_in_day: "Starts in {x} day",
-    starts_in_days: "Starts in {x} days",
-    starts_in_week: "Starts in {x} week",
-    starts_in_weeks: "Starts in {x} weeks",
-    loading: "Loading events...",
-    no_events: "No active events",
-    more_events: "+{x} more",
-    editor_show_upcoming: "Show upcoming events",
-    editor_unfold_events: "Unfold Events",
-    editor_configuration: "Configuration",
-    editor_text_visibility: "Text Visibility",
-    editor_show_divider: "Show Divider",
-    editor_show_weekday: "Show Weekday",
-    editor_show_weekday_long: "Use long weekday (e.g. Monday)",
-    editor_show_month: "Show Month",
-    editor_show_month_long: "Use long month (e.g. December)",
-    editor_icon_show_weekday: "Swap Month and Weekday",
-    editor_show_add_event: "Show 'Add Event' Button",
-    add_event_title: "Add Event",
-    add_event_name: "Title",
-    add_event_start: "Start",
-    add_event_end: "End",
-    add_event_all_day: "All Day",
-    add_event_location: "Location",
-    add_event_description: "Description",
-    add_event_calendar: "Calendar",
-    add_event_save: "Save",
-    add_event_cancel: "Cancel",
-    popup_upcoming_events: "Upcoming events",
-    editor_show_more: "Show More",
-    editor_show_less: "Show Less",
-    editor_background_color: "Background Color",
-    editor_show_location: "Show Location",
-    editor_show_duration: "Show Duration",
-    editor_show_time: "Show Time",
-    duration_min: "min",
-    duration_hour: "h",
-    duration_day: "day",
-    duration_days: "days",
-    editor_max_lines: "Max. displayed events",
-    group_by_date: "Group by Day",
-    group_by_date_and_calendar: "Group by Day and Calendar",
-    empty: "Empty",
-    editor_show_empty_days: "Show Empty Days"
-  },
-  de: {
-    starts_in_min: "Beginnt in {x} Minute",
-    starts_in_mins: "Beginnt in {x} Minuten",
-    starts_in_hour: "Beginnt in {x} Stunde",
-    starts_in_hours: "Beginnt in {x} Stunden",
-    starts_in_day: "Beginnt in {x} Tag",
-    starts_in_days: "Beginnt in {x} Tagen",
-    starts_in_week: "Beginnt in {x} Woche",
-    starts_in_weeks: "Beginnt in {x} Wochen",
-    loading: "Lade Termine...",
-    no_events: "Keine aktiven Termine",
-    more_events: "+{x} weitere",
-    editor_show_upcoming: "Zeige bevorstehende Ereignisse",
-    editor_unfold_events: "Ereignisse ausklappen",
-    editor_configuration: "Konfiguration",
-    editor_text_visibility: "Text & Sichtbarkeit",
-    editor_show_divider: "Zeige Trenner",
-    editor_show_weekday: "Zeige Wochentag",
-    editor_show_weekday_long: "Ausgeschrieben (z.B. Montag)",
-    editor_show_month: "Zeige Monat",
-    editor_show_month_long: "Ausgeschrieben (z.B. Dezember)",
-    editor_icon_show_weekday: "Monat und Wochentag tauschen",
-    editor_show_add_event: "Zeige 'Neuer Termin' Button",
-    add_event_title: "Neuer Termin",
-    add_event_name: "Titel",
-    add_event_start: "Start",
-    add_event_end: "Ende",
-    add_event_all_day: "Ganztägig",
-    add_event_location: "Ort",
-    add_event_description: "Beschreibung",
-    add_event_calendar: "Kalender",
-    add_event_save: "Speichern",
-    add_event_cancel: "Abbrechen",
-    popup_upcoming_events: "Bevorstehende Ereignisse",
-    editor_show_more: "Mehr anzeigen",
-    editor_show_less: "Weniger anzeigen",
-    editor_background_color: "Hintergrundfarbe",
-    editor_show_location: "Zeige Ort",
-    editor_show_duration: "Zeige Dauer",
-    editor_show_time: "Zeige Zeit",
-    duration_min: "Minuten",
-    duration_hour: "h",
-    duration_day: "Tag",
-    duration_days: "Tage",
-    editor_max_lines: "Max. angezeigte Termine",
-    group_by_date: "Nach Tag gruppieren",
-    group_by_date_and_calendar: "Nach Tag und Kalender gruppieren",
-    empty: "Leer",
-    editor_show_empty_days: "Zeige leere Tage"
-  },
-  fr: {
-    starts_in_min: "Commence dans {x} minute",
-    starts_in_mins: "Commence dans {x} minutes",
-    starts_in_hour: "Commence dans {x} heure",
-    starts_in_hours: "Commence dans {x} heures",
-    starts_in_day: "Commence dans {x} jour",
-    starts_in_days: "Commence dans {x} jours",
-    starts_in_week: "Commence dans {x} semaine",
-    starts_in_weeks: "Commence dans {x} semaines",
-    loading: "Chargement...",
-    no_events: "Pas d'événement",
-    more_events: "+{x} autres",
-    editor_show_upcoming: "Afficher les événements futurs",
-    editor_unfold_events: "Déplier les événements",
-    editor_configuration: "Configuration",
-    editor_text_visibility: "Visibilité du texte",
-    editor_show_divider: "Afficher le séparateur",
-    editor_show_weekday: "Afficher le jour de la semaine",
-    editor_show_weekday_long: "Format long (ex. Lundi)",
-    editor_show_month: "Afficher le mois",
-    editor_show_month_long: "Format long (ex. Décembre)",
-    editor_icon_show_weekday: "Permuter Mois et Jour de semaine",
-    editor_show_add_event: "Afficher bouton 'Nouvel événement'",
-    add_event_title: "Nouvel événement",
-    add_event_name: "Titre",
-    add_event_start: "De",
-    add_event_end: "A",
-    add_event_all_day: "Toute la journée",
-    add_event_location: "Lieu",
-    add_event_description: "Description",
-    add_event_calendar: "Calendrier",
-    add_event_save: "Enregistrer",
-    add_event_cancel: "Annuler",
-    popup_upcoming_events: "Événements à venir",
-    editor_show_more: "Afficher plus",
-    editor_show_less: "Afficher moins",
-    editor_background_color: "Couleur de fond",
-    editor_show_location: "Afficher le lieu",
-    editor_show_duration: "Afficher la durée",
-    editor_show_time: "Montrer les heures",
-    duration_min: "min",
-    duration_hour: "h",
-    duration_day: "jour",
-    duration_days: "jours",
-    editor_max_lines: "Nombre max. d'événements",
-    group_by_date: "Grouper par jour",
-    group_by_date_and_calendar: "Grouper par jour et calendrier",
-    empty: "Aucun événement",
-    editor_show_empty_days: "Montrer les jours vides"
-  },
-  it: {
-    starts_in_min: "Inizia tra {x} minuto",
-    starts_in_mins: "Inizia tra {x} minuti",
-    starts_in_hour: "Inizia tra {x} ora",
-    starts_in_hours: "Inizia tra {x} ore",
-    starts_in_day: "Inizia tra {x} giorno",
-    starts_in_days: "Inizia tra {x} giorni",
-    starts_in_week: "Inizia tra {x} settimana",
-    starts_in_weeks: "Inizia tra {x} settimane",
-    loading: "Caricamento...",
-    no_events: "Nessun evento",
-    more_events: "+{x} altri",
-    editor_show_upcoming: "Mostra prossimi eventi",
-    editor_unfold_events: "Espandi gli eventi",
-    editor_configuration: "Configurazione",
-    editor_text_visibility: "Visibilità testo",
-    editor_show_divider: "Mostra divisore",
-    editor_show_weekday: "Mostra giorno della settimana",
-    editor_show_weekday_long: "Usa nome completo (es. Lunedì)",
-    editor_show_month: "Mostra mese",
-    editor_show_month_long: "Usa nome completo (es. Dicembre)",
-    editor_icon_show_weekday: "Scambia Mese e Giorno della settimana",
-    editor_show_add_event: "Mostra pulsante Aggiungi",
-    add_event_title: "Aggiungi Evento",
-    add_event_name: "Titolo",
-    add_event_start: "Inizio",
-    add_event_end: "Fine",
-    add_event_all_day: "Tutto il giorno",
-    add_event_location: "Luogo",
-    add_event_description: "Descrizione",
-    add_event_calendar: "Calendario",
-    add_event_save: "Salva",
-    add_event_cancel: "Annulla",
-    popup_upcoming_events: "Prossimi eventi",
-    editor_show_more: "Mostra di più",
-    editor_show_less: "Mostra meno",
-    editor_background_color: "Colore di sfondo",
-    editor_show_location: "Mostra luogo",
-    editor_show_duration: "Mostra durata",
-    editor_show_time: "Mostra tempo",
-    duration_min: "min",
-    duration_hour: "h",
-    duration_day: "giorno",
-    duration_days: "giorni",
-    editor_max_lines: "Numero massimo di eventi",
-    group_by_date: "Raggruppa per giorno",
-    group_by_date_and_calendar: "Raggruppa per giorno e calendario",
-    empty: "Vuoto",
-    editor_show_empty_days: "Mostra giorni vuoti"
-  },
-  es: {
-    starts_in_min: "Empieza en {x} minuto",
-    starts_in_mins: "Empieza en {x} minutos",
-    starts_in_hour: "Empieza en {x} hora",
-    starts_in_hours: "Empieza en {x} horas",
-    starts_in_day: "Empieza en {x} día",
-    starts_in_days: "Empieza en {x} días",
-    starts_in_week: "Empieza en {x} semana",
-    starts_in_weeks: "Empieza en {x} semanas",
-    loading: "Cargando...",
-    no_events: "No hay eventos",
-    more_events: "+{x} más",
-    editor_show_upcoming: "Mostrar próximos eventos",
-    editor_unfold_events: "Desplegar eventos",
-    editor_configuration: "Configuración",
-    editor_text_visibility: "Visibilidad de texto",
-    editor_show_divider: "Mostrar divisor",
-    editor_show_weekday: "Mostrar día de la semana",
-    editor_show_weekday_long: "Formato largo (ej. Lunes)",
-    editor_show_month: "Mostrar mes",
-    editor_show_month_long: "Formato largo (ej. Diciembre)",
-    editor_icon_show_weekday: "Intercambiar Mes y Día de la semana",
-    editor_show_add_event: "Mostrar botón Añadir Evento",
-    add_event_title: "Añadir Evento",
-    add_event_name: "Título",
-    add_event_start: "Inicio",
-    add_event_end: "Fin",
-    add_event_all_day: "Todo el día",
-    add_event_location: "Ubicación",
-    add_event_description: "Descripción",
-    add_event_calendar: "Calendario",
-    add_event_save: "Guardar",
-    add_event_cancel: "Cancelar",
-    popup_upcoming_events: "Próximos eventos",
-    editor_show_more: "Mostrar más",
-    editor_show_less: "Mostrar menos",
-    editor_background_color: "Color de fondo",
-    editor_show_location: "Mostrar ubicación",
-    editor_show_duration: "Mostrar duración",
-    editor_show_time: "Mostrar tiempo",
-    duration_min: "min",
-    duration_hour: "h",
-    duration_day: "día",
-    duration_days: "días",
-    editor_max_lines: "Número máximo de eventos",
-    group_by_date: "Agrupar por día",
-    group_by_date_and_calendar: "Agrupar por día y calendario",
-    empty: "Vacío",
-    editor_show_empty_days: "Mostrar días vacíos"
-  },
-  nl: {
-    starts_in_min: "Begint over {x} minuut",
-    starts_in_mins: "Begint over {x} minuten",
-    starts_in_hour: "Begint over {x} uur",
-    starts_in_hours: "Begint over {x} uur",
-    starts_in_day: "Begint over {x} dag",
-    starts_in_days: "Begint over {x} dagen",
-    starts_in_week: "Begint over {x} week",
-    starts_in_weeks: "Begint over {x} weken",
-    loading: "Laden...",
-    no_events: "Geen evenementen",
-    more_events: "+{x} meer",
-    editor_show_upcoming: "Toon aankomende evenementen",
-    editor_unfold_events: "Evenementen uitvouwen",
-    editor_configuration: "Configuratie",
-    editor_text_visibility: "Zichtbaarheid tekst",
-    editor_show_divider: "Toon verdeler",
-    editor_show_weekday: "Toon weekdag",
-    editor_show_weekday_long: "Gebruik lange notatie (bijv. Maandag)",
-    editor_show_month: "Toon maand",
-    editor_show_month_long: "Lange notatie (bijv. December)",
-    editor_icon_show_weekday: "Maand en weekdag omwisselen",
-    editor_show_add_event: "Toon Toevoegen knop",
-    add_event_title: "Evenement toevoegen",
-    add_event_name: "Titel",
-    add_event_start: "Start",
-    add_event_end: "Eind",
-    add_event_all_day: "Hele dag",
-    add_event_location: "Locatie",
-    add_event_description: "Beschrijving",
-    add_event_calendar: "Kalender",
-    add_event_save: "Opslaan",
-    add_event_cancel: "Annuleren",
-    popup_upcoming_events: "Aankomende evenementen",
-    editor_show_more: "Toon meer",
-    editor_show_less: "Toon minder",
-    editor_background_color: "Achtergrondkleur",
-    editor_show_location: "Toon locatie",
-    editor_show_duration: "Toon duur",
-    editor_show_time: "Toon tijd",
-    duration_min: "min",
-    duration_hour: "u",
-    duration_day: "dag",
-    duration_days: "dagen",
-    editor_max_lines: "Max. weergegeven evenementen",
-    group_by_date: "Groepeer per dag",
-    group_by_date_and_calendar: "Groepeer per dag en kalender",
-    empty: "Leeg",
-    editor_show_empty_days: "Toon lege dagen"
-  },
-  pt: {
-    starts_in_min: "Começa em {x} minuto",
-    starts_in_mins: "Começa em {x} minutos",
-    starts_in_hour: "Começa em {x} hora",
-    starts_in_hours: "Começa em {x} horas",
-    starts_in_day: "Começa em {x} dia",
-    starts_in_days: "Começa em {x} dias",
-    starts_in_week: "Começa em {x} semana",
-    starts_in_weeks: "Começa em {x} semanas",
-    loading: "A carregar...",
-    no_events: "Sem eventos",
-    more_events: "+{x} mais",
-    editor_show_upcoming: "Mostrar próximos eventos",
-    editor_unfold_events: "Desdobrar eventos",
-    editor_configuration: "Configuração",
-    editor_text_visibility: "Visibilidade do texto",
-    editor_show_divider: "Mostrar divisor",
-    editor_show_weekday: "Mostrar dia da semana",
-    editor_show_weekday_long: "Formato longo (ex. Segunda-feira)",
-    editor_show_month: "Mostrar mês",
-    editor_show_month_long: "Formato longo (ex. Dezembro)",
-    editor_icon_show_weekday: "Trocar Mês e Dia da semana",
-    editor_show_add_event: "Mostrar botão Adicionar",
-    add_event_title: "Adicionar evento",
-    add_event_name: "Título",
-    add_event_start: "Início",
-    add_event_end: "Fim",
-    add_event_all_day: "Dia inteiro",
-    add_event_location: "Local",
-    add_event_description: "Descrição",
-    add_event_calendar: "Calendário",
-    add_event_save: "Salvar",
-    add_event_cancel: "Cancelar",
-    popup_upcoming_events: "Próximos eventos",
-    editor_show_more: "Mostrar mais",
-    editor_show_less: "Mostrar menos",
-    editor_background_color: "Cor de fundo",
-    editor_show_location: "Mostrar local",
-    editor_show_duration: "Mostrar duração",
-    editor_show_time: "Mostrar hora",
-    duration_min: "min",
-    duration_hour: "h",
-    duration_day: "dia",
-    duration_days: "dias",
-    editor_max_lines: "Máximo de eventos exibidos",
-    group_by_date: "Agrupar por dia",
-    group_by_date_and_calendar: "Agrupar por dia e calendário",
-    empty: "Vazio",
-    editor_show_empty_days: "Mostrar dias vazios"
-  },
-  ru: {
-    starts_in_min: "Начнется через {x} минуту",
-    starts_in_mins: "Начнется через {x} мин.",
-    starts_in_hour: "Начнется через {x} час",
-    starts_in_hours: "Начнется через {x} ч.",
-    starts_in_day: "Начнется через {x} день",
-    starts_in_days: "Начнется через {x} дн.",
-    starts_in_week: "Начнется через {x} неделю",
-    starts_in_weeks: "Начнется через {x} нед.",
-    loading: "Загрузка...",
-    no_events: "Нет событий",
-    more_events: "ещё +{x}",
-    editor_show_upcoming: "Показать предстоящие события",
-    editor_unfold_events: "Развернуть события",
-    editor_configuration: "Конфигурация",
-    editor_text_visibility: "Видимость текста",
-    editor_show_divider: "Показать разделитель",
-    editor_show_weekday: "Показать день недели",
-    editor_show_weekday_long: "Использовать полное название (напр. Понедельник)",
-    editor_show_month: "Показать месяц",
-    editor_show_month_long: "Использовать полное название (напр. Декабрь)",
-    editor_icon_show_weekday: "Поменять местами Месяц и День недели",
-    editor_show_add_event: "Показать кнопку Добавить",
-    add_event_title: "Добавить событие",
-    add_event_name: "Название",
-    add_event_start: "Начало",
-    add_event_end: "Конец",
-    add_event_all_day: "Весь день",
-    add_event_location: "Место",
-    add_event_description: "Описание",
-    add_event_calendar: "Календарь",
-    add_event_save: "Сохранить",
-    add_event_cancel: "Отмена",
-    popup_upcoming_events: "Предстоящие события",
-    editor_show_more: "Показать больше",
-    editor_show_less: "Показать меньше",
-    editor_background_color: "Цвет фона",
-    editor_show_location: "Показать место",
-    editor_show_duration: "Показать продолжительность",
-    editor_show_time: "Показать время",
-    duration_min: "мин",
-    duration_hour: "ч",
-    duration_day: "день",
-    duration_days: "дней",
-    editor_max_lines: "Максимум отобр. событий",
-    group_by_date: "Группировать по дням",
-    group_by_date_and_calendar: "Группировать по дням и календарю",
-    empty: "Пусто",
-    editor_show_empty_days: "Показать пустые дни"
-  },
-  pl: {
-    starts_in_min: "Rozpoczyna się za {x} minutę",
-    starts_in_mins: "Rozpoczyna się za {x} min.",
-    starts_in_hour: "Rozpoczyna się za {x} godzinę",
-    starts_in_hours: "Rozpoczyna się za {x} godz.",
-    starts_in_day: "Rozpoczyna się za {x} dzień",
-    starts_in_days: "Rozpoczyna się za {x} dni",
-    starts_in_week: "Rozpoczyna się za {x} tydzień",
-    starts_in_weeks: "Rozpoczyna się za {x} tyg.",
-    loading: "Ładowanie...",
-    no_events: "Brak wydarzeń",
-    more_events: "+{x} więcej",
-    editor_show_upcoming: "Pokaż nadchodzące wydarzenia",
-    editor_unfold_events: "Rozwiń wydarzenia",
-    editor_configuration: "Konfiguracja",
-    editor_text_visibility: "Widoczność tekstu",
-    editor_show_divider: "Pokaż dzielnik",
-    editor_show_weekday: "Pokaż dzień tygodnia",
-    editor_show_weekday_long: "Użyj pełnej nazwy (np. Poniedziałek)",
-    editor_show_month: "Pokaż miesiąc",
-    editor_show_month_long: "Użyj pełnej nazwy (np. Grudzień)",
-    editor_icon_show_weekday: "Zamień Miesiąc i Dzień tygodnia",
-    editor_show_add_event: "Pokaż przycisk Dodaj",
-    add_event_title: "Dodaj wydarzenie",
-    add_event_name: "Tytuł",
-    add_event_start: "Początek",
-    add_event_end: "Koniec",
-    add_event_all_day: "Cały dzień",
-    add_event_location: "Lokalizacja",
-    add_event_description: "Opis",
-    add_event_calendar: "Kalendarz",
-    add_event_save: "Zapisz",
-    add_event_cancel: "Anuluj",
-    popup_upcoming_events: "Nadchodzące wydarzenia",
-    editor_show_more: "Pokaż więcej",
-    editor_show_less: "Pokaż mniej",
-    editor_background_color: "Kolor tła",
-    editor_show_location: "Pokaż lokalizację",
-    editor_show_duration: "Pokaż czas trwania",
-    editor_show_time: "Pokaż czas",
-    duration_min: "min",
-    duration_hour: "godz",
-    duration_day: "dzień",
-    duration_days: "dni",
-    editor_max_lines: "Maks. wyświetlane wydarzenia",
-    group_by_date: "Grupuj według dnia",
-    group_by_date_and_calendar: "Grupuj według dnia i kalendarza",
-    empty: "Pusty",
-    editor_show_empty_days: "Pokaż puste dni"
-  },
-  sv: {
-    starts_in_min: "Börjar om {x} minut",
-    starts_in_mins: "Börjar om {x} minuter",
-    starts_in_hour: "Börjar om {x} timme",
-    starts_in_hours: "Börjar om {x} timmar",
-    starts_in_day: "Börjar om {x} dag",
-    starts_in_days: "Börjar om {x} dagar",
-    starts_in_week: "Börjar om {x} vecka",
-    starts_in_weeks: "Börjar om {x} veckor",
-    loading: "Laddar...",
-    no_events: "Inga händelser",
-    more_events: "+{x} till",
-    editor_show_upcoming: "Visa kommande händelser",
-    editor_unfold_events: "Fäll ut evenemang",
-    editor_configuration: "Konfiguration",
-    editor_text_visibility: "Textsynlighet",
-    editor_show_divider: "Visa avdelare",
-    editor_show_weekday: "Visa veckodag",
-    editor_show_weekday_long: "Använd långt format (t.ex. Måndag)",
-    editor_show_month: "Visa månad",
-    editor_show_month_long: "Använd långt format (t.ex. December)",
-    editor_icon_show_weekday: "Byt plats mellan Månad och Veckodag",
-    editor_show_add_event: "Visa Lägg till-knapp",
-    add_event_title: "Lägg till händelse",
-    add_event_name: "Titel",
-    add_event_start: "Start",
-    add_event_end: "Slut",
-    add_event_all_day: "Heldag",
-    add_event_location: "Plats",
-    add_event_description: "Beskrivning",
-    add_event_calendar: "Kalender",
-    add_event_save: "Spara",
-    add_event_cancel: "Avbryt",
-    popup_upcoming_events: "Kommande händelser",
-    editor_show_more: "Visa mer",
-    editor_show_less: "Visa mindre",
-    editor_background_color: "Bakgrundsfärg",
-    editor_show_location: "Visa plats",
-    editor_show_duration: "Visa varaktighet",
-    editor_show_time: "Visa tid",
-    duration_min: "min",
-    duration_hour: "h",
-    duration_day: "dag",
-    duration_days: "dagar",
-    editor_max_lines: "Max. visade händelser",
-    group_by_date: "Gruppera per dag",
-    group_by_date_and_calendar: "Gruppera per dag och kalender",
-    empty: "Tom",
-    editor_show_empty_days: "Visa tomma dagar"
-  },
-  da: {
-    starts_in_min: "Starter om {x} minut",
-    starts_in_mins: "Starter om {x} minutter",
-    starts_in_hour: "Starter om {x} time",
-    starts_in_hours: "Starter om {x} timer",
-    starts_in_day: "Starter om {x} dag",
-    starts_in_days: "Starter om {x} dage",
-    starts_in_week: "Starter om {x} uge",
-    starts_in_weeks: "Starter om {x} uger",
-    loading: "Indlæser...",
-    no_events: "Ingen begivenheder",
-    more_events: "+{x} mere",
-    editor_show_upcoming: "Vis kommende begivenheder",
-    editor_unfold_events: "Udfold begivenheder",
-    editor_configuration: "Konfiguration",
-    editor_text_visibility: "Tekst og synlighed",
-    editor_show_divider: "Vis skillelinje",
-    editor_show_weekday: "Vis ugedag",
-    editor_show_weekday_long: "Brug langt format (f.eks. Mandag)",
-    editor_show_month: "Vis måned",
-    editor_show_month_long: "Brug langt format (f.eks. December)",
-    editor_icon_show_weekday: "Skift Måned og Ugedag",
-    editor_show_add_event: "Vis Tilføj-knap",
-    add_event_title: "Tilføj begivenhed",
-    add_event_name: "Titel",
-    add_event_start: "Start",
-    add_event_end: "Slut",
-    add_event_all_day: "Hele dagen",
-    add_event_location: "Sted",
-    add_event_description: "Beskrivelse",
-    add_event_calendar: "Kalender",
-    add_event_save: "Gem",
-    add_event_cancel: "Annuller",
-    popup_upcoming_events: "Kommende begivenheder",
-    editor_show_more: "Vis mere",
-    editor_show_less: "Vis mindre",
-    editor_background_color: "Baggrundsfarve",
-    editor_show_location: "Vis sted",
-    editor_show_duration: "Vis varighed",
-    editor_show_time: "Vis tid",
-    duration_min: "min",
-    duration_hour: "t",
-    duration_day: "dag",
-    duration_days: "dage",
-    editor_max_lines: "Maks. viste begivenheder",
-    group_by_date: "Gruppér efter dag",
-    group_by_date_and_calendar: "Gruppér efter dag og kalender",
-    empty: "Tom",
-    editor_show_empty_days: "Vis tomme dage"
-  },
-  no: {
-    starts_in_min: "Starter om {x} minutt",
-    starts_in_mins: "Starter om {x} minutter",
-    starts_in_hour: "Starter om {x} time",
-    starts_in_hours: "Starter om {x} timer",
-    starts_in_day: "Starter om {x} dag",
-    starts_in_days: "Starter om {x} dager",
-    starts_in_week: "Starter om {x} uke",
-    starts_in_weeks: "Starter om {x} uker",
-    loading: "Laster...",
-    no_events: "Ingen hendelser",
-    more_events: "+{x} til",
-    editor_show_upcoming: "Vis kommende hendelser",
-    editor_unfold_events: "Brett ut hendelser",
-    editor_configuration: "Konfigurasjon",
-    editor_text_visibility: "Tekstsynlighet",
-    editor_show_divider: "Vis skillelinje",
-    editor_show_weekday: "Vis ukedag",
-    editor_show_weekday_long: "Bruk langt format (f.eks. Mandag)",
-    editor_show_month: "Vis måned",
-    editor_show_month_long: "Bruk langt format (f.eks. Desember)",
-    editor_icon_show_weekday: "Bytt Måned og Ukedag",
-    editor_show_add_event: "Vis Legg til-knapp",
-    add_event_title: "Legg til hendelse",
-    add_event_name: "Tittel",
-    add_event_start: "Start",
-    add_event_end: "Slutt",
-    add_event_all_day: "Hele dagen",
-    add_event_location: "Sted",
-    add_event_description: "Beskrivelse",
-    add_event_calendar: "Kalender",
-    add_event_save: "Lagre",
-    add_event_cancel: "Avbryt",
-    popup_upcoming_events: "Kommende hendelser",
-    editor_show_more: "Vis mer",
-    editor_show_less: "Vis mindre",
-    editor_background_color: "Bakgrunnsfarge",
-    editor_show_location: "Vis sted",
-    editor_show_duration: "Vis varighet",
-    editor_show_time: "Vis tid",
-    duration_min: "min",
-    duration_hour: "t",
-    duration_day: "dag",
-    duration_days: "dager",
-    editor_max_lines: "Maks. viste hendelser",
-    group_by_date: "Grupper etter dag",
-    group_by_date_and_calendar: "Grupper etter dag og kalender",
-    empty: "Tom",
-    editor_show_empty_days: "Vis tomme dager"
-  },
-  fi: {
-    starts_in_min: "Alkaa {x} minuutin kuluttua",
-    starts_in_mins: "Alkaa {x} minuutin kuluttua",
-    starts_in_hour: "Alkaa {x} tunnin kuluttua",
-    starts_in_hours: "Alkaa {x} tunnin kuluttua",
-    starts_in_day: "Alkaa {x} päivän kuluttua",
-    starts_in_days: "Alkaa {x} päivän kuluttua",
-    starts_in_week: "Alkaa {x} viikon kuluttua",
-    starts_in_weeks: "Alkaa {x} viikon kuluttua",
-    loading: "Ladataan...",
-    no_events: "Ei tapahtumia",
-    more_events: "+{x} lisää",
-    editor_show_upcoming: "Näytä tulevat tapahtumat",
-    editor_unfold_events: "Avaa tapahtumat",
-    editor_configuration: "Määritys",
-    editor_text_visibility: "Tekstin näkyvyys",
-    editor_show_divider: "Näytä jakaja",
-    editor_show_weekday: "Näytä viikonpäivä",
-    editor_show_weekday_long: "Käytä pitkää nimeä (esim. Maanantai)",
-    editor_show_month: "Näytä kuukausi",
-    editor_show_month_long: "Käytä pitkää nimeä (esim. Joulukuu)",
-    editor_icon_show_weekday: "Vaihda Kuukausi ja Viikonpäivä",
-    editor_show_add_event: "Näytä Lisää-painike",
-    add_event_title: "Lisää tapahtuma",
-    add_event_name: "Nimi",
-    add_event_start: "Alku",
-    add_event_end: "Loppu",
-    add_event_all_day: "Koko päivä",
-    add_event_location: "Sijainti",
-    add_event_description: "Kuvaus",
-    add_event_calendar: "Kalenteri",
-    add_event_save: "Tallenna",
-    add_event_cancel: "Peruuta",
-    popup_upcoming_events: "Tulevat tapahtumat",
-    editor_show_more: "Näytä enemmän",
-    editor_show_less: "Näytä vähemmän",
-    editor_background_color: "Taustaväri",
-    editor_show_location: "Näytä sijainti",
-    editor_show_duration: "Näytä kesto",
-    editor_show_time: "Näytä aika",
-    duration_min: "min",
-    duration_hour: "t",
-    duration_day: "päivä",
-    duration_days: "päivää",
-    editor_max_lines: "Näytettävien tapahtumien enimmäismäärä",
-    group_by_date: "Ryhmittele päivän mukaan",
-    group_by_date_and_calendar: "Ryhmittele päivän ja kalenterin mukaan",
-    empty: "Tyhjä",
-    editor_show_empty_days: "Näytä tyhjät päivät"
-  },
-  cs: {
-    starts_in_min: "Začíná za {x} minutu",
-    starts_in_mins: "Začíná za {x} minut",
-    starts_in_hour: "Začíná za {x} hodinu",
-    starts_in_hours: "Začíná za {x} hodin",
-    starts_in_day: "Začíná za {x} den",
-    starts_in_days: "Začíná za {x} dní",
-    starts_in_week: "Začíná za {x} týden",
-    starts_in_weeks: "Začíná za {x} týdnů",
-    loading: "Načítání...",
-    no_events: "Žádné události",
-    more_events: "+{x} další",
-    editor_show_upcoming: "Zobrazit nadcházející události",
-    editor_unfold_events: "Rozvinout události",
-    editor_configuration: "Konfigurace",
-    editor_text_visibility: "Viditelnost textu",
-    editor_show_divider: "Zobrazit dělič",
-    editor_show_weekday: "Zobrazit den v týdnu",
-    editor_show_weekday_long: "Použít celý název (např. Pondělí)",
-    editor_show_month: "Zobrazit měsíc",
-    editor_show_month_long: "Použít celý název (např. Prosinec)",
-    editor_icon_show_weekday: "Vyměnit Měsíc a Den v týdnu",
-    editor_show_add_event: "Zobrazit tlačítko Přidat",
-    add_event_title: "Přidat událost",
-    add_event_name: "Název",
-    add_event_start: "Začátek",
-    add_event_end: "Konec",
-    add_event_all_day: "Celý den",
-    add_event_location: "Místo",
-    add_event_description: "Popis",
-    add_event_calendar: "Kalendář",
-    add_event_save: "Uložit",
-    add_event_cancel: "Zrušit",
-    popup_upcoming_events: "Nadcházející události",
-    editor_show_more: "Zobrazit více",
-    editor_show_less: "Zobrazit méně",
-    editor_background_color: "Barva pozadí",
-    editor_show_location: "Zobrazit místo",
-    editor_show_duration: "Zobrazit dobu trvání",
-    editor_show_time: "Zobrazit čas",
-    duration_min: "min",
-    duration_hour: "h",
-    duration_day: "den",
-    duration_days: "dní",
-    editor_max_lines: "Max. zobrazované události",
-    group_by_date: "Seskupit podle dne",
-    group_by_date_and_calendar: "Seskupit podle dne a kalendáře",
-    empty: "Prázdné",
-    editor_show_empty_days: "Zobrazit prázdné dny"
-  },
-  hu: {
-    starts_in_min: "Kezdés {x} perc múlva",
-    starts_in_mins: "Kezdés {x} perc múlva",
-    starts_in_hour: "Kezdés {x} óra múlva",
-    starts_in_hours: "Kezdés {x} óra múlva",
-    starts_in_day: "Kezdés {x} nap múlva",
-    starts_in_days: "Kezdés {x} nap múlva",
-    starts_in_week: "Kezdés {x} hét múlva",
-    starts_in_weeks: "Kezdés {x} hét múlva",
-    loading: "Betöltés...",
-    no_events: "Nincs esemény",
-    more_events: "+{x} további",
-    editor_show_upcoming: "Közelgő események megjelenítése",
-    editor_unfold_events: "Események kibontása",
-    editor_configuration: "Konfiguráció",
-    editor_text_visibility: "Szöveg láthatósága",
-    editor_show_divider: "Osztó megjelenítése",
-    editor_show_weekday: "Hét napjának mutatása",
-    editor_show_weekday_long: "Hosszú formátum (pl. Hétfő)",
-    editor_show_month: "Hó megjelenítése",
-    editor_show_month_long: "Hosszú formátum (pl. December)",
-    editor_icon_show_weekday: "Hó és Hét napja felcserélése",
-    editor_show_add_event: "Hozzáadás gomb mutatása",
-    add_event_title: "Esemény Hozzáadása",
-    add_event_name: "Cím",
-    add_event_start: "Kezdés",
-    add_event_end: "Befejezés",
-    add_event_all_day: "Egész napos",
-    add_event_location: "Helyszín",
-    add_event_description: "Leírás",
-    add_event_calendar: "Naptár",
-    add_event_save: "Mentés",
-    add_event_cancel: "Mégse",
-    popup_upcoming_events: "Közelgő események",
-    editor_show_more: "Több mutatása",
-    editor_show_less: "Kevesebb mutatása",
-    editor_background_color: "Háttérszín",
-    editor_show_location: "Helyszín mutatása",
-    editor_show_duration: "Időtartam mutatása",
-    editor_show_time: "Idő mutatása",
-    duration_min: "perc",
-    duration_hour: "ó",
-    duration_day: "nap",
-    duration_days: "nap",
-    editor_max_lines: "Max. megjelenített események",
-    group_by_date: "Csoportosítás nap szerint",
-    group_by_date_and_calendar: "Csoportosítás nap és naptár szerint",
-    empty: "Üres",
-    editor_show_empty_days: "Üres napok mutatása"
-  }
-};
-function g(a, e, t, i) {
-  var n;
-  const s = ((n = a.locale) == null ? void 0 : n.language) || a.language || "en";
-  let o;
-  if (Q[s] && Q[s][e])
-    o = Q[s][e];
-  else if (Q.en && Q.en[e])
-    o = Q.en[e];
-  else
-    return e;
-  return t && i && (o = o.replace(t, i)), o;
+function K(e, t, n, r) {
+	return !t.read_only_calendars?.includes(n) && ((e.states[n]?.attributes?.supported_features ?? 0) & r) !== 0;
 }
-function j(a) {
-  var e;
-  return ((e = a.locale) == null ? void 0 : e.language) || a.language || navigator.language || "en";
-}
-function Ct(a) {
-  var t, i;
-  const e = (t = a.locale) == null ? void 0 : t.time_format;
-  if (!e || e === "language" || e === "system") {
-    const s = e === "language" ? ((i = a.locale) == null ? void 0 : i.language) || a.language : void 0;
-    return (/* @__PURE__ */ new Date("January 1, 2023 22:00:00")).toLocaleString(
-      s
-    ).includes("10");
-  }
-  return e === "12";
-}
-function T(a, e) {
-  var n;
-  const t = j(a), i = Ct(a), o = ((n = a.locale) == null ? void 0 : n.time_format) === "system";
-  return new Intl.DateTimeFormat(o ? void 0 : t, {
-    hour: "numeric",
-    minute: "2-digit",
-    hourCycle: i ? "h12" : "h23"
-  }).format(e);
-}
-function M(a, e) {
-  var h, $, w, m, p;
-  const t = j(a), i = (h = a.locale) == null ? void 0 : h.date_format, s = i === "system", o = new Intl.DateTimeFormat(
-    s ? void 0 : t,
-    {
-      year: "numeric",
-      month: "numeric",
-      day: "numeric"
-    }
-  );
-  if (!i || i === "language" || i === "system")
-    return o.format(e);
-  const n = o.formatToParts(e), d = (($ = n.find((y) => y.type === "literal")) == null ? void 0 : $.value) ?? "/", r = ((w = n.find((y) => y.type === "day")) == null ? void 0 : w.value) ?? "", c = ((m = n.find((y) => y.type === "month")) == null ? void 0 : m.value) ?? "", l = ((p = n.find((y) => y.type === "year")) == null ? void 0 : p.value) ?? "", _ = n[n.length - 1], v = (_ == null ? void 0 : _.type) === "literal" ? _ == null ? void 0 : _.value : "";
-  return {
-    DMY: `${r}${d}${c}${d}${l}${v}`,
-    MDY: `${c}${d}${r}${d}${l}${v}`,
-    YMD: `${l}${d}${c}${d}${r}${v}`
-  }[i] ?? o.format(e);
-}
-function zt(a, e, t) {
-  const i = (t == null ? void 0 : t.unfold_events) || !1;
-  if (e === void 0)
-    return u`
+function ut(e, t, n, r, i) {
+	if (t === void 0) return ft(V(e, "loading"), "mdi:calendar-clock", "var(--primary-color, #03a9f4)");
+	if (t.length === 0) return ft(V(e, "no_events"), "mdi:calendar-remove", "var(--disabled-text-color, #bdbdbb)");
+	if (!n.unfold_events) {
+		let r = t.slice(1).filter((e) => !e.is_empty).length, a = t.some((e) => !e.is_empty) ? i : void 0;
+		return k`
       <div class="calendar-container">
-        <div class="calendar-item" style="cursor: default;">
-          <div
-            class="calendar-icon"
-            style="background-color: var(--primary-color, #03a9f4);"
-          >
-            <ha-icon icon="mdi:calendar-clock"></ha-icon>
-          </div>
-          <div class="calendar-content">
-            <div class="event-title">${g(a, "loading")}</div>
-          </div>
-        </div>
+        ${pt(e, t[0], n, a, { moreText: r > 0 ? ` ${V(e, "more_events", "{x}", r.toString())}` : "" })}
       </div>
     `;
-  if (e.length === 0)
-    return u`
-      <div class="calendar-container">
-        <div class="calendar-item" style="cursor: default;">
-          <div
-            class="calendar-icon"
-            style="background-color: var(--disabled-text-color, #bdbdbb);"
-          >
-            <ha-icon icon="mdi:calendar-remove"></ha-icon>
-          </div>
-          <div class="calendar-content">
-            <div class="event-title">${g(a, "no_events")}</div>
-          </div>
-        </div>
-      </div>
-    `;
-  if (!i) {
-    const d = e[0], r = e.length - 1, c = d.is_empty ? g(a, "empty") : d.summary;
-    let l, _;
-    try {
-      if (l = new Date(d.start.dateTime || d.start.date), _ = new Date(d.end.dateTime || d.end.date), isNaN(l.getTime()) || isNaN(_.getTime()))
-        throw new Error("Invalid Date");
-    } catch {
-      return u`<div class="error">Date Error</div>`;
-    }
-    const v = /* @__PURE__ */ new Date(), f = !d.start.dateTime, h = G(a, l, _, f), $ = `${T(a, l)} - ${T(a, _)}`, w = (t == null ? void 0 : t.show_date) ?? !1, m = (t == null ? void 0 : t.show_time) ?? !1;
-    let p = "";
-    const y = a.localize(
-      "component.calendar.entity_component._.state_attributes.all_day.name"
-    ) || "All day";
-    if (d.is_empty)
-      p = "";
-    else if (w || m)
-      if (f) {
-        const z = w ? M(a, l) : "";
-        w && m ? p = `${z}, ${y}` : p = z || y;
-      } else {
-        const z = [];
-        w && z.push(M(a, l)), m && z.push($), p = z.join(", ");
-      }
-    else if (l > v) {
-      const z = l.getTime() - v.getTime(), O = Math.ceil(z / 6e4);
-      p = Ce(a, O);
-    } else
-      p = f ? y : T(a, l);
-    if (!d.is_empty && (t != null && t.show_duration) && (p ? p.endsWith(h) || (p += ` • ${h}`) : p = h), r > 0 && (p += ` ${g(a, "more_events", "{x}", r.toString())}`), !d.is_empty && (t != null && t.show_weekday)) {
-      const z = j(a), O = t != null && t.icon_show_weekday ? l.toLocaleDateString(z, {
-        month: t.show_weekday_long ? "long" : "short"
-      }) : l.toLocaleDateString(z, {
-        weekday: t.show_weekday_long ? "long" : "short"
-      });
-      p += ` • ${O}`;
-    }
-    const b = l <= v && _ >= v ? v : l, D = d.is_empty ? B(d.entity_id, t) || "var(--disabled-text-color, #bdbdbb)" : B(d.entity_id, t), P = W(
-      a,
-      b,
-      D,
-      (t == null ? void 0 : t.dark_mode) ?? !1,
-      (t == null ? void 0 : t.icon_show_weekday) ?? !1
-    ), k = Z(d.entity_id, t), x = k ? `background-color: ${k}; border: none;` : "";
-    return u`
-      <div class="calendar-container">
-        <div
-          class="calendar-item"
-          style="${x} ${d.is_empty ? "cursor: default; opacity: 0.7;" : ""}"
-          title="${c}"
-          @click=${(z) => d.is_empty ? null : Ie(z, a, e)}
-        >
-          <div class="calendar-icon dynamic">${P}</div>
-          <div class="calendar-content">
-            <div class="event-title">${c}</div>
-            <div class="event-time">
-              ${!d.is_empty && (w || m) ? u`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
-              ${p}
-            </div>
-            ${!d.is_empty && (t != null && t.show_location) && d.location ? u`
-                  <div class="event-location">
-                    <ha-icon icon="mdi:map-marker"></ha-icon>
-                    ${d.location}
-                  </div>
-                ` : ""}
-            ${t != null && t.show_calendar_name && d.calendar_name ? u`
-                  <div class="event-calendar">
-                    <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
-                    ${d.calendar_name}
-                  </div>
-                ` : ""}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  if (t != null && t.group_by_date_and_calendar && i) {
-    const d = Qe(e);
-    return u`
-      <div class="calendar-container">
-        ${d.map((r) => {
-      const c = r.date, l = B(r.events[0].entity_id, t), _ = W(
-        a,
-        c,
-        l,
-        (t == null ? void 0 : t.dark_mode) ?? !1,
-        (t == null ? void 0 : t.icon_show_weekday) ?? !1
-      ), v = Z(
-        r.events[0].entity_id,
-        t
-      ), f = v ? `background-color: ${v}; border: none;` : "";
-      return u`
-            <div
-              class="calendar-item grouped"
-              style="align-items: center; ${f}"
-            >
-              <div class="calendar-icon dynamic">${_}</div>
-              <div class="calendar-content">
-                ${r.events.map((h) => {
-        const $ = h.is_empty ? g(a, "empty") : h.summary, w = new Date(
-          h.start.dateTime || h.start.date
-        ), m = new Date(h.end.dateTime || h.end.date), p = !h.start.dateTime, y = G(a, w, m, p), C = `${T(a, w)} - ${T(a, m)}`, b = (t == null ? void 0 : t.show_date) ?? !1, D = (t == null ? void 0 : t.show_time) ?? !1, P = a.localize(
-          "component.calendar.entity_component._.state_attributes.all_day.name"
-        ) || "All day";
-        let k = "";
-        if (h.is_empty)
-          k = "";
-        else if (b || D)
-          if (p) {
-            const x = b ? M(a, w) : "";
-            b && D ? k = `${x}, ${P}` : k = x || P;
-          } else {
-            const x = [];
-            b && x.push(M(a, w)), D && x.push(C), k = x.join(", ");
-          }
-        else
-          k = p ? P : T(a, w);
-        if (!h.is_empty && (t != null && t.show_duration) && (k.endsWith(y) || (k += ` • ${y}`)), !h.is_empty && (t != null && t.show_weekday)) {
-          const x = j(a), z = t != null && t.icon_show_weekday ? w.toLocaleDateString(x, {
-            month: t.show_weekday_long ? "long" : "short"
-          }) : w.toLocaleDateString(x, {
-            weekday: t.show_weekday_long ? "long" : "short"
-          });
-          k.includes(z) || (k += ` • ${z}`);
-        }
-        return u`
-                    <div
-                      class="event-entry"
-                      @click=${(x) => h.is_empty ? null : be(x, h.entity_id)}
-                      style="margin-bottom: 4px; ${h.is_empty ? "opacity: 0.7; cursor: default;" : ""}"
-                    >
-                      <div class="event-title">${$}</div>
-                      <div
-                        class="event-time"
-                        style="display: flex; align-items: center; gap: 4px;"
-                      >
-                        ${!h.is_empty && (b || D) ? u`<ha-icon
-                              icon="mdi:clock-time-four-outline"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>` : ""}
-                        ${k}
-                      </div>
-                      ${!h.is_empty && (t != null && t.show_location) && h.location ? u`
-                            <div
-                              class="event-location"
-                              style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);"
-                            >
-                              <ha-icon
-                                icon="mdi:map-marker"
-                                style="--mdc-icon-size: 14px;"
-                              ></ha-icon>
-                              ${h.location}
-                            </div>
-                          ` : ""}
-                      ${t != null && t.show_calendar_name && h.calendar_name ? u`
-                            <div
-                              class="event-calendar"
-                              style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);"
-                            >
-                              <ha-icon
-                                icon="mdi:calendar-blank-multiple"
-                                style="--mdc-icon-size: 14px;"
-                              ></ha-icon>
-                              ${h.calendar_name}
-                            </div>
-                          ` : ""}
-                    </div>
-                  `;
-      })}
-              </div>
-            </div>
-            ${t != null && t.show_divider ? u`<div class="calendar-divider"></div>` : ""}
-          `;
-    })}
-      </div>
-    `;
-  }
-  if (t != null && t.group_by_date && i) {
-    const d = Je(e);
-    return u`
-      <div class="calendar-container">
-        ${d.map((r) => {
-      const c = r.date, l = B(r.events[0].entity_id, t), _ = W(
-        a,
-        c,
-        l,
-        (t == null ? void 0 : t.dark_mode) ?? !1,
-        (t == null ? void 0 : t.icon_show_weekday) ?? !1
-      ), v = Z(
-        r.events[0].entity_id,
-        t
-      ), f = v ? `background-color: ${v}; border: none;` : "";
-      return u`
-            <div
-              class="calendar-item grouped"
-              style="align-items: center; ${f}"
-            >
-              <div class="calendar-icon dynamic">${_}</div>
-              <div class="calendar-content">
-                ${r.events.map((h) => {
-        const $ = h.is_empty ? g(a, "empty") : h.summary, w = new Date(
-          h.start.dateTime || h.start.date
-        ), m = new Date(h.end.dateTime || h.end.date), p = !h.start.dateTime, y = G(a, w, m, p), C = `${T(a, w)} - ${T(a, m)}`, b = (t == null ? void 0 : t.show_date) ?? !1, D = (t == null ? void 0 : t.show_time) ?? !1, P = a.localize(
-          "component.calendar.entity_component._.state_attributes.all_day.name"
-        ) || "All day";
-        let k = "";
-        if (h.is_empty)
-          k = "";
-        else if (b || D)
-          if (p) {
-            const x = b ? M(a, w) : "";
-            b && D ? k = `${x}, ${P}` : k = x || P;
-          } else {
-            const x = [];
-            b && x.push(M(a, w)), D && x.push(C), k = x.join(", ");
-          }
-        else
-          k = p ? P : T(a, w);
-        if (!h.is_empty && (t != null && t.show_duration) && (k.endsWith(y) || (k += ` • ${y}`)), !h.is_empty && (t != null && t.show_weekday)) {
-          const x = j(a), z = t != null && t.icon_show_weekday ? w.toLocaleDateString(x, {
-            month: t.show_weekday_long ? "long" : "short"
-          }) : w.toLocaleDateString(x, {
-            weekday: t.show_weekday_long ? "long" : "short"
-          });
-          k.includes(z) || (k += ` • ${z}`);
-        }
-        return u`
-                    <div
-                      class="event-entry"
-                      @click=${(x) => h.is_empty ? null : be(x, h.entity_id)}
-                      style="margin-bottom: 4px; ${h.is_empty ? "opacity: 0.7; cursor: default;" : ""}"
-                    >
-                      <div class="event-title">${$}</div>
-                      <div
-                        class="event-time"
-                        style="display: flex; align-items: center; gap: 4px;"
-                      >
-                        ${!h.is_empty && (b || D) ? u`<ha-icon
-                              icon="mdi:clock-time-four-outline"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>` : ""}
-                        ${k}
-                      </div>
-                      ${!h.is_empty && (t != null && t.show_location) && h.location ? u`
-                            <div
-                              class="event-location"
-                              style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);"
-                            >
-                              <ha-icon
-                                icon="mdi:map-marker"
-                                style="--mdc-icon-size: 14px;"
-                              ></ha-icon>
-                              ${h.location}
-                            </div>
-                          ` : ""}
-                      ${t != null && t.show_calendar_name && h.calendar_name ? u`
-                            <div
-                              class="event-calendar"
-                              style="display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: var(--secondary-text-color);"
-                            >
-                              <ha-icon
-                                icon="mdi:calendar-blank-multiple"
-                                style="--mdc-icon-size: 14px;"
-                              ></ha-icon>
-                              ${h.calendar_name}
-                            </div>
-                          ` : ""}
-                    </div>
-                  `;
-      })}
-              </div>
-            </div>
-            ${t != null && t.show_divider ? u`<div class="calendar-divider"></div>` : ""}
-          `;
-    })}
-      </div>
-    `;
-  }
-  const s = (t == null ? void 0 : t.max_lines) || 0, o = s > 0 ? e.slice(0, s) : e, n = e.length - o.length;
-  return u`
+	}
+	return k`
     <div class="calendar-container">
-      ${o.map((d, r) => {
-    const c = d.is_empty ? g(a, "empty") : d.summary;
-    let l, _;
-    try {
-      if (l = new Date(d.start.dateTime || d.start.date), _ = new Date(d.end.dateTime || d.end.date), isNaN(l.getTime())) throw new Error("Invalid start date");
-      if (isNaN(_.getTime())) throw new Error("Invalid end date");
-    } catch {
-      return u`<div class="error">Date Error for ${c}</div>`;
-    }
-    const v = /* @__PURE__ */ new Date(), f = !d.start.dateTime;
-    let h = -1;
-    const $ = G(a, l, _, f), w = `${T(a, l)} - ${T(a, _)}`, m = (t == null ? void 0 : t.show_date) ?? !1, p = (t == null ? void 0 : t.show_time) ?? !1;
-    let y = "";
-    const C = a.localize(
-      "component.calendar.entity_component._.state_attributes.all_day.name"
-    ) || "All day";
-    if (d.is_empty)
-      y = "";
-    else if (m || p)
-      if (f) {
-        const A = m ? M(a, l) : "";
-        m && p ? y = `${A}, ${C}` : y = A || C;
-      } else {
-        const A = [];
-        m && A.push(M(a, l)), p && A.push(w), y = A.join(", ");
-      }
-    else if (l > v) {
-      const A = l.getTime() - v.getTime(), ae = Math.ceil(A / 6e4);
-      y = Ce(a, ae);
-    } else
-      y = f ? C : T(a, l);
-    if (!d.is_empty && (t != null && t.show_duration) && (y ? y.endsWith($) || (y += ` • ${$}`) : y = $), !d.is_empty && !f && l <= v && _ >= v) {
-      const A = _.getTime() - l.getTime(), ae = v.getTime() - l.getTime();
-      A > 0 && (h = Math.max(
-        0,
-        Math.min(100, ae / A * 100)
-      ));
-    }
-    if (!d.is_empty && (t != null && t.show_weekday)) {
-      const A = j(a), ae = t != null && t.icon_show_weekday ? l.toLocaleDateString(A, {
-        month: t.show_weekday_long ? "long" : "short"
-      }) : l.toLocaleDateString(A, {
-        weekday: t.show_weekday_long ? "long" : "short"
-      });
-      y += ` • ${ae}`;
-    }
-    const D = l <= v && _ >= v ? v : l, P = d.is_empty ? B(d.entity_id, t) || "var(--disabled-text-color, #bdbdbb)" : B(d.entity_id, t), k = W(
-      a,
-      D,
-      P,
-      (t == null ? void 0 : t.dark_mode) ?? !1,
-      (t == null ? void 0 : t.icon_show_weekday) ?? !1
-    ), x = Z(d.entity_id, t), z = x ? `background-color: ${x}; border: none;` : "", O = (t == null ? void 0 : t.show_divider) && r > 0, J = s > 0 && r === s - 1 && n > 0;
-    return u`
-          ${O ? u`<div class="calendar-divider"></div>` : ""}
-          <div
-            class="calendar-item"
-            style="${z} ${d.is_empty ? "cursor: default; opacity: 0.7;" : ""}"
-            title="${J ? g(a, "popup_upcoming_events") : c}"
-            @click=${(A) => d.is_empty ? null : J ? Ie(A, a, e) : be(A, d.entity_id)}
-          >
-            <div class="calendar-icon dynamic">${k}</div>
-            <div
-              class="calendar-content"
-              style="${d.is_empty ? "opacity: 0.8;" : ""}"
-            >
-              <div
-                class="event-title"
-                style="display: flex; align-items: center; justify-content: space-between; gap: 8px;"
-              >
-                <span
-                  style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;"
-                  >${c}</span
-                >
-                ${J ? u`
-                      <span
-                        class="more-indicator"
-                        style="display: flex; align-items: center; gap: 4px; color: var(--secondary-text-color); font-size: 0.85em; font-style: italic; flex-shrink: 0;"
-                      >
-                        <ha-icon
-                          icon="mdi:dots-horizontal"
-                          style="--mdc-icon-size: 16px; color: var(--secondary-text-color);"
-                        ></ha-icon>
-                        (${n})
-                      </span>
-                    ` : ""}
-              </div>
-              <div class="event-time">
-                ${!d.is_empty && (m || p) ? u`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
-                ${y}
-              </div>
-              ${!d.is_empty && (t != null && t.show_location) && d.location ? u`
-                    <div class="event-location">
-                      <ha-icon icon="mdi:map-marker"></ha-icon>
-                      ${d.location}
-                    </div>
-                  ` : ""}
-              ${t != null && t.show_calendar_name && d.calendar_name ? u`
-                    <div class="event-calendar">
-                      <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
-                      ${d.calendar_name}
-                    </div>
-                  ` : ""}
-              ${h >= 0 ? u`
-                    <div class="progress-bar">
-                      <div
-                        class="progress-fill"
-                        style="width: ${h}%"
-                      ></div>
-                    </div>
-                  ` : ""}
-            </div>
-          </div>
-        `;
-  })}
+      ${dt(e, t, n, r, i)}
     </div>
   `;
 }
-function B(a, e) {
-  var i;
-  const t = ((i = e == null ? void 0 : e.calendar_colors) == null ? void 0 : i[a]) || (e == null ? void 0 : e.calendar_icon_color) || "#fa3e3e";
-  return Ye(t);
+function dt(e, t, n, r, i) {
+	let a = i ? "" : "detail", o = (e) => n.show_divider && e > 0 ? k`<div class="calendar-divider"></div>` : j;
+	if (n.group_by_date_and_calendar || n.group_by_date) return yt(t, !!n.group_by_date_and_calendar).map((t, i) => {
+		let s = t.events[0];
+		return k`
+          ${o(i)}
+          <div
+            class="calendar-item grouped ${a}"
+            style=${Dt(s.entity_id, n)}
+          >
+            <div class="calendar-icon dynamic">
+              ${bt(e, t.date, gt(s.entity_id, n), n.dark_mode, n.icon_show_weekday)}
+            </div>
+            <div class="calendar-content">
+              ${t.events.map((t) => k`
+                  <div
+                    class="event-entry ${t.is_empty ? "empty static" : ""}"
+                    @click=${t.is_empty ? null : () => r(t)}
+                  >
+                    ${mt(e, t, n, !1)}
+                  </div>
+                `)}
+            </div>
+          </div>
+        `;
+	});
+	let s = i && n.max_lines || 0, c = s > 0 ? t.slice(0, s) : t, l = t.slice(c.length).filter((e) => !e.is_empty).length;
+	return c.map((t, s) => {
+		let u = l > 0 && s === c.length - 1;
+		return k`
+      ${o(s)}
+      ${pt(e, t, n, u ? i : t.is_empty ? void 0 : () => r(t), {
+			cls: a,
+			progress: !!i,
+			badge: u ? l : 0
+		})}
+    `;
+	});
 }
-function Z(a, e) {
-  var i;
-  const t = ((i = e == null ? void 0 : e.calendar_background_colors) == null ? void 0 : i[a]) || (e == null ? void 0 : e.background_color) || "";
-  return t ? Ye(t) : "";
+function ft(e, t, n) {
+	return k`
+    <div class="calendar-container">
+      <div class="calendar-item" style="cursor: default;">
+        <div class="calendar-icon" style="background-color: ${n};">
+          <ha-icon icon=${t}></ha-icon>
+        </div>
+        <div class="calendar-content">
+          <div class="event-title">${e}</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
-function Ye(a) {
-  return a.startsWith("#") || a.startsWith("rgb") || a.startsWith("hsl") || a.startsWith("var") ? a : `var(--${a}-color)`;
+function pt(e, t, n, r, i) {
+	let a = q(t), o = J(t);
+	if (isNaN(a.getTime()) || isNaN(o.getTime())) return k`<div class="error">Date Error for ${t.summary}</div>`;
+	let s = /* @__PURE__ */ new Date(), c = a <= s && o >= s, l = -1;
+	if (i.progress && !t.is_empty && t.start.dateTime && c) {
+		let e = o.getTime() - a.getTime();
+		e > 0 && (l = Math.min(100, (s.getTime() - a.getTime()) / e * 100));
+	}
+	return k`
+    <div
+      class="calendar-item ${i.cls ?? ""} ${t.is_empty ? "empty" : ""} ${r ? "" : "static"}"
+      style=${Dt(t.entity_id, n)}
+      title=${i.badge ? V(e, "popup_upcoming_events") : Et(e, t, n)}
+      @click=${r}
+    >
+      <div class="calendar-icon dynamic">
+        ${bt(e, c ? s : a, gt(t.entity_id, n), n.dark_mode, n.icon_show_weekday)}
+      </div>
+      <div class="calendar-content">
+        ${mt(e, t, n, !0, i.moreText, i.badge)}
+        ${l >= 0 ? k`
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${l}%"></div>
+              </div>
+            ` : j}
+      </div>
+    </div>
+  `;
 }
-function Ie(a, e, t) {
-  const i = new CustomEvent("calendar-card-show-detail", {
-    bubbles: !0,
-    composed: !0,
-    detail: {
-      title: g(e, "popup_upcoming_events"),
-      entities: t
-    }
-  });
-  a.target.dispatchEvent(i);
+function mt(e, t, n, r, i = "", a = 0) {
+	let o = k`<div class="event-title">
+    ${Et(e, t, n)}
+  </div>`;
+	return k`
+    ${a ? k`<div class="title-row">
+          ${o}
+          <span class="more-indicator">
+            <ha-icon icon="mdi:dots-horizontal"></ha-icon>(${a})
+          </span>
+        </div>` : o}
+    <div class="event-time">
+      ${!t.is_empty && (n.show_date || n.show_time) ? k`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : j}
+      ${ht(e, t, n, r)}${i}
+    </div>
+    ${!t.is_empty && n.show_location && t.location ? k`
+          <div class="event-location">
+            <ha-icon icon="mdi:map-marker"></ha-icon>
+            ${t.location}
+          </div>
+        ` : j}
+    ${n.show_calendar_name && t.calendar_name ? k`
+          <div class="event-calendar">
+            <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
+            ${t.calendar_name}
+          </div>
+        ` : j}
+  `;
 }
-function be(a, e) {
-  const t = new CustomEvent("hass-more-info", {
-    bubbles: !0,
-    composed: !0,
-    detail: { entityId: e }
-  });
-  a.target.dispatchEvent(t);
+function ht(e, t, n, r) {
+	if (t.is_empty) return "";
+	let i = q(t), a = J(t), o = !t.start.dateTime, s = /* @__PURE__ */ new Date(), c;
+	if (n.show_date || n.show_time) {
+		let t = [];
+		n.show_date && t.push(it(e, i)), n.show_time && t.push(o ? Y(e) : `${rt(e, i)} - ${rt(e, a)}`), c = t.join(", ");
+	} else c = r && i > s ? St(e, Math.ceil((i.getTime() - s.getTime()) / 6e4)) : o ? Y(e) : rt(e, i);
+	if (n.show_duration) {
+		let t = xt(e, i, a, o);
+		c.endsWith(t) || (c += ` • ${t}`);
+	}
+	if (n.show_weekday) {
+		let t = n.show_weekday_long ? "long" : "short", r = i.toLocaleDateString(tt(e), n.icon_show_weekday ? { month: t } : { weekday: t });
+		c.includes(r) || (c += ` • ${r}`);
+	}
+	return c;
 }
-function Je(a) {
-  const e = {};
-  return a.forEach((t) => {
-    const i = new Date(t.start.dateTime || t.start.date), s = i.toISOString().split("T")[0];
-    e[s] || (e[s] = {
-      date: i,
-      events: []
-    }), e[s].events.push(t);
-  }), Object.values(e).sort(
-    (t, i) => t.date.getTime() - i.date.getTime()
-  );
+function gt(e, t) {
+	return vt(t?.calendar_colors?.[e] || t?.calendar_icon_color || "#fa3e3e");
 }
-function Qe(a) {
-  const e = {};
-  return a.forEach((t) => {
-    const i = new Date(t.start.dateTime || t.start.date), s = i.toISOString().split("T")[0], o = t.calendar_name || t.entity_id, n = `${s}|${o}`;
-    e[n] || (e[n] = {
-      date: i,
-      calendar: o,
-      events: []
-    }), e[n].events.push(t);
-  }), Object.values(e).sort((t, i) => {
-    const s = t.date.getTime() - i.date.getTime();
-    return s !== 0 ? s : t.calendar.localeCompare(i.calendar);
-  });
+function _t(e, t) {
+	let n = t?.calendar_background_colors?.[e] || t?.background_color || "";
+	return n ? vt(n) : "";
 }
-function W(a, e, t, i = !1, s = !1) {
-  const o = j(a);
-  let n;
-  s ? n = e.toLocaleDateString(o, { weekday: "short" }).toUpperCase() : n = e.toLocaleDateString(o, { month: "short" }).toUpperCase();
-  const d = e.getDate();
-  return u`
+function vt(e) {
+	return e.startsWith("#") || e.startsWith("rgb") || e.startsWith("hsl") || e.startsWith("var") ? e : `var(--${e}-color)`;
+}
+function yt(e, t) {
+	let n = /* @__PURE__ */ new Map();
+	for (let r of e) {
+		let e = Ct(r), i = t ? r.calendar_name || r.entity_id : "", a = `${W(e)}|${i}`;
+		n.has(a) || n.set(a, {
+			date: e,
+			calendar: i,
+			events: []
+		}), n.get(a).events.push(r);
+	}
+	return [...n.values()].sort((e, t) => e.date.getTime() - t.date.getTime() || e.calendar.localeCompare(t.calendar));
+}
+function bt(e, t, n, r = !1, i = !1) {
+	let a = t.toLocaleDateString(tt(e), i ? { weekday: "short" } : { month: "short" }).toUpperCase(), o = t.getDate();
+	return k`
     <svg
       viewBox="0 0 100 100"
       class="dynamic-calendar-icon"
@@ -1954,11 +1519,11 @@ function W(a, e, t, i = !1, s = !1) {
         height="100"
         rx="20"
         ry="20"
-        fill="${i ? "#222222" : "white"}"
+        fill="${r ? "#222222" : "white"}"
       ></rect>
       <path
         d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z"
-        fill="${t}"
+        fill="${n}"
       ></path>
       <text
         x="50"
@@ -1966,10 +1531,10 @@ function W(a, e, t, i = !1, s = !1) {
         font-family="sans-serif"
         font-size="22"
         font-weight="bold"
-        fill="${i ? "#222222" : "white"}"
+        fill="${r ? "#222222" : "white"}"
         text-anchor="middle"
       >
-        ${n}
+        ${a}
       </text>
       <text
         x="50"
@@ -1977,369 +1542,370 @@ function W(a, e, t, i = !1, s = !1) {
         font-family="sans-serif"
         font-size="52"
         font-weight="bold"
-        fill="${i ? "white" : "#333"}"
+        fill="${r ? "white" : "#333"}"
         text-anchor="middle"
       >
-        ${d}
+        ${o}
       </text>
     </svg>
   `;
 }
-function G(a, e, t, i) {
-  const s = t.getTime() - e.getTime(), o = Math.round(s / 6e4);
-  if (i && o === 1440)
-    return a.localize(
-      "component.calendar.entity_component._.state_attributes.all_day.name"
-    ) || "All day";
-  if (o < 60)
-    return `${o} ${g(a, "duration_min")}`;
-  const n = Math.floor(o / 1440), d = o % 1440, r = Math.floor(d / 60), c = d % 60, l = [];
-  return n >= 1 && l.push(
-    `${n} ${g(a, n === 1 ? "duration_day" : "duration_days")}`
-  ), r > 0 && l.push(`${r} ${g(a, "duration_hour")}`), c > 0 && l.push(`${c} ${g(a, "duration_min")}`), l.join(" ");
+function xt(e, t, n, r) {
+	let i = Math.round((n.getTime() - t.getTime()) / 6e4);
+	if (r && (i = Math.round(i / 1440) * 1440), r && i === 1440) return Y(e);
+	if (i < 60) return `${i} ${V(e, "duration_min")}`;
+	let a = Math.floor(i / 1440), o = Math.floor(i % 1440 / 60), s = i % 60, c = [];
+	return a >= 1 && c.push(`${a} ${V(e, a === 1 ? "duration_day" : "duration_days")}`), o > 0 && c.push(`${o} ${V(e, "duration_hour")}`), s > 0 && c.push(`${s} ${V(e, "duration_min")}`), c.join(" ");
 }
-function Ce(a, e) {
-  if (e < 60)
-    return e === 1 ? g(a, "starts_in_min", "{x}", e.toString()) : g(a, "starts_in_mins", "{x}", e.toString());
-  if (e < 1440) {
-    const i = Math.round(e / 60);
-    return i === 1 ? g(a, "starts_in_hour", "{x}", i.toString()) : g(a, "starts_in_hours", "{x}", i.toString());
+function St(e, t) {
+	let n = (t, n) => V(e, n === 1 ? t : `${t}s`, "{x}", n.toString());
+	return t < 60 ? n("starts_in_min", t) : t < 1440 ? n("starts_in_hour", Math.round(t / 60)) : t < 43200 ? n("starts_in_day", Math.round(t / 1440)) : n("starts_in_week", Math.round(t / 10080));
+}
+var q, J, Ct, wt, Tt, Et, Y, Dt, Ot = t((() => {
+	I(), et(), ct(), q = (e) => ot(e.start.dateTime || e.start.date), J = (e) => ot(e.end.dateTime || e.end.date), Ct = (e) => at(q(e)), wt = d`
+  .empty {
+    opacity: 0.7;
   }
-  if (e < 43200) {
-    const i = Math.round(e / 1440);
-    return i === 1 ? g(a, "starts_in_day", "{x}", i.toString()) : g(a, "starts_in_days", "{x}", i.toString());
+  .static {
+    cursor: default;
   }
-  const t = Math.round(e / 10080);
-  return t === 1 ? g(a, "starts_in_week", "{x}", t.toString()) : g(a, "starts_in_weeks", "{x}", t.toString());
+  .event-time ha-icon {
+    --mdc-icon-size: 14px;
+    color: var(--secondary-text-color);
+  }
+  .event-location,
+  .event-calendar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9em;
+    color: var(--secondary-text-color);
+    margin-top: 1px;
+  }
+  .event-location ha-icon,
+  .event-calendar ha-icon {
+    --mdc-icon-size: 14px;
+    color: var(--secondary-text-color);
+  }
+  .calendar-divider {
+    border-top: 1px solid var(--divider-color, #e0e0e0);
+    margin: 4px 12px;
+  }
+  .calendar-item.grouped .calendar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .calendar-item.grouped .event-entry {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 4px;
+  }
+  .calendar-item.grouped .calendar-icon {
+    align-self: center;
+  }
+`, Tt = (e, t, n) => !!n.uid && K(e, t, n.entity_id, 6), Et = (e, t, n) => t.is_empty ? n.empty_text || V(e, "empty") : t.summary, Y = (e) => e.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day", Dt = (e, t) => {
+		let n = _t(e, t);
+		return n ? `background-color: ${n}; border-color: transparent;` : "";
+	};
+}));
+//#endregion
+//#region src/events.ts
+function kt(e, t) {
+	let n = /* @__PURE__ */ new Date();
+	n.setHours(n.getHours() + 1, 0, 0, 0);
+	let r = new Date(n);
+	return r.setHours(r.getHours() + 1, 0, 0, 0), {
+		calendar_id: Ft(e, t)[0],
+		name: "",
+		start_date: W(n),
+		start_time: G(n),
+		end_date: W(r),
+		end_time: G(r),
+		location: "",
+		description: "",
+		recurrence: "none",
+		all_day: !1
+	};
 }
-function At(a, e) {
-  const t = Object.keys(a.states).filter((l) => l.startsWith("calendar.")).filter((l) => {
-    var _;
-    return !((_ = e.exclude_entities) != null && _.includes(l));
-  }), i = t.length > 0 ? t[0] : void 0, s = /* @__PURE__ */ new Date(), o = new Date(s);
-  o.setHours(o.getHours() + 1, 0, 0, 0);
-  const n = new Date(o);
-  n.setHours(n.getHours() + 1, 0, 0, 0);
-  const d = (l) => l.toString().padStart(2, "0"), r = (l) => `${l.getFullYear()}-${d(l.getMonth() + 1)}-${d(l.getDate())}`, c = (l) => `${d(l.getHours())}:${d(l.getMinutes())}`;
-  return {
-    open: !0,
-    calendar_id: i,
-    name: "",
-    start_date: r(o),
-    start_time: c(o),
-    end_date: r(n),
-    end_time: c(n),
-    location: "",
-    description: "",
-    recurrence: "none",
-    all_day: !1
-  };
+function At(e) {
+	let t = q(e), n = J(e), r = !e.start.dateTime;
+	return r && n.setDate(n.getDate() - 1), {
+		calendar_id: e.entity_id,
+		name: e.summary,
+		start_date: W(t),
+		start_time: G(t),
+		end_date: W(n < t ? t : n),
+		end_time: G(n),
+		all_day: r,
+		location: e.location ?? "",
+		description: e.description ?? "",
+		recurrence: "none",
+		uid: e.uid,
+		recurrence_id: e.recurrence_id,
+		rrule: e.rrule
+	};
 }
-async function Et(a, e, t, i) {
-  if (!(!e.calendar_id || !e.name || !e.start_date || !e.end_date))
-    try {
-      const s = {
-        entity_id: e.calendar_id,
-        summary: e.name
-      };
-      if (e.all_day) {
-        let o = e.end_date;
-        if (e.start_date === o) {
-          const n = o.split("-"), d = new Date(
-            Number(n[0]),
-            Number(n[1]) - 1,
-            Number(n[2])
-          );
-          d.setDate(d.getDate() + 1);
-          const r = (c) => c.toString().padStart(2, "0");
-          o = `${d.getFullYear()}-${r(d.getMonth() + 1)}-${r(d.getDate())}`;
-        }
-        s.start_date = e.start_date, s.end_date = o;
-      } else {
-        const o = e.start_time || "09:00", n = e.end_time || "10:00";
-        s.start_date_time = `${e.start_date} ${o}:00`, s.end_date_time = `${e.end_date} ${n}:00`, e.location && (s.location = e.location), e.description && (s.description = e.description);
-      }
-      if (e.recurrence && e.recurrence !== "none") {
-        const o = {
-          DAILY: "FREQ=DAILY",
-          WEEKLY: "FREQ=WEEKLY",
-          MONTHLY: "FREQ=MONTHLY",
-          YEARLY: "FREQ=YEARLY"
-        };
-        o[e.recurrence] && (s.rrule = o[e.recurrence]);
-      }
-      await a.callService("calendar", "create_event", s), t();
-    } catch (s) {
-      i(s);
-    }
+async function jt(e, t) {
+	if (!t.calendar_id || !t.name || !t.start_date || !t.end_date) throw Error("Title, calendar, start and end date are required");
+	if (!st(!!t.all_day, t.start_date, t.end_date, t.start_time, t.end_time)) throw Error("End must be after start");
+	let n = { summary: t.name };
+	t.location && (n.location = t.location), t.description && (n.description = t.description);
+	let r, i;
+	if (t.all_day) {
+		let e = ot(t.end_date);
+		e.setDate(e.getDate() + 1), r = t.start_date, i = W(e);
+	} else r = (/* @__PURE__ */ new Date(`${t.start_date}T${t.start_time || "09:00"}`)).toISOString(), i = (/* @__PURE__ */ new Date(`${t.end_date}T${t.end_time || "10:00"}`)).toISOString();
+	let a = !It(t) && Pt.includes(t.recurrence ?? "") ? `FREQ=${t.recurrence}` : void 0;
+	t.uid ? await e.callWS({
+		type: "calendar/event/update",
+		entity_id: t.calendar_id,
+		uid: t.uid,
+		...t.recurrence_id ? { recurrence_id: t.recurrence_id } : {},
+		event: {
+			...n,
+			dtstart: r,
+			dtend: i,
+			...a ? { rrule: a } : {}
+		}
+	}) : await e.callService("calendar", "create_event", {
+		entity_id: t.calendar_id,
+		...n,
+		...t.all_day ? {
+			start_date: r,
+			end_date: i
+		} : {
+			start_date_time: r,
+			end_date_time: i
+		},
+		...a ? { rrule: a } : {}
+	});
 }
-function Tt(a, e, t, i, s, o) {
-  const n = Object.keys(a.states).filter((r) => r.startsWith("calendar.")).filter((r) => {
-    var c;
-    return !((c = e.exclude_entities) != null && c.includes(r));
-  }), d = t.all_day || !1;
-  return u`
+function Mt(e, t, n = !1) {
+	return e.callWS({
+		type: "calendar/event/delete",
+		entity_id: t.calendar_id,
+		uid: t.uid,
+		...t.recurrence_id ? { recurrence_id: t.recurrence_id } : {},
+		...n ? { recurrence_range: "THISANDFUTURE" } : {}
+	});
+}
+function Nt(e, t, n, r, i, a, o) {
+	let s = !!n.uid, c = s ? [n.calendar_id] : Ft(e, t), l = !s || K(e, t, n.calendar_id, 4), u = s && K(e, t, n.calendar_id, 2), d = n.all_day || !1, f = (t, n) => e.localize(`ui.components.calendar.event.${t}`) || n;
+	return k`
     <div class="add-event-form">
       <div class="field">
-        <label class="field-label"
-          >${a.localize("ui.components.calendar.event.summary") || "Title"}</label
-        >
+        <label class="field-label">${f("summary", "Title")}</label>
         <input
           type="text"
           class="field-input"
-          .value=${t.name || ""}
-          @input=${(r) => i({ name: r.target.value })}
+          .value=${n.name || ""}
+          @input=${(e) => r({ name: e.target.value })}
+        />
+      </div>
+
+      <div class="field">
+        <label class="field-label">${f("location", "Location")}</label>
+        <input
+          type="text"
+          class="field-input"
+          .value=${n.location || ""}
+          @input=${(e) => r({ location: e.target.value })}
+        />
+      </div>
+
+      <div class="field">
+        <label class="field-label">${f("description", "Description")}</label>
+        <input
+          type="text"
+          class="field-input"
+          .value=${n.description || ""}
+          @input=${(e) => r({ description: e.target.value })}
         />
       </div>
 
       <div class="field">
         <label class="field-label"
-          >${a.localize("ui.components.calendar.event.location") || "Location"}</label
-        >
-        <input
-          type="text"
-          class="field-input"
-          .value=${t.location || ""}
-          @input=${(r) => i({ location: r.target.value })}
-        />
-      </div>
-
-      <div class="field">
-        <label class="field-label"
-          >${a.localize("ui.components.calendar.event.description") || "Description"}</label
-        >
-        <input
-          type="text"
-          class="field-input"
-          .value=${t.description || ""}
-          @input=${(r) => i({ description: r.target.value })}
-        />
-      </div>
-
-      <div class="field">
-        <label class="field-label"
-          >${a.localize("ui.components.calendar.my_calendars") || "Calendar"}</label
+          >${e.localize("ui.components.calendar.my_calendars") || "Calendar"}</label
         >
         <select
           class="field-input"
-          .value=${t.calendar_id || ""}
-          @change=${(r) => i({ calendar_id: r.target.value })}
+          ?disabled=${s}
+          .value=${n.calendar_id || ""}
+          @change=${(e) => r({ calendar_id: e.target.value })}
         >
-          ${n.length === 0 ? u`<option value="">
-                -- ${a.localize("ui.common.none") || "no calendars"} --
-              </option>` : n.map(
-    (r) => {
-      var c, l;
-      return u`
-                  <option value=${r} ?selected=${r === t.calendar_id}>
-                    ${((l = (c = a.states[r]) == null ? void 0 : c.attributes) == null ? void 0 : l.friendly_name) || r}
+          ${c.length === 0 ? k`<option value="">
+                -- ${e.localize("ui.common.none") || "no calendars"} --
+              </option>` : c.map((t) => k`
+                  <option value=${t} ?selected=${t === n.calendar_id}>
+                    ${e.states[t]?.attributes?.friendly_name || t}
                   </option>
-                `;
-    }
-  )}
+                `)}
         </select>
       </div>
 
       <div class="row-flex">
-        <ha-formfield
-          .label=${a.localize("ui.components.calendar.event.all_day") || "All Day"}
-        >
+        <ha-formfield .label=${f("all_day", "All Day")}>
           <ha-switch
             .checked=${d}
-            @change=${(r) => i({ all_day: r.target.checked })}
+            @change=${(e) => r({ all_day: e.target.checked })}
           ></ha-switch>
         </ha-formfield>
       </div>
 
-      <div class="field">
-        <label class="field-label"
-          >${a.localize("ui.components.calendar.event.start") || "Start"}</label
-        >
-        <div class="date-row">
-          <input
-            type="date"
-            class="field-input"
-            .value=${t.start_date || ""}
-            @change=${(r) => i({ start_date: r.target.value })}
-          />
-          ${d ? "" : u`
-                <input
-                  type="time"
-                  class="field-input"
-                  .value=${t.start_time || "09:00"}
-                  @change=${(r) => i({
-    start_time: r.target.value
-  })}
-                />
-              `}
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label"
-          >${a.localize("ui.components.calendar.event.end") || "End"}</label
-        >
-        <div class="date-row">
-          <input
-            type="date"
-            class="field-input"
-            .value=${t.end_date || ""}
-            @change=${(r) => i({ end_date: r.target.value })}
-          />
-          ${d ? "" : u`
-                <input
-                  type="time"
-                  class="field-input"
-                  .value=${t.end_time || "10:00"}
-                  @change=${(r) => i({
-    end_time: r.target.value
-  })}
-                />
-              `}
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label"
-          >${a.localize("ui.components.calendar.event.repeat.label") || "Repeat"}</label
-        >
-        <select
-          class="field-input"
-          .value=${t.recurrence || "none"}
-          @change=${(r) => i({ recurrence: r.target.value })}
-        >
-          <option value="none">
-            ${a.localize("ui.components.calendar.event.repeat.freq.none") || "None"}
-          </option>
-          <option value="DAILY">
-            ${a.localize("ui.components.calendar.event.repeat.freq.daily") || "Daily"}
-          </option>
-          <option value="WEEKLY">
-            ${a.localize(
-    "ui.components.calendar.event.repeat.freq.weekly"
-  ) || "Weekly"}
-          </option>
-          <option value="MONTHLY">
-            ${a.localize(
-    "ui.components.calendar.event.repeat.freq.monthly"
-  ) || "Monthly"}
-          </option>
-          <option value="YEARLY">
-            ${a.localize(
-    "ui.components.calendar.event.repeat.freq.yearly"
-  ) || "Yearly"}
-          </option>
-        </select>
-      </div>
+      ${["start", "end"].map((e) => k`
+          <div class="field">
+            <label class="field-label"
+              >${f(e, e === "start" ? "Start" : "End")}</label
+            >
+            <div class="date-row">
+              <input
+                type="date"
+                class="field-input"
+                .value=${n[`${e}_date`] || ""}
+                @change=${(t) => r({ [`${e}_date`]: t.target.value })}
+              />
+              ${d ? j : k`
+                    <input
+                      type="time"
+                      class="field-input"
+                      .value=${n[`${e}_time`] || (e === "start" ? "09:00" : "10:00")}
+                      @change=${(t) => r({ [`${e}_time`]: t.target.value })}
+                    />
+                  `}
+            </div>
+          </div>
+        `)}
+      ${It(n) ? j : k`
+            <div class="field">
+              <label class="field-label"
+                >${f("repeat.label", "Repeat")}</label
+              >
+              <select
+                class="field-input"
+                .value=${n.recurrence || "none"}
+                @change=${(e) => r({ recurrence: e.target.value })}
+              >
+                ${["none", ...Pt].map((e) => k`
+                    <option value=${e} ?selected=${e === (n.recurrence || "none")}>
+                      ${f(`repeat.freq.${e.toLowerCase()}`, e.charAt(0) + e.slice(1).toLowerCase())}
+                    </option>
+                  `)}
+              </select>
+            </div>
+          `}
 
       <div class="dialog-actions">
-        <ha-button @click=${s}>
-          ${a.localize("ui.common.cancel") || "Cancel"}
+        ${u ? It(n) ? k`
+                <ha-button class="delete" @click=${() => o(!1)}>
+                  ${f("confirm_delete.delete_this", "Delete only this event")}
+                </ha-button>
+                <ha-button class="delete" @click=${() => o(!0)}>
+                  ${f("confirm_delete.delete_future", "Delete all future events")}
+                </ha-button>
+              ` : k`
+                <ha-button class="delete" @click=${() => o(!1)}>
+                  ${e.localize("ui.common.delete") || "Delete"}
+                </ha-button>
+              ` : j}
+        <span class="spacer"></span>
+        <ha-button @click=${i}>
+          ${e.localize("ui.common.cancel") || "Cancel"}
         </ha-button>
-        <ha-button
-          unelevated
-          @click=${o}
-          ?disabled=${!t.name || !t.calendar_id}
-        >
-          ${a.localize("ui.common.save") || "Save"}
-        </ha-button>
+        ${l ? k`
+              <ha-button
+                unelevated
+                @click=${a}
+                ?disabled=${!n.name || !n.calendar_id || !st(!!n.all_day, n.start_date, n.end_date, n.start_time, n.end_time)}
+              >
+                ${e.localize("ui.common.save") || "Save"}
+              </ha-button>
+            ` : j}
       </div>
     </div>
   `;
 }
-var Xe = Object.defineProperty, Dt = Object.getOwnPropertyDescriptor, St = (a, e, t) => e in a ? Xe(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t, R = (a, e, t, i) => {
-  for (var s = i > 1 ? void 0 : i ? Dt(e, t) : e, o = a.length - 1, n; o >= 0; o--)
-    (n = a[o]) && (s = (i ? n(e, t, s) : n(s)) || s);
-  return i && s && Xe(e, t, s), s;
-}, Mt = (a, e, t) => St(a, e + "", t);
-let L = class extends F {
-  constructor() {
-    super(...arguments);
-    E(this, "hass");
-    E(this, "config");
-    E(this, "open", !1);
-    E(this, "mode", "detail");
-    E(this, "detailTitle", "");
-    E(this, "detailEvents", []);
-    E(this, "_addEventState", { open: !1 });
-    E(this, "_opener", null);
-    E(this, "_onEventSaved", null);
-    E(this, "_onPopState", (e) => {
-      var t;
-      this.open && !((t = window.history.state) != null && t.calendarCardPlusPopup) && this._close();
-    });
-    E(this, "_close", () => {
-      if (!this.open) return;
-      this.open = !1, this.requestUpdate();
-      const e = { dialog: this };
-      this.dispatchEvent(
-        new CustomEvent("closed", { bubbles: !0, composed: !0, detail: e })
-      ), this.dispatchEvent(
-        new CustomEvent("dialog-closed", {
-          bubbles: !0,
-          composed: !0,
-          detail: e
-        })
-      ), this.dispatchEvent(
-        new CustomEvent("popup-closed", {
-          bubbles: !0,
-          composed: !0,
-          detail: e
-        })
-      );
-    });
-    E(this, "_onDialogClosed", (e) => {
-      var t;
-      if (e && e.type !== "click") {
-        const i = e.target;
-        if (i && i.tagName !== "HA-ADAPTIVE-DIALOG" && i.tagName !== "HA-DIALOG")
-          return;
-      }
-      this._close(), (t = window.history.state) != null && t.calendarCardPlusPopup && window.history.back();
-    });
-    E(this, "_closeDialog", () => {
-      var e;
-      this.open && (this._close(), (e = window.history.state) != null && e.calendarCardPlusPopup && window.history.back());
-    });
-  }
-  async showDialog(e) {
-    this.hass = e.hass, this.config = e.config, this._opener = e.opener, this.mode = e.mode, e.title && (this.detailTitle = e.title), e.events && (this.detailEvents = e.events), e.addEventState && (this._addEventState = e.addEventState), e.onEventSaved && (this._onEventSaved = e.onEventSaved), this.open = !0, window.history.pushState({ calendarCardPlusPopup: !0 }, ""), this.requestUpdate(), await this.updateComplete;
-    const t = this.renderRoot.querySelector("ha-adaptive-dialog");
-    if (t && t.shadowRoot) {
-      const i = t.shadowRoot.querySelector("ha-bottom-sheet");
-      i && (i.style.removeProperty("--dialog-transform"), i.style.removeProperty("--dialog-transition"));
-    }
-  }
-  connectedCallback() {
-    super.connectedCallback(), window.addEventListener("popstate", this._onPopState);
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback(), window.removeEventListener("popstate", this._onPopState);
-  }
-  _updateAddEventState(e) {
-    this._addEventState = { ...this._addEventState, ...e }, this.requestUpdate();
-  }
-  async _handleSave() {
-    await Et(
-      this.hass,
-      this._addEventState,
-      () => {
-        this.dispatchEvent(
-          new CustomEvent("event-saved", { bubbles: !0, composed: !0 })
-        ), this._onEventSaved && this._onEventSaved(), this._closeDialog();
-      },
-      (e) => {
-        this.hass.callService("persistent_notification", "create", {
-          title: "Calendar Card Plus",
-          message: "Error saving event: " + e.message
-        });
-      }
-    );
-  }
-  render() {
-    var i;
-    const e = this.mode === "add-event", t = e ? ((i = this.hass) == null ? void 0 : i.localize("ui.components.calendar.event.add")) || "Add Event" : this.detailTitle;
-    return u`
+var Pt, Ft, It, Lt = t((() => {
+	I(), Ot(), ct(), Pt = [
+		"DAILY",
+		"WEEKLY",
+		"MONTHLY",
+		"YEARLY"
+	], Ft = (e, t) => lt(e, t).filter((n) => K(e, t, n, 1)), It = (e) => !!(e.rrule || e.recurrence_id);
+}));
+//#endregion
+//#region \0@oxc-project+runtime@0.154.0/helpers/esm/decorate.js
+function X(e, t, n, r) {
+	var i = arguments.length, a = i < 3 ? t : r === null ? r = Object.getOwnPropertyDescriptor(t, n) : r, o;
+	if (typeof Reflect == "object" && typeof Reflect.decorate == "function") a = Reflect.decorate(e, t, n, r);
+	else for (var s = e.length - 1; s >= 0; s--) (o = e[s]) && (a = (i < 3 ? o(a) : i > 3 ? o(t, n, a) : o(t, n)) || a);
+	return i > 3 && a && Object.defineProperty(t, n, a), a;
+}
+var Rt = t((() => {})), zt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z }), Z, Bt = t((() => {
+	I(), Qe(), $e(), Lt(), Ot(), Rt(), Z = class extends F {
+		constructor(...e) {
+			super(...e), this.open = !1, this.mode = "detail", this.detailTitle = "", this.detailEvents = [], this._formState = {}, this._opener = null, this._onEventSaved = null, this._onPopState = (e) => {
+				this.open && !window.history.state?.calendarCardPlusPopup && this._close();
+			}, this._close = () => {
+				if (!this.open) return;
+				this.open = !1;
+				let e = { dialog: this };
+				for (let t of [
+					"closed",
+					"dialog-closed",
+					"popup-closed"
+				]) this.dispatchEvent(new CustomEvent(t, {
+					bubbles: !0,
+					composed: !0,
+					detail: e
+				}));
+			}, this._onDialogClosed = (e) => {
+				let t = e.target;
+				t && t.tagName !== "HA-ADAPTIVE-DIALOG" && t.tagName !== "HA-DIALOG" || this._closeDialog();
+			}, this._closeDialog = () => {
+				this.open && (this._close(), window.history.state?.calendarCardPlusPopup && window.history.back());
+			}, this._updateFormState = (e) => {
+				this._formState = {
+					...this._formState,
+					...e
+				};
+			}, this._handleSave = () => this._run(() => jt(this.hass, this._formState)), this._handleDelete = (e) => {
+				let t = this.hass.localize("ui.components.calendar.event.confirm_delete.prompt") || "Do you want to delete this event?";
+				window.confirm(t) && this._run(() => Mt(this.hass, this._formState, e));
+			}, this._openEvent = (e) => {
+				Tt(this.hass, this.config, e) ? (this._formState = At(e), this.mode = "edit-event") : B(this._opener ?? window, "hass-more-info", { entityId: e.entity_id });
+			};
+		}
+		async showDialog(e) {
+			this.hass = e.hass, this.config = e.config, this._opener = e.opener, this.mode = e.mode, e.title && (this.detailTitle = e.title), e.events && (this.detailEvents = e.events), e.formState && (this._formState = e.formState), e.onEventSaved && (this._onEventSaved = e.onEventSaved), this.open = !0, window.history.pushState({ calendarCardPlusPopup: !0 }, ""), await this.updateComplete;
+			let t = this.renderRoot.querySelector("ha-adaptive-dialog");
+			if (t && t.shadowRoot) {
+				let e = t.shadowRoot.querySelector("ha-bottom-sheet");
+				e && (e.style.removeProperty("--dialog-transform"), e.style.removeProperty("--dialog-transition"));
+			}
+		}
+		connectedCallback() {
+			super.connectedCallback(), window.addEventListener("popstate", this._onPopState);
+		}
+		disconnectedCallback() {
+			super.disconnectedCallback(), window.removeEventListener("popstate", this._onPopState);
+		}
+		async _run(e) {
+			try {
+				await e(), this.dispatchEvent(new CustomEvent("event-saved", {
+					bubbles: !0,
+					composed: !0
+				})), this._onEventSaved?.(), this._closeDialog();
+			} catch (e) {
+				this.hass.callService("persistent_notification", "create", {
+					title: "Calendar Card Plus",
+					message: "Error saving event: " + (e?.message ?? e)
+				});
+			}
+		}
+		render() {
+			let e = this.mode !== "detail", t = this.mode === "add-event" ? this.hass?.localize("ui.components.calendar.event.add") || "Add Event" : this.mode === "edit-event" ? this.hass?.localize("ui.components.calendar.event.edit") || "Edit Event" : this.detailTitle;
+			return k`
       <ha-adaptive-dialog
         .hass=${this.hass}
         .open=${this.open}
@@ -2348,277 +1914,16 @@ let L = class extends F {
         @ha-dialog-closed=${this._onDialogClosed}
         flexcontent
       >
-        <div class="dialog-content scrollable ha-scrollbar">
-          ${e ? Tt(
-      this.hass,
-      this.config,
-      this._addEventState,
-      this._updateAddEventState.bind(this),
-      this._closeDialog.bind(this),
-      this._handleSave.bind(this)
-    ) : this._renderDetailContent()}
+        <div
+          class="dialog-content scrollable ha-scrollbar ${this.config?.show_divider && !e ? "plain" : ""}"
+        >
+          ${e ? Nt(this.hass, this.config, this._formState, this._updateFormState, this._closeDialog, this._handleSave, this._handleDelete) : dt(this.hass, this.detailEvents, this.config, this._openEvent)}
         </div>
       </ha-adaptive-dialog>
     `;
-  }
-  _renderDetailContent() {
-    return this.config.group_by_date_and_calendar ? Qe(this.detailEvents).map((t) => {
-      const i = t.date, s = B(t.events[0].entity_id, this.config), o = W(
-        this.hass,
-        i,
-        s,
-        this.config.dark_mode ?? !1
-      ), n = Z(
-        t.events[0].entity_id,
-        this.config
-      ), d = n ? `background-color: ${n}; border: none;` : "";
-      return u`
-          <div
-            class="calendar-item grouped detail"
-            style="align-items: center; ${d}"
-          >
-            <div class="calendar-icon dynamic">${o}</div>
-            <div class="calendar-content">
-              ${t.events.map((r) => {
-        const c = r.is_empty ? g(this.hass, "empty") : r.summary, l = new Date(
-          r.start.dateTime || r.start.date
-        ), _ = new Date(r.end.dateTime || r.end.date), v = !r.start.dateTime, f = G(
-          this.hass,
-          l,
-          _,
-          v
-        ), h = `${T(this.hass, l)} - ${T(this.hass, _)}`, $ = this.config.show_date ?? !1, w = this.config.show_time ?? !1, m = this.hass.localize(
-          "component.calendar.entity_component._.state_attributes.all_day.name"
-        ) || "All day";
-        let p = "";
-        if (r.is_empty)
-          p = "";
-        else if ($ || w)
-          if (v) {
-            const y = $ ? M(this.hass, l) : "";
-            $ && w ? p = `${y}, ${m}` : p = y || m;
-          } else {
-            const y = [];
-            $ && y.push(M(this.hass, l)), w && y.push(h), p = y.join(", ");
-          }
-        else
-          p = v ? m : T(this.hass, l);
-        if (!r.is_empty && this.config.show_duration && (p.endsWith(f) || (p += ` • ${f}`)), !r.is_empty && this.config.show_weekday) {
-          const y = j(this.hass), C = l.toLocaleDateString(y, {
-            weekday: this.config.show_weekday_long ? "long" : "short"
-          });
-          p.includes(C) || (p += ` • ${C}`);
-        }
-        return u`
-                  <div
-                    class="event-entry"
-                    @click=${() => r.is_empty ? null : this._handleMoreInfo(r.entity_id)}
-                    style="margin-bottom: 4px; ${r.is_empty ? "opacity: 0.7; cursor: default;" : ""}"
-                  >
-                    <div class="event-title">${c}</div>
-                    <div
-                      class="event-time"
-                      style="display: flex; align-items: center; gap: 4px;"
-                    >
-                      ${!r.is_empty && ($ || w) ? u`<ha-icon
-                            icon="mdi:clock-time-four-outline"
-                            style="--mdc-icon-size: 14px;"
-                          ></ha-icon>` : ""}
-                      ${p}
-                    </div>
-                    ${!r.is_empty && this.config.show_location && r.location ? u`
-                          <div class="event-location">
-                            <ha-icon
-                              icon="mdi:map-marker"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>
-                            ${r.location}
-                          </div>
-                        ` : ""}
-                    ${this.config.show_calendar_name && r.calendar_name ? u`
-                          <div class="event-calendar">
-                            <ha-icon
-                              icon="mdi:calendar-blank-multiple"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>
-                            ${r.calendar_name}
-                          </div>
-                        ` : ""}
-                  </div>
-                `;
-      })}
-            </div>
-          </div>
-          ${this.config.show_divider ? u`<div class="calendar-divider"></div>` : ""}
-        `;
-    }) : this.config.group_by_date ? Je(this.detailEvents).map((t) => {
-      const i = t.date, s = B(t.events[0].entity_id, this.config), o = W(
-        this.hass,
-        i,
-        s,
-        this.config.dark_mode ?? !1
-      ), n = Z(
-        t.events[0].entity_id,
-        this.config
-      ), d = n ? `background-color: ${n}; border: none;` : "";
-      return u`
-          <div
-            class="calendar-item grouped detail"
-            style="align-items: center; ${d}"
-          >
-            <div class="calendar-icon dynamic">${o}</div>
-            <div class="calendar-content">
-              ${t.events.map((r) => {
-        const c = r.is_empty ? g(this.hass, "empty") : r.summary, l = new Date(
-          r.start.dateTime || r.start.date
-        ), _ = new Date(r.end.dateTime || r.end.date), v = !r.start.dateTime, f = G(
-          this.hass,
-          l,
-          _,
-          v
-        ), h = `${T(this.hass, l)} - ${T(this.hass, _)}`, $ = this.config.show_date ?? !1, w = this.config.show_time ?? !1, m = this.hass.localize(
-          "component.calendar.entity_component._.state_attributes.all_day.name"
-        ) || "All day";
-        let p = "";
-        if (r.is_empty)
-          p = "";
-        else if ($ || w)
-          if (v) {
-            const y = $ ? M(this.hass, l) : "";
-            $ && w ? p = `${y}, ${m}` : p = y || m;
-          } else {
-            const y = [];
-            $ && y.push(M(this.hass, l)), w && y.push(h), p = y.join(", ");
-          }
-        else
-          p = v ? m : T(this.hass, l);
-        if (!r.is_empty && this.config.show_duration && (p.endsWith(f) || (p += ` • ${f}`)), !r.is_empty && this.config.show_weekday) {
-          const y = j(this.hass), C = l.toLocaleDateString(y, {
-            weekday: this.config.show_weekday_long ? "long" : "short"
-          });
-          p.includes(C) || (p += ` • ${C}`);
-        }
-        return u`
-                  <div
-                    class="event-entry"
-                    @click=${() => r.is_empty ? null : this._handleMoreInfo(r.entity_id)}
-                    style="margin-bottom: 4px; ${r.is_empty ? "opacity: 0.7; cursor: default;" : ""}"
-                  >
-                    <div class="event-title">${c}</div>
-                    <div
-                      class="event-time"
-                      style="display: flex; align-items: center; gap: 4px;"
-                    >
-                      ${!r.is_empty && ($ || w) ? u`<ha-icon
-                            icon="mdi:clock-time-four-outline"
-                            style="--mdc-icon-size: 14px;"
-                          ></ha-icon>` : ""}
-                      ${p}
-                    </div>
-                    ${!r.is_empty && this.config.show_location && r.location ? u`
-                          <div class="event-location">
-                            <ha-icon
-                              icon="mdi:map-marker"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>
-                            ${r.location}
-                          </div>
-                        ` : ""}
-                    ${this.config.show_calendar_name && r.calendar_name ? u`
-                          <div class="event-calendar">
-                            <ha-icon
-                              icon="mdi:calendar-blank-multiple"
-                              style="--mdc-icon-size: 14px;"
-                            ></ha-icon>
-                            ${r.calendar_name}
-                          </div>
-                        ` : ""}
-                  </div>
-                `;
-      })}
-            </div>
-          </div>
-          ${this.config.show_divider ? u`<div class="calendar-divider"></div>` : ""}
-        `;
-    }) : this.detailEvents.map((e, t) => {
-      const i = e.is_empty ? g(this.hass, "empty") : e.summary;
-      let s = "", o, n;
-      try {
-        o = new Date(e.start.dateTime || e.start.date), n = new Date(e.end.dateTime || e.end.date);
-      } catch {
-        return u`<div class="error">Date Error</div>`;
-      }
-      const d = /* @__PURE__ */ new Date(), r = !e.start.dateTime, c = G(this.hass, o, n, r), l = `${T(this.hass, o)} - ${T(this.hass, n)}`, _ = this.config.show_date ?? !1, v = this.config.show_time ?? !1, f = this.hass.localize(
-        "component.calendar.entity_component._.state_attributes.all_day.name"
-      ) || "All day";
-      if (e.is_empty)
-        s = "";
-      else if (_ || v)
-        if (r) {
-          const b = _ ? M(this.hass, o) : "";
-          _ && v ? s = `${b}, ${f}` : s = b || f;
-        } else {
-          const b = [];
-          _ && b.push(M(this.hass, o)), v && b.push(l), s = b.join(", ");
-        }
-      else if (o > d) {
-        const b = o.getTime() - d.getTime(), D = Math.ceil(b / 6e4);
-        s = Ce(this.hass, D);
-      } else
-        s = r ? f : T(this.hass, o);
-      if (!e.is_empty && this.config.show_duration && (s ? s.endsWith(c) || (s += ` • ${c}`) : s = c), !e.is_empty && this.config.show_weekday) {
-        const b = j(this.hass), D = o.toLocaleDateString(b, {
-          weekday: this.config.show_weekday_long ? "long" : "short"
-        });
-        s += ` • ${D}`;
-      }
-      const $ = !e.is_empty && o <= d && n >= d ? d : o, w = e.is_empty ? "var(--disabled-text-color, #bdbdbb)" : B(e.entity_id, this.config), m = W(
-        this.hass,
-        $,
-        w,
-        this.config.dark_mode ?? !1
-      ), p = this.config.show_divider && t > 0, y = Z(e.entity_id, this.config), C = y ? `background-color: ${y}; border: none;` : "";
-      return u`
-        ${p ? u`<div class="calendar-divider"></div>` : ""}
-        <div
-          class="calendar-item detail"
-          style="${C} ${e.is_empty ? "cursor: default; opacity: 0.7;" : ""}"
-          @click=${() => e.is_empty ? null : this._handleMoreInfo(e.entity_id)}
-        >
-          <div class="calendar-icon dynamic">${m}</div>
-          <div class="calendar-content">
-            <div class="event-title">${i}</div>
-            <div class="event-time">
-              ${!e.is_empty && (_ || v) ? u`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : ""}
-              ${s}
-            </div>
-            ${!e.is_empty && this.config.show_location && e.location ? u`
-                  <div class="event-location">
-                    <ha-icon icon="mdi:map-marker"></ha-icon>
-                    ${e.location}
-                  </div>
-                ` : ""}
-            ${this.config.show_calendar_name && e.calendar_name ? u`
-                  <div class="event-calendar">
-                    <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
-                    ${e.calendar_name}
-                  </div>
-                ` : ""}
-          </div>
-        </div>
-      `;
-    });
-  }
-  _handleMoreInfo(e) {
-    const t = new CustomEvent("hass-more-info", {
-      bubbles: !0,
-      composed: !0,
-      detail: { entityId: e }
-    });
-    this._opener ? this._opener.dispatchEvent(t) : window.dispatchEvent(t);
-  }
-};
-Mt(L, "styles", Ee`
+		}
+		static {
+			this.styles = [wt, d`
     :host {
       display: block;
     }
@@ -2632,28 +1937,9 @@ Mt(L, "styles", Ee`
       --ha-bottom-sheet-max-height: var(--ha-bottom-sheet-height) !important;
     }
 
-    .dialog-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .dialog-title {
-      font-size: 1.1em;
-      font-weight: 500;
-      flex: 1;
-    }
-
     .dialog-content {
       padding: 0 8px 8px 8px;
       min-width: 320px;
-    }
-
-    .dialog-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      padding: 8px 16px 16px;
     }
 
     .calendar-item {
@@ -2679,6 +1965,17 @@ Mt(L, "styles", Ee`
     }
 
     .calendar-item.detail:hover {
+      background-color: var(--secondary-background-color);
+    }
+
+    /* "show divider": plain rows separated by lines, same as in the card */
+    .plain .calendar-item.detail {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      margin-bottom: 0;
+    }
+    .plain .calendar-item.detail:hover {
       background-color: var(--secondary-background-color);
     }
 
@@ -2710,29 +2007,6 @@ Mt(L, "styles", Ee`
       gap: 4px;
       font-size: 0.9em;
       color: var(--secondary-text-color);
-    }
-    .event-time ha-icon {
-      --mdc-icon-size: 14px;
-      color: var(--secondary-text-color);
-    }
-    .event-location,
-    .event-calendar {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.9em;
-      color: var(--secondary-text-color);
-      margin-top: 1px;
-    }
-    .event-location ha-icon,
-    .event-calendar ha-icon {
-      --mdc-icon-size: 14px;
-      color: var(--secondary-text-color);
-    }
-
-    .calendar-divider {
-      border-top: 1px solid var(--divider-color, #e0e0e0);
-      margin: 4px 12px;
     }
 
     .add-event-form {
@@ -2775,6 +2049,11 @@ Mt(L, "styles", Ee`
       appearance: auto;
     }
 
+    .add-event-form select.field-input:disabled {
+      cursor: default;
+      opacity: 0.7;
+    }
+
     .row-flex {
       display: flex;
       align-items: center;
@@ -2793,389 +2072,38 @@ Mt(L, "styles", Ee`
 
     .dialog-actions {
       display: flex;
-      justify-content: flex-end;
+      flex-wrap: wrap;
       gap: 8px;
       margin-top: 8px;
     }
 
-    .calendar-item.grouped .calendar-content {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    .dialog-actions .spacer {
+      flex: 1;
     }
-    .calendar-item.grouped .event-entry {
-      display: flex;
-      flex-direction: column;
-    }
-    .calendar-item.grouped .calendar-icon {
-      align-self: center;
-    }
-  `);
-R([
-  N({ attribute: !1 })
-], L.prototype, "hass", 2);
-R([
-  N({ attribute: !1 })
-], L.prototype, "config", 2);
-R([
-  N({ type: Boolean })
-], L.prototype, "open", 2);
-R([
-  N({ type: String })
-], L.prototype, "mode", 2);
-R([
-  N({ type: String })
-], L.prototype, "detailTitle", 2);
-R([
-  N({ type: Array })
-], L.prototype, "detailEvents", 2);
-R([
-  he()
-], L.prototype, "_addEventState", 2);
-L = R([
-  Se("calendar-card-plus-popup")
-], L);
-const Pt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  get CalendarCardPlusPopup() {
-    return L;
-  }
-}, Symbol.toStringTag, { value: "Module" }));
-var jt = Object.defineProperty, Lt = Object.getOwnPropertyDescriptor, ye = (a, e, t, i) => {
-  for (var s = i > 1 ? void 0 : i ? Lt(e, t) : e, o = a.length - 1, n; o >= 0; o--)
-    (n = a[o]) && (s = (i ? n(e, t, s) : n(s)) || s);
-  return i && s && jt(e, t, s), s;
-};
-function ke(a) {
-  const e = a.getFullYear(), t = `${a.getMonth() + 1}`.padStart(2, "0"), i = `${a.getDate()}`.padStart(2, "0");
-  return `${e}-${t}-${i}`;
-}
-let ce = class extends F {
-  constructor() {
-    super(...arguments);
-    E(this, "hass");
-    E(this, "config");
-    E(this, "_events");
-    E(this, "_handleShowDetail", async (e) => {
-      this._showPopup("calendar-card-plus-popup", {
-        hass: this.hass,
-        config: this.config,
-        opener: this,
-        mode: "detail",
-        title: e.detail.title,
-        events: e.detail.entities
-      });
-    });
-    E(this, "_openAddEventPopup", async () => {
-      const e = At(this.hass, this.config);
-      this._showPopup("calendar-card-plus-popup", {
-        hass: this.hass,
-        config: this.config,
-        opener: this,
-        mode: "add-event",
-        addEventState: e
-      });
-    });
-    E(this, "_onEventSaved", () => {
-      this._events = void 0, this.requestUpdate(), this._fetchEvents();
-    });
-  }
-  connectedCallback() {
-    super.connectedCallback(), this.addEventListener(
-      "calendar-card-show-detail",
-      this._handleShowDetail
-    );
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback(), this.removeEventListener(
-      "calendar-card-show-detail",
-      this._handleShowDetail
-    );
-  }
-  willUpdate(e) {
-    super.willUpdate(e), this.hass && this.config && (this._events === void 0 || e.has("config")) && this._fetchEvents();
-  }
-  setConfig(e) {
-    if (!e)
-      throw new Error("Invalid configuration");
-    this.config = e;
-  }
-  async _fetchEvents() {
-    if (!this.hass || !this.config) return;
-    const e = /* @__PURE__ */ new Date();
-    let t;
-    if (this.config.upcoming_events) {
-      let o = 1440;
-      this.config.days !== void 0 || this.config.hours !== void 0 || this.config.minutes !== void 0 ? o = (this.config.days || 0) * 1440 + (this.config.hours || 0) * 60 + (this.config.minutes || 0) : this.config.max_minutes_until_start !== void 0 && (o = this.config.max_minutes_until_start), t = new Date(e.getTime() + o * 6e4);
-    } else
-      t = new Date(e), t.setHours(23, 59, 59, 999);
-    const i = Object.keys(this.hass.states).filter((o) => o.startsWith("calendar.")).filter((o) => {
-      var n;
-      return !((n = this.config.exclude_entities) != null && n.includes(o));
-    });
-    if (i.length === 0) {
-      this._events = [];
-      return;
-    }
-    const s = await at(this.hass, e, t, i);
-    this.config.show_empty_days ? this._events = this._injectEmptyDays(s, e, t) : this._events = s, this.requestUpdate();
-  }
-  _injectEmptyDays(e, t, i) {
-    const s = [...e], o = /* @__PURE__ */ new Set();
-    e.forEach((c) => {
-      c.start.date ? o.add(c.start.date) : c.start.dateTime && o.add(ke(new Date(c.start.dateTime)));
-    });
-    const n = new Date(t);
-    n.setHours(0, 0, 0, 0);
-    const d = new Date(i);
-    d.setHours(0, 0, 0, 0);
-    const r = ke(/* @__PURE__ */ new Date());
-    for (; n <= d; ) {
-      const c = ke(n);
-      c >= r && !o.has(c) && s.push({
-        start: { date: c },
-        end: { date: c },
-        summary: "empty",
-        is_empty: !0,
-        entity_id: "empty",
-        calendar_name: ""
-      }), n.setDate(n.getDate() + 1);
-    }
-    return s.sort((c, l) => {
-      const _ = new Date(c.start.dateTime || c.start.date).getTime(), v = new Date(l.start.dateTime || l.start.date).getTime();
-      return _ - v;
-    });
-  }
-  render() {
-    if (!this.config || !this.hass)
-      return u``;
-    const e = zt(this.hass, this._events, this.config);
-    return u`
-      <ha-card>
-        <div
-          class="add-event-btn"
-          @click=${this._openAddEventPopup}
-          style=${this.config.show_add_event ? "" : "display: none;"}
-        >
-          <ha-icon-button .path=${it}></ha-icon-button>
-        </div>
-        ${e}
-      </ha-card>
-    `;
-  }
-  _showPopup(e, t) {
-    this.dispatchEvent(
-      new CustomEvent("show-dialog", {
-        detail: {
-          dialogTag: e,
-          dialogImport: () => Promise.resolve().then(() => Pt),
-          dialogParams: {
-            ...t,
-            onEventSaved: this._onEventSaved
-          }
-        },
-        bubbles: !0,
-        composed: !0
-      })
-    );
-  }
-  static get styles() {
-    return Ee`
-      :host {
-        display: block;
-      }
-      ha-card {
-        height: 100%;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
 
-      .calendar-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        height: 100%;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .calendar-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        border-radius: var(--ha-card-border-radius, 12px);
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      }
-      .calendar-item:last-child {
-        margin-bottom: 0px;
-      }
-      .calendar-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: var(--primary-color, #03a9f4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        flex-shrink: 0;
-      }
-      .calendar-icon ha-icon {
-        --mdc-icon-size: 20px;
-      }
-      .calendar-content {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        flex: 1;
-      }
-      .event-title {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--primary-text-color);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .event-time {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        color: var(--secondary-text-color);
-      }
-      .event-time ha-icon {
-        --mdc-icon-size: 14px;
-        color: var(--secondary-text-color);
-      }
-      .event-location,
-      .event-calendar {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 0.9em;
-        color: var(--secondary-text-color);
-        margin-top: 1px;
-      }
-      .event-location ha-icon,
-      .event-calendar ha-icon {
-        --mdc-icon-size: 14px;
-        color: var(--secondary-text-color);
-      }
-      .progress-bar {
-        margin-top: 4px;
-        height: 4px;
-        background-color: var(--secondary-background-color, #444);
-        border-radius: 2px;
-        overflow: hidden;
-        width: 100%;
-      }
-      .progress-fill {
-        height: 100%;
-        background-color: var(--primary-text-color, #fff);
-        border-radius: 2px;
-        opacity: 0.7;
-      }
-      .calendar-divider {
-        border-top: 1px solid var(--divider-color, #e0e0e0);
-        margin: 4px 12px;
-      }
-
-      .add-event-btn {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        z-index: 2;
-        color: var(--secondary-text-color);
-      }
-      .add-event-btn:hover {
-        color: var(--primary-text-color);
-      }
-      .calendar-item.grouped .calendar-content {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .calendar-item.grouped .event-entry {
-        display: flex;
-        flex-direction: column;
-      }
-      .calendar-item.grouped .calendar-icon {
-        align-self: center;
-      }
-    `;
-  }
-  getCardSize() {
-    return 1;
-  }
-  static async getConfigElement() {
-    return await Promise.resolve().then(() => Ot), document.createElement("calendar-card-plus-editor");
-  }
-  static getStubConfig(e) {
-    return {
-      type: "custom:calendar-card-plus",
-      exclude_entities: [],
-      unfold_events: !1
-    };
-  }
-};
-ye([
-  N({ attribute: !1 })
-], ce.prototype, "hass", 2);
-ye([
-  he()
-], ce.prototype, "config", 2);
-ye([
-  he()
-], ce.prototype, "_events", 2);
-ce = ye([
-  Se("calendar-card-plus")
-], ce);
-window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "calendar-card-plus",
-  name: "Dynamic Calendar Card Plus",
-  preview: !0,
-  description: "A standalone calendar card with dynamic grid styling"
-});
-const H = (a, e, t, i) => {
-  i = i || {}, t = t ?? {};
-  const s = new Event(e, {
-    bubbles: i.bubbles === void 0 ? !0 : i.bubbles,
-    cancelable: !!i.cancelable,
-    composed: i.composed === void 0 ? !0 : i.composed
-  });
-  return s.detail = t, a.dispatchEvent(s), s;
-};
-var Bt = Object.defineProperty, Nt = Object.getOwnPropertyDescriptor, ge = (a, e, t, i) => {
-  for (var s = i > 1 ? void 0 : i ? Nt(e, t) : e, o = a.length - 1, n; o >= 0; o--)
-    (n = a[o]) && (s = (i ? n(e, t, s) : n(s)) || s);
-  return i && s && Bt(e, t, s), s;
-};
-let ie = class extends F {
-  constructor() {
-    super(...arguments);
-    E(this, "hass");
-    E(this, "_config", {
-      type: "custom:calendar-card-plus"
-    });
-    E(this, "_showAllCalendars", !1);
-  }
-  set config(e) {
-    this.setConfig(e);
-  }
-  setConfig(e) {
-    this._config = e, this.requestUpdate();
-  }
-  render() {
-    var d, r, c, l, _, v, f, h, $, w;
-    if (!this.hass)
-      return u``;
-    const e = this._config.upcoming_events ?? !1, t = this._config.unfold_events ?? !1, i = this._config.days ?? 1, s = this._config.hours ?? 0, o = this._config.minutes ?? 0, n = this._config.exclude_entities ?? [];
-    return u`
+    .dialog-actions .delete {
+      --ha-button-theme-color: var(--error-color, #db4437);
+      --mdc-theme-primary: var(--error-color, #db4437);
+      color: var(--error-color, #db4437);
+    }
+  `];
+		}
+	}, X([R({ attribute: !1 })], Z.prototype, "hass", void 0), X([R({ attribute: !1 })], Z.prototype, "config", void 0), X([R({ type: Boolean })], Z.prototype, "open", void 0), X([R({ type: String })], Z.prototype, "mode", void 0), X([R({ type: String })], Z.prototype, "detailTitle", void 0), X([R({ type: Array })], Z.prototype, "detailEvents", void 0), X([z()], Z.prototype, "_formState", void 0), Z = X([L("calendar-card-plus-popup")], Z);
+})), Vt = /* @__PURE__ */ n({ CalendarCardPlusEditor: () => Q }), Q, Ht = t((() => {
+	I(), Qe(), $e(), et(), Ot(), Rt(), Q = class extends F {
+		constructor(...e) {
+			super(...e), this._config = { type: "custom:calendar-card-plus" }, this._showAllCalendars = !1;
+		}
+		set config(e) {
+			this.setConfig(e);
+		}
+		setConfig(e) {
+			this._config = e;
+		}
+		render() {
+			if (!this.hass) return k``;
+			let e = this._config.upcoming_events ?? !1, t = this._config.unfold_events ?? !1, n = this._config.days ?? 1, r = this._config.hours ?? 0, i = this._config.minutes ?? 0, a = this._config.exclude_entities ?? [];
+			return k`
       <div class="card-config">
         <ha-expansion-panel outlined>
           <div
@@ -3188,7 +2116,7 @@ let ie = class extends F {
               icon="mdi:cog"
               style="color: var(--secondary-text-color);"
             ></ha-icon>
-            ${g(this.hass, "editor_configuration")}
+            ${V(this.hass, "editor_configuration")}
           </div>
           <div
             class="settings-grid"
@@ -3196,127 +2124,152 @@ let ie = class extends F {
           >
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_unfold_events")}</span
+                >${V(this.hass, "editor_unfold_events")}</span
               >
               <ha-switch
                 .checked=${t}
-                @change=${this._compactModeChanged}
+                @change=${(e) => this._toggleBooleanConfig(e, "unfold_events")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_show_divider")}</span
+                >${V(this.hass, "editor_show_divider")}</span
               >
               <ha-switch
                 .checked=${this._config.show_divider ?? !1}
-                @change=${this._calendarDividerChanged}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_divider")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_show_add_event")}</span
+                >${V(this.hass, "editor_show_add_event")}</span
               >
               <ha-switch
                 .checked=${this._config.show_add_event ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "show_add_event")}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_add_event")}
               ></ha-switch>
             </div>
             <div class="settings-row">
-              <span class="label">${g(this.hass, "group_by_date")}</span>
+              <span class="label">${V(this.hass, "group_by_date")}</span>
               <ha-switch
                 .checked=${this._config.group_by_date ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "group_by_date")}
+                @change=${(e) => this._toggleBooleanConfig(e, "group_by_date")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "group_by_date_and_calendar")}</span
+                >${V(this.hass, "group_by_date_and_calendar")}</span
               >
               <ha-switch
                 .checked=${this._config.group_by_date_and_calendar ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "group_by_date_and_calendar")}
+                @change=${(e) => this._toggleBooleanConfig(e, "group_by_date_and_calendar")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label">Dark Mode</span>
               <ha-switch
                 .checked=${this._config.dark_mode ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "dark_mode")}
+                @change=${(e) => this._toggleBooleanConfig(e, "dark_mode")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_show_upcoming")}</span
+                >${V(this.hass, "editor_show_upcoming")}</span
               >
               <ha-switch
                 .checked=${e}
-                @change=${this._calendarShowAllChanged}
+                @change=${(e) => this._toggleBooleanConfig(e, "upcoming_events")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_show_empty_days")}</span
+                >${V(this.hass, "editor_show_empty_days")}</span
               >
               <ha-switch
                 .checked=${this._config.show_empty_days ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "show_empty_days")}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_empty_days")}
               ></ha-switch>
             </div>
           </div>
 
-          ${t ? u`
+          ${this._config.show_empty_days ? k`
                 <div
                   class="settings-row full-width"
                   style="margin-bottom: 16px;"
                 >
                   <ha-selector
                     .hass=${this.hass}
-                    .selector=${{ number: { min: 0, max: 20, mode: "box" } }}
+                    .selector=${{ text: {} }}
+                    .value=${this._config.empty_text || ""}
+                    .label=${V(this.hass, "editor_empty_text")}
+                    .placeholder=${V(this.hass, "empty")}
+                    .configValue=${"empty_text"}
+                    @value-changed=${this._valueChanged}
+                  ></ha-selector>
+                </div>
+              ` : ""}
+
+          ${t ? k`
+                <div
+                  class="settings-row full-width"
+                  style="margin-bottom: 16px;"
+                >
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{ number: {
+				min: 0,
+				max: 20,
+				mode: "box"
+			} }}
                     .value=${this._config.max_lines || 0}
-                    .label=${g(this.hass, "editor_max_lines")}
+                    .label=${V(this.hass, "editor_max_lines")}
                     .configValue=${"max_lines"}
                     @value-changed=${this._valueChanged}
                   ></ha-selector>
                 </div>
               ` : ""}
-          ${e ? u`
+          ${e ? k`
                 <div
                   class="settings-row full-width"
                   style="margin-bottom: 8px;"
                 >
                   <span class="label" style="margin-bottom: 8px;"
-                    >${((d = this.hass) == null ? void 0 : d.localize(
-      "ui.panel.lovelace.editor.card.statistic.period"
-    )) || "Period"}</span
+                    >${this.hass?.localize("ui.panel.lovelace.editor.card.statistic.period") || "Period"}</span
                   >
                   <div class="period-selectors">
                     <ha-selector
                       .hass=${this.hass}
-                      .selector=${{ number: { min: 0, max: 365, mode: "box" } }}
-                      .value=${i}
-                      .label=${((r = this.hass) == null ? void 0 : r.localize(
-      "component.input_datetime.entity_component._.state_attributes.day.name"
-    )) || "Days"}
+                      .selector=${{ number: {
+				min: 0,
+				max: 365,
+				mode: "box"
+			} }}
+                      .value=${n}
+                      .label=${this.hass?.localize("component.input_datetime.entity_component._.state_attributes.day.name") || "Days"}
                       .configValue=${"days"}
                       @value-changed=${this._valueChanged}
                     ></ha-selector>
                     <ha-selector
                       .hass=${this.hass}
-                      .selector=${{ number: { min: 0, max: 23, mode: "box" } }}
-                      .value=${s}
-                      .label=${((c = this.hass) == null ? void 0 : c.localize(
-      "component.input_datetime.entity_component._.state_attributes.hour.name"
-    )) || "Hours"}
+                      .selector=${{ number: {
+				min: 0,
+				max: 23,
+				mode: "box"
+			} }}
+                      .value=${r}
+                      .label=${this.hass?.localize("component.input_datetime.entity_component._.state_attributes.hour.name") || "Hours"}
                       .configValue=${"hours"}
                       @value-changed=${this._valueChanged}
                     ></ha-selector>
                     <ha-selector
                       .hass=${this.hass}
-                      .selector=${{ number: { min: 0, max: 59, mode: "box" } }}
-                      .value=${o}
-                      .label=${((l = this.hass) == null ? void 0 : l.localize(
-      "component.input_datetime.entity_component._.state_attributes.minute.name"
-    )) || "Minutes"}
+                      .selector=${{ number: {
+				min: 0,
+				max: 59,
+				mode: "box"
+			} }}
+                      .value=${i}
+                      .label=${this.hass?.localize("component.input_datetime.entity_component._.state_attributes.minute.name") || "Minutes"}
                       .configValue=${"minutes"}
                       @value-changed=${this._valueChanged}
                     ></ha-selector>
@@ -3329,9 +2282,7 @@ let ie = class extends F {
               .hass=${this.hass}
               .selector=${{ ui_color: {} }}
               .value=${this._config.calendar_icon_color || ""}
-              .label="Global ${this.hass.localize(
-      "ui.panel.lovelace.editor.card.tile.color"
-    ) || "Color"}"
+              .label="Global ${this.hass.localize("ui.panel.lovelace.editor.card.tile.color") || "Color"}"
               .configValue=${"calendar_icon_color"}
               @value-changed=${this._valueChanged}
             ></ha-selector>
@@ -3342,7 +2293,7 @@ let ie = class extends F {
               .hass=${this.hass}
               .selector=${{ ui_color: {} }}
               .value=${this._config.background_color || ""}
-              .label=${g(this.hass, "editor_background_color")}
+              .label=${V(this.hass, "editor_background_color")}
               .configValue=${"background_color"}
               @value-changed=${this._valueChanged}
             ></ha-selector>
@@ -3360,7 +2311,7 @@ let ie = class extends F {
               icon="mdi:card-text"
               style="color: var(--secondary-text-color);"
             ></ha-icon>
-            ${g(this.hass, "editor_text_visibility")}
+            ${V(this.hass, "editor_text_visibility")}
           </div>
           <div
             class="settings-grid"
@@ -3368,84 +2319,80 @@ let ie = class extends F {
           >
             <div class="settings-row">
               <span class="label"
-                >${(_ = this.hass) == null ? void 0 : _.localize("ui.common.show")}
-                ${(v = this.hass) == null ? void 0 : v.localize(
-      "component.calendar.entity_component._.name"
-    )}
-                ${(f = this.hass) == null ? void 0 : f.localize("ui.common.name")}</span
+                >${this.hass?.localize("ui.common.show")}
+                ${this.hass?.localize("component.calendar.entity_component._.name")}
+                ${this.hass?.localize("ui.common.name")}</span
               >
               <ha-switch
                 .checked=${this._config.show_calendar_name ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "show_calendar_name")}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_calendar_name")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${(h = this.hass) == null ? void 0 : h.localize("ui.common.show")}
-                ${(($ = this.hass) == null ? void 0 : $.localize(
-      "ui.dialogs.helper_settings.input_datetime.date"
-    )) || "Date"}</span
+                >${this.hass?.localize("ui.common.show")}
+                ${this.hass?.localize("ui.dialogs.helper_settings.input_datetime.date") || "Date"}</span
               >
               <ha-switch
                 .checked=${this._config.show_date ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "show_date")}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_date")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_show_location")}</span
+                >${V(this.hass, "editor_show_location")}</span
               >
               <ha-switch
                 .checked=${this._config.show_location ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "show_location")}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_location")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_show_duration")}</span
+                >${V(this.hass, "editor_show_duration")}</span
               >
               <ha-switch
                 .checked=${this._config.show_duration ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "show_duration")}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_duration")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_show_time")}</span
+                >${V(this.hass, "editor_show_time")}</span
               >
               <ha-switch
                 .checked=${this._config.show_time ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "show_time")}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_time")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${g(this.hass, "editor_icon_show_weekday")}</span
+                >${V(this.hass, "editor_icon_show_weekday")}</span
               >
               <ha-switch
                 .checked=${this._config.icon_show_weekday ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "icon_show_weekday")}
+                @change=${(e) => this._toggleBooleanConfig(e, "icon_show_weekday")}
               ></ha-switch>
             </div>
             <div class="settings-row">
               <span class="label"
-                >${this._config.icon_show_weekday ? g(this.hass, "editor_show_month") : g(this.hass, "editor_show_weekday")}</span
+                >${this._config.icon_show_weekday ? V(this.hass, "editor_show_month") : V(this.hass, "editor_show_weekday")}</span
               >
               <ha-switch
                 .checked=${this._config.show_weekday ?? !1}
-                @change=${(m) => this._toggleBooleanConfig(m, "show_weekday")}
+                @change=${(e) => this._toggleBooleanConfig(e, "show_weekday")}
               ></ha-switch>
             </div>
-            ${this._config.show_weekday ? u`
+            ${this._config.show_weekday ? k`
                   <div class="settings-row">
                     <span
                       class="label"
                       style="color: var(--secondary-text-color);"
-                      >${this._config.icon_show_weekday ? g(this.hass, "editor_show_month_long") : g(this.hass, "editor_show_weekday_long")}</span
+                      >${this._config.icon_show_weekday ? V(this.hass, "editor_show_month_long") : V(this.hass, "editor_show_weekday_long")}</span
                     >
                     <ha-switch
                       .checked=${this._config.show_weekday_long ?? !1}
-                      @change=${(m) => this._toggleBooleanConfig(m, "show_weekday_long")}
+                      @change=${(e) => this._toggleBooleanConfig(e, "show_weekday_long")}
                     ></ha-switch>
                   </div>
                   <div></div>
@@ -3454,186 +2401,129 @@ let ie = class extends F {
         </ha-expansion-panel>
 
         <h4>
-          ${((w = this.hass) == null ? void 0 : w.localize("ui.components.calendar.my_calendars")) || "Calendars"}
+          ${this.hass?.localize("ui.components.calendar.my_calendars") || "Calendars"}
         </h4>
         <div class="entities-list">
           ${(() => {
-      const m = this._getCalendarEntities(), p = this._showAllCalendars ? m : m.slice(0, 3), y = m.length > 3;
-      return u`
-              ${p.map((C) => {
-        var k, x, z, O, J;
-        const b = !n.includes(C.entity_id), D = ((k = this._config.calendar_colors) == null ? void 0 : k[C.entity_id]) || "", P = this._toCssColor(
-          D || this._config.calendar_icon_color || "#fa3e3e"
-        );
-        return u`
-                  <div class="entity-row ${b ? "" : "disabled"}">
+				let e = this._getCalendarEntities(), t = this._showAllCalendars ? e : e.slice(0, 3), n = e.length > 3;
+				return k`
+              ${t.map((e) => {
+					let t = !a.includes(e.entity_id), n = this._config.calendar_colors?.[e.entity_id] || "", r = !!((e.attributes.supported_features ?? 0) & 7);
+					return k`
+                  <div class="entity-row ${t ? "" : "disabled"}">
                     <div class="entity-row-top">
                       <div
                         class="entity-icon dynamic"
                         style="background: transparent;"
                       >
-                        ${this._renderDynamicIcon(
-          /* @__PURE__ */ new Date(),
-          P,
-          this._config.dark_mode ?? !1,
-          this._config.icon_show_weekday ?? !1
-        )}
+                        ${bt(this.hass, /* @__PURE__ */ new Date(), gt(e.entity_id, this._config), this._config.dark_mode ?? !1, this._config.icon_show_weekday ?? !1)}
                       </div>
                       <div class="entity-info">
                         <span class="entity-name"
-                          >${C.attributes.friendly_name || C.entity_id}</span
+                          >${e.attributes.friendly_name || e.entity_id}</span
                         >
-                        <span class="entity-id">${C.entity_id}</span>
+                        <span class="entity-id">${e.entity_id}</span>
                       </div>
                       <ha-button
                         size="small"
                         appearance="filled"
                         variant="brand"
-                        class="${b ? "action-hide" : "action-show"}"
-                        @click=${(A) => this._calendarToggleEntity(A, C.entity_id)}
+                        class="${t ? "action-hide" : "action-show"}"
+                        @click=${(t) => this._toggleListEntry(t, "exclude_entities", e.entity_id)}
                       >
-                        ${b ? ((x = this.hass) == null ? void 0 : x.localize("ui.common.hide")) || "Hide" : ((z = this.hass) == null ? void 0 : z.localize("ui.common.show")) || "Show"}
+                        ${t ? this.hass?.localize("ui.common.hide") || "Hide" : this.hass?.localize("ui.common.show") || "Show"}
                       </ha-button>
+                    </div>
+                    <div class="settings-row">
+                      <span class="label"
+                        >${V(this.hass, "editor_read_only")}</span
+                      >
+                      <ha-switch
+                        .checked=${!r || (this._config.read_only_calendars ?? []).includes(e.entity_id)}
+                        .disabled=${!r}
+                        @change=${(t) => this._toggleListEntry(t, "read_only_calendars", e.entity_id)}
+                      ></ha-switch>
                     </div>
                     <div class="entity-row-bottom">
                       <ha-selector
                         .hass=${this.hass}
                         .selector=${{ ui_color: {} }}
-                        .value=${D}
-                        .label=${((O = this.hass) == null ? void 0 : O.localize(
-          "ui.panel.lovelace.editor.card.tile.color"
-        )) || "Color"}
-                        @value-changed=${(A) => this._calendarColorChanged(A, C.entity_id)}
+                        .value=${n}
+                        .label=${this.hass?.localize("ui.panel.lovelace.editor.card.tile.color") || "Color"}
+                        @value-changed=${(t) => this._mapValueChanged(t, "calendar_colors", e.entity_id)}
                       ></ha-selector>
                       <ha-selector
                         .hass=${this.hass}
                         .selector=${{ ui_color: {} }}
-                        .value=${((J = this._config.calendar_background_colors) == null ? void 0 : J[C.entity_id]) || ""}
-                        .label=${g(
-          this.hass,
-          "editor_background_color"
-        )}
-                        @value-changed=${(A) => this._calendarBackgroundColorChanged(
-          A,
-          C.entity_id
-        )}
+                        .value=${this._config.calendar_background_colors?.[e.entity_id] || ""}
+                        .label=${V(this.hass, "editor_background_color")}
+                        @value-changed=${(t) => this._mapValueChanged(t, "calendar_background_colors", e.entity_id)}
                       ></ha-selector>
                     </div>
                   </div>
                 `;
-      })}
-              ${y ? u`
+				})}
+              ${n ? k`
                     <div class="show-more-row">
                       <ha-button
                         @click=${() => {
-        this._showAllCalendars = !this._showAllCalendars, this.requestUpdate();
-      }}
+					this._showAllCalendars = !this._showAllCalendars;
+				}}
                       >
-                        ${this._showAllCalendars ? g(this.hass, "editor_show_less") : g(this.hass, "editor_show_more")}
+                        ${this._showAllCalendars ? V(this.hass, "editor_show_less") : V(this.hass, "editor_show_more")}
                       </ha-button>
                     </div>
                   ` : ""}
             `;
-    })()}
+			})()}
         </div>
       </div>
     `;
-  }
-  _getCalendarEntities() {
-    return this.hass ? Object.keys(this.hass.states).filter((e) => e.startsWith("calendar.")).map((e) => {
-      var t;
-      return (t = this.hass) == null ? void 0 : t.states[e];
-    }) : [];
-  }
-  _calendarToggleEntity(e, t) {
-    e.stopPropagation();
-    const i = [...this._config.exclude_entities ?? []], s = i.indexOf(t);
-    s === -1 ? i.push(t) : i.splice(s, 1), this._config = {
-      ...this._config,
-      exclude_entities: i
-    }, H(this, "config-changed", { config: this._config });
-  }
-  _calendarShowAllChanged(e) {
-    const t = e.target.checked;
-    this._config = {
-      ...this._config,
-      upcoming_events: t
-    }, H(this, "config-changed", { config: this._config });
-  }
-  _compactModeChanged(e) {
-    const t = e.target.checked;
-    this._config = {
-      ...this._config,
-      unfold_events: t
-    }, H(this, "config-changed", { config: this._config });
-  }
-  _calendarDividerChanged(e) {
-    const t = e.target.checked;
-    this._config = {
-      ...this._config,
-      show_divider: t
-    }, H(this, "config-changed", { config: this._config });
-  }
-  _toggleBooleanConfig(e, t) {
-    const i = e.target.checked;
-    this._config = {
-      ...this._config,
-      [t]: i
-    }, H(this, "config-changed", { config: this._config });
-  }
-  _valueChanged(e) {
-    var n;
-    if (!this._config || !this.hass)
-      return;
-    const i = e.target.configValue;
-    if (!i)
-      return;
-    const s = (n = e.detail) == null ? void 0 : n.value;
-    if (this._config[i] === s)
-      return;
-    const o = { ...this._config };
-    s == null || s === "" ? delete o[i] : o[i] = s, this._config = o, H(this, "config-changed", { config: this._config });
-  }
-  _calendarColorChanged(e, t) {
-    const i = e.detail.value, s = { ...this._config.calendar_colors || {} };
-    if (i == null || i === "" ? delete s[t] : s[t] = i, Object.keys(s).length === 0) {
-      const o = { ...this._config };
-      delete o.calendar_colors, this._config = o;
-    } else
-      this._config = {
-        ...this._config,
-        calendar_colors: s
-      };
-    H(this, "config-changed", { config: this._config });
-  }
-  _calendarBackgroundColorChanged(e, t) {
-    const i = e.detail.value, s = {
-      ...this._config.calendar_background_colors || {}
-    };
-    if (i == null || i === "" ? delete s[t] : s[t] = i, Object.keys(s).length === 0) {
-      const o = { ...this._config };
-      delete o.calendar_background_colors, this._config = o;
-    } else
-      this._config = {
-        ...this._config,
-        calendar_background_colors: s
-      };
-    H(this, "config-changed", { config: this._config });
-  }
-  static get styles() {
-    return Ee`
+		}
+		_getCalendarEntities() {
+			return this.hass ? Object.keys(this.hass.states).filter((e) => e.startsWith("calendar.")).map((e) => this.hass?.states[e]) : [];
+		}
+		_setConfig(e) {
+			this._config = e, B(this, "config-changed", { config: this._config });
+		}
+		_toggleListEntry(e, t, n) {
+			e.stopPropagation();
+			let r = this._config[t] ?? [];
+			this._setConfig({
+				...this._config,
+				[t]: r.includes(n) ? r.filter((e) => e !== n) : [...r, n]
+			});
+		}
+		_toggleBooleanConfig(e, t) {
+			this._setConfig({
+				...this._config,
+				[t]: e.target.checked
+			});
+		}
+		_valueChanged(e) {
+			if (!this._config || !this.hass) return;
+			let t = e.target.configValue;
+			if (!t) return;
+			let n = e.detail?.value;
+			if (this._config[t] === n) return;
+			let r = { ...this._config };
+			n == null || n === "" ? delete r[t] : r[t] = n, this._setConfig(r);
+		}
+		_mapValueChanged(e, t, n) {
+			let r = e.detail.value, i = { ...this._config[t] || {} };
+			r == null || r === "" ? delete i[n] : i[n] = r;
+			let a = {
+				...this._config,
+				[t]: i
+			};
+			Object.keys(i).length === 0 && delete a[t], this._setConfig(a);
+		}
+		static get styles() {
+			return d`
       .card-config {
         display: flex;
         flex-direction: column;
         gap: 16px;
-      }
-      .ha-select {
-        padding: 8px;
-        border-radius: 4px;
-        border: 1px solid var(--divider-color, #eee);
-        background: var(--card-background-color, #fff);
-        color: var(--primary-text-color);
-        width: 50%;
       }
       .settings-grid {
         display: grid;
@@ -3742,82 +2632,238 @@ let ie = class extends F {
         margin-bottom: 0px;
         margin-top: 8px;
       }
-      ha-textfield {
+    `;
+		}
+	}, X([R({ attribute: !1 })], Q.prototype, "hass", void 0), X([z()], Q.prototype, "_config", void 0), X([z()], Q.prototype, "_showAllCalendars", void 0), Q = X([L("calendar-card-plus-editor")], Q);
+}));
+I(), Qe(), $e(), Ot(), et(), ct(), Lt(), Bt(), Rt();
+var Ut = 3e5, $ = class extends F {
+	constructor(...e) {
+		super(...e), this._events = void 0, this._lastFetch = 0, this._showAll = () => {
+			this._showPopup({
+				mode: "detail",
+				title: V(this.hass, "popup_upcoming_events"),
+				events: this._events
+			});
+		}, this._openEvent = (e) => {
+			Tt(this.hass, this.config, e) ? this._showPopup({
+				mode: "edit-event",
+				formState: At(e)
+			}) : B(this, "hass-more-info", { entityId: e.entity_id });
+		}, this._openAddEventPopup = () => {
+			this._showPopup({
+				mode: "add-event",
+				formState: kt(this.hass, this.config)
+			});
+		}, this._onEventSaved = () => {
+			this._events = void 0, this._fetchEvents();
+		};
+	}
+	willUpdate(e) {
+		super.willUpdate(e), this.hass && this.config && (e.has("config") || Date.now() - this._lastFetch > Ut) && this._fetchEvents();
+	}
+	setConfig(e) {
+		if (!e) throw Error("Invalid configuration");
+		this.config = e;
+	}
+	async _fetchEvents() {
+		this._lastFetch = Date.now();
+		let e = /* @__PURE__ */ new Date(), t;
+		if (this.config.upcoming_events) {
+			let n = 1440;
+			this.config.days !== void 0 || this.config.hours !== void 0 || this.config.minutes !== void 0 ? n = (this.config.days || 0) * 1440 + (this.config.hours || 0) * 60 + (this.config.minutes || 0) : this.config.max_minutes_until_start !== void 0 && (n = this.config.max_minutes_until_start), t = new Date(e.getTime() + n * 6e4);
+		} else t = new Date(e), t.setHours(23, 59, 59, 999);
+		let n = lt(this.hass, this.config);
+		if (n.length === 0) {
+			this._events = [];
+			return;
+		}
+		let r = await i(this.hass, e, t, n);
+		this.config.show_empty_days && (r = r.concat(this._emptyDays(r, e, t))), this._events = r.sort((e, t) => q(e).getTime() - q(t).getTime());
+	}
+	_emptyDays(e, t, n) {
+		let r = new Set(e.map((e) => W(Ct(e)))), i = [], a = new Date(t);
+		for (a.setHours(0, 0, 0, 0); a <= n;) {
+			let e = W(a);
+			r.has(e) || i.push({
+				start: { date: e },
+				end: { date: e },
+				summary: "empty",
+				is_empty: !0,
+				entity_id: "empty",
+				calendar_name: ""
+			}), a.setDate(a.getDate() + 1);
+		}
+		return i;
+	}
+	render() {
+		if (!this.config || !this.hass) return k``;
+		let e = this.config.show_add_event && Ft(this.hass, this.config).length > 0;
+		return k`
+      <ha-card
+        class=${!this.config.unfold_events || this.config.show_divider ? "plain" : ""}
+      >
+        ${e ? k`
+              <div class="add-event-btn" @click=${this._openAddEventPopup}>
+                <ha-icon-button .path=${r}></ha-icon-button>
+              </div>
+            ` : ""}
+        ${ut(this.hass, this._events, this.config, this._openEvent, this._showAll)}
+      </ha-card>
+    `;
+	}
+	_showPopup(e) {
+		B(this, "show-dialog", {
+			dialogTag: "calendar-card-plus-popup",
+			dialogImport: () => Promise.resolve().then(() => (Bt(), zt)),
+			dialogParams: {
+				...e,
+				hass: this.hass,
+				config: this.config,
+				opener: this,
+				onEventSaved: this._onEventSaved
+			}
+		});
+	}
+	static get styles() {
+		return [wt, d`
+      :host {
+        display: block;
+      }
+      ha-card {
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .calendar-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px;
+        height: 100%;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      /* each event is a thin-bordered tile; radius follows the card's minus its padding */
+      .calendar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        border-radius: calc(var(--ha-card-border-radius, 12px) - 6px);
+        cursor: pointer;
+      }
+      /* compact view or "show divider": plain rows instead of tiles */
+      ha-card.plain .calendar-container {
+        gap: 0;
+      }
+      ha-card.plain .calendar-item {
+        border-color: transparent;
+      }
+      .calendar-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-color, #03a9f4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+      }
+      .calendar-icon ha-icon {
+        --mdc-icon-size: 20px;
+      }
+      .calendar-content {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex: 1;
+      }
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .title-row .event-title {
+        flex: 1;
+      }
+      .more-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--secondary-text-color);
+        font-size: 0.85em;
+        font-style: italic;
+        flex-shrink: 0;
+        --mdc-icon-size: 16px;
+      }
+      .event-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--primary-text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .event-time {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--secondary-text-color);
+      }
+      .progress-bar {
+        margin-top: 4px;
+        height: 4px;
+        background-color: var(--secondary-background-color, #444);
+        border-radius: 2px;
+        overflow: hidden;
         width: 100%;
       }
-    `;
-  }
-  _toCssColor(e) {
-    return e.startsWith("#") || e.startsWith("rgb") || e.startsWith("hsl") || e.startsWith("var") ? e : `var(--${e}-color)`;
-  }
-  _renderDynamicIcon(e, t, i = !1, s = !1) {
-    const o = this.hass ? j(this.hass) : "en";
-    let n;
-    s ? n = e.toLocaleDateString(o, { weekday: "short" }).toUpperCase() : n = e.toLocaleDateString(o, { month: "short" }).toUpperCase();
-    const d = e.getDate();
-    return u`
-      <svg
-        viewBox="0 0 100 100"
-        class="dynamic-calendar-icon"
-        style="width: 100%; height: 100%; display: block;"
-      >
-        <rect
-          x="0"
-          y="0"
-          width="100"
-          height="100"
-          rx="20"
-          ry="20"
-          fill="${i ? "#222222" : "white"}"
-        ></rect>
-        <path
-          d="M0 20 C0 8 8 0 20 0 L80 0 C92 0 100 8 100 20 L100 30 L0 30 Z"
-          fill="${t}"
-        ></path>
-        <text
-          x="50"
-          y="23"
-          font-family="sans-serif"
-          font-size="22"
-          font-weight="bold"
-          fill="${i ? "#222222" : "white"}"
-          text-anchor="middle"
-        >
-          ${n}
-        </text>
-        <text
-          x="50"
-          y="82"
-          font-family="sans-serif"
-          font-size="52"
-          font-weight="bold"
-          fill="${i ? "white" : "#333"}"
-          text-anchor="middle"
-        >
-          ${d}
-        </text>
-      </svg>
-    `;
-  }
+      .progress-fill {
+        height: 100%;
+        background-color: var(--primary-text-color, #fff);
+        border-radius: 2px;
+        opacity: 0.7;
+      }
+
+      .add-event-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 2;
+        color: var(--secondary-text-color);
+      }
+      .add-event-btn:hover {
+        color: var(--primary-text-color);
+      }
+    `];
+	}
+	getCardSize() {
+		return 1;
+	}
+	static async getConfigElement() {
+		return await Promise.resolve().then(() => (Ht(), Vt)), document.createElement("calendar-card-plus-editor");
+	}
+	static getStubConfig(e) {
+		return {
+			type: "custom:calendar-card-plus",
+			exclude_entities: [],
+			unfold_events: !1
+		};
+	}
 };
-ge([
-  N({ attribute: !1 })
-], ie.prototype, "hass", 2);
-ge([
-  he()
-], ie.prototype, "_config", 2);
-ge([
-  he()
-], ie.prototype, "_showAllCalendars", 2);
-ie = ge([
-  Se("calendar-card-plus-editor")
-], ie);
-const Ot = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  get CalendarCardPlusEditor() {
-    return ie;
-  }
-}, Symbol.toStringTag, { value: "Module" }));
-export {
-  ce as CalendarCardPlus
-};
+X([R({ attribute: !1 })], $.prototype, "hass", void 0), X([z()], $.prototype, "config", void 0), X([z()], $.prototype, "_events", void 0), $ = X([L("calendar-card-plus")], $), window.customCards = window.customCards || [], window.customCards.push({
+	type: "calendar-card-plus",
+	name: "Dynamic Calendar Card Plus",
+	preview: !0,
+	description: "A standalone calendar card with dynamic grid styling"
+});
+//#endregion
+export { $ as CalendarCardPlus };
