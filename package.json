@@ -1,17 +1,17 @@
 {
   "name": "calendar-card-plus",
   "version": "1.2.0",
-  "type": "module",
   "description": "Standalone Calendar Card extracted from Dynamic Grid Card",
+  "type": "module",
   "scripts": {
-    "build": "npx tsc && npx vite build"
+    "build": "tsc && vite build"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "lit": "^3.3.3"
   },
   "devDependencies": {
-    "@mdi/js": "^7.4.47",
-    "typescript": "^5.3.3",
+    "typescript": "~7.0.2",
     "vite": "^8.3.4"
   }
 }
