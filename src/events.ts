@@ -15,6 +15,7 @@ import {
   localDayKey,
   localTimeKey,
   parseEventDate,
+  useAmPm,
 } from "./format";
 
 export interface EventFormState {
@@ -168,6 +169,60 @@ export function deleteEvent(
   });
 }
 
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+/** Hour + minute selects in the form's own style; hours follow HA's 12/24h setting (native time inputs follow the browser). */
+function renderTimeSelect(
+  hass: HomeAssistant,
+  value: string,
+  onChange: (time: string) => void,
+): TemplateResult {
+  const [h, m] = value.split(":").map(Number);
+  const ampm = useAmPm(hass);
+  const hourLabel = (i: number) =>
+    ampm ? `${i % 12 || 12} ${i < 12 ? "AM" : "PM"}` : pad2(i);
+  const options = (count: number, selected: number, label: (i: number) => string) =>
+    Array.from(
+      { length: count },
+      (_, i) => html`<option value=${i} ?selected=${i === selected}>${label(i)}</option>`,
+    );
+  return html`
+    <select
+      class="field-input"
+      @change=${(e: Event) =>
+        onChange(`${pad2(+(e.target as HTMLSelectElement).value)}:${pad2(m)}`)}
+    >
+      ${options(24, h, hourLabel)}
+    </select>
+    <select
+      class="field-input"
+      @change=${(e: Event) =>
+        onChange(`${pad2(h)}:${pad2(+(e.target as HTMLSelectElement).value)}`)}
+    >
+      ${options(60, m, pad2)}
+    </select>
+  `;
+}
+
+/** Start moved past the end: end = start + 1h (all-day: same day). Fixed 1h so half-typed times can't skew it. */
+export function keepEndAfterStart(
+  s: EventFormState,
+  patch: Partial<EventFormState>,
+): Partial<EventFormState> {
+  const next = { ...s, ...patch };
+  if (
+    !("start_date" in patch || "start_time" in patch) ||
+    !next.start_date ||
+    endAfterStart(!!next.all_day, next.start_date, next.end_date, next.start_time, next.end_time)
+  ) {
+    return patch;
+  }
+  if (next.all_day) return { ...patch, end_date: next.start_date };
+  const end = new Date(`${next.start_date}T${next.start_time || "09:00"}`);
+  end.setHours(end.getHours() + 1);
+  return { ...patch, end_date: localDayKey(end), end_time: localTimeKey(end) };
+}
+
 export function renderEventForm(
   hass: HomeAssistant,
   config: CalendarCardPlusConfig,
@@ -271,23 +326,20 @@ export function renderEventForm(
                 class="field-input"
                 .value=${s[`${which}_date`] || ""}
                 @change=${(e: Event) =>
-                  updateState({
-                    [`${which}_date`]: (e.target as HTMLInputElement).value,
-                  })}
+                  updateState(
+                    keepEndAfterStart(s, {
+                      [`${which}_date`]: (e.target as HTMLInputElement).value,
+                    }),
+                  )}
               />
               ${!isAllDay
                 ? html`
-                    <input
-                      type="time"
-                      class="field-input"
-                      .value=${s[`${which}_time`] ||
-                      (which === "start" ? "09:00" : "10:00")}
-                      @change=${(e: Event) =>
-                        updateState({
-                          [`${which}_time`]: (e.target as HTMLInputElement)
-                            .value,
-                        })}
-                    />
+                    ${renderTimeSelect(
+                      hass,
+                      s[`${which}_time`] || (which === "start" ? "09:00" : "10:00"),
+                      (time) =>
+                        updateState(keepEndAfterStart(s, { [`${which}_time`]: time })),
+                    )}
                   `
                 : nothing}
             </div>

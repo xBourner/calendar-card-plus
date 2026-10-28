@@ -26,6 +26,19 @@ export class CalendarCardPlus extends LitElement {
   @state() private config!: CalendarCardPlusConfig;
   @state() private _events: CalendarEvent[] | undefined = undefined;
   private _lastFetch = 0;
+  @state() private _hidden = false;
+  @property({ type: Boolean }) public preview = false;
+
+  protected updated(changedProps: Map<string, any>) {
+    super.updated(changedProps);
+    // HA sets preview in the card editor and dashboard edit mode; keep the card visible there
+    const hidden = this._hidden && !this.preview;
+    if (hidden !== this.hidden) {
+      this.hidden = hidden;
+      // hui-card only re-reads our hidden flag on this event
+      fireEvent(this, "card-visibility-changed" as any, { value: !hidden });
+    }
+  }
 
   protected willUpdate(changedProps: Map<string, any>) {
     super.willUpdate(changedProps);
@@ -72,13 +85,31 @@ export class CalendarCardPlus extends LitElement {
       end.setHours(23, 59, 59, 999);
     }
 
+    const c = this.config;
+    let hideEnd: Date | undefined;
+    if (c.hide_if_no_events) {
+      if (c.hide_days || c.hide_hours || c.hide_minutes) {
+        hideEnd = new Date(
+          now.getTime() +
+            ((c.hide_days || 0) * 1440 + (c.hide_hours || 0) * 60 + (c.hide_minutes || 0)) * 60000,
+        );
+      } else {
+        hideEnd = new Date(now);
+        hideEnd.setHours(23, 59, 59, 999);
+      }
+    }
+
     const calendars = getCalendars(this.hass, this.config);
     if (calendars.length === 0) {
       this._events = [];
+      this._hidden = !!hideEnd;
       return;
     }
 
-    let events = await fetchCalendarEvents(this.hass, now, end, calendars);
+    const fetchEnd = hideEnd && hideEnd > end ? hideEnd : end;
+    let events = await fetchCalendarEvents(this.hass, now, fetchEnd, calendars);
+    this._hidden = !!hideEnd && !events.some((e) => eventStart(e) <= hideEnd!);
+    events = events.filter((e) => eventStart(e) <= end);
     if (this.config.show_empty_days) {
       events = events.concat(this._emptyDays(events, now, end));
     }
@@ -193,6 +224,9 @@ export class CalendarCardPlus extends LitElement {
     return [eventStyles, css`
       :host {
         display: block;
+      }
+      :host([hidden]) {
+        display: none;
       }
       ha-card {
         height: 100%;

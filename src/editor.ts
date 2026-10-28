@@ -30,6 +30,37 @@ export class CalendarCardPlusEditor
     this._config = config;
   }
 
+  private _renderPeriod(
+    label: string,
+    daysKey: string,
+    hoursKey: string,
+    minutesKey: string,
+    defaultDays: number,
+  ): TemplateResult {
+    const field = (key: string, max: number, fallback: number, unit: string, name: string) => html`
+      <ha-selector
+        .hass=${this.hass}
+        .selector=${{ number: { min: 0, max, mode: "box" } }}
+        .value=${this._config[key] ?? fallback}
+        .label=${this.hass?.localize(
+          `component.input_datetime.entity_component._.state_attributes.${unit}.name`,
+        ) || name}
+        .configValue=${key}
+        @value-changed=${this._valueChanged}
+      ></ha-selector>
+    `;
+    return html`
+      <div class="settings-row full-width" style="margin-bottom: 8px;">
+        <span class="label" style="margin-bottom: 8px;">${label}</span>
+        <div class="period-selectors">
+          ${field(daysKey, 365, defaultDays, "day", "Days")}
+          ${field(hoursKey, 23, 0, "hour", "Hours")}
+          ${field(minutesKey, 59, 0, "minute", "Minutes")}
+        </div>
+      </div>
+    `;
+  }
+
   protected render(): TemplateResult {
     if (!this.hass) {
       return html``;
@@ -37,9 +68,6 @@ export class CalendarCardPlusEditor
 
     const upcoming_events = this._config.upcoming_events ?? false;
     const unfold_events = this._config.unfold_events ?? false;
-    const days = this._config.days ?? 1;
-    const hours = this._config.hours ?? 0;
-    const minutes = this._config.minutes ?? 0;
     const exclude_entities = this._config.exclude_entities ?? [];
 
     return html`
@@ -137,7 +165,27 @@ export class CalendarCardPlusEditor
                   this._toggleBooleanConfig(ev, "show_empty_days")}
               ></ha-switch>
             </div>
+            <div class="settings-row">
+              <span class="label"
+                >${localize(this.hass, "editor_hide_if_no_events")}</span
+              >
+              <ha-switch
+                .checked=${this._config.hide_if_no_events ?? false}
+                @change=${(ev: Event) =>
+                  this._toggleBooleanConfig(ev, "hide_if_no_events")}
+              ></ha-switch>
+            </div>
           </div>
+
+          ${this._config.hide_if_no_events
+            ? this._renderPeriod(
+                localize(this.hass, "editor_hide_period"),
+                "hide_days",
+                "hide_hours",
+                "hide_minutes",
+                0,
+              )
+            : ""}
 
           ${this._config.show_empty_days
             ? html`
@@ -176,50 +224,15 @@ export class CalendarCardPlusEditor
               `
             : ""}
           ${upcoming_events
-            ? html`
-                <div
-                  class="settings-row full-width"
-                  style="margin-bottom: 8px;"
-                >
-                  <span class="label" style="margin-bottom: 8px;"
-                    >${this.hass?.localize(
-                      "ui.panel.lovelace.editor.card.statistic.period",
-                    ) || "Period"}</span
-                  >
-                  <div class="period-selectors">
-                    <ha-selector
-                      .hass=${this.hass}
-                      .selector=${{ number: { min: 0, max: 365, mode: "box" } }}
-                      .value=${days}
-                      .label=${this.hass?.localize(
-                        "component.input_datetime.entity_component._.state_attributes.day.name",
-                      ) || "Days"}
-                      .configValue=${"days"}
-                      @value-changed=${this._valueChanged}
-                    ></ha-selector>
-                    <ha-selector
-                      .hass=${this.hass}
-                      .selector=${{ number: { min: 0, max: 23, mode: "box" } }}
-                      .value=${hours}
-                      .label=${this.hass?.localize(
-                        "component.input_datetime.entity_component._.state_attributes.hour.name",
-                      ) || "Hours"}
-                      .configValue=${"hours"}
-                      @value-changed=${this._valueChanged}
-                    ></ha-selector>
-                    <ha-selector
-                      .hass=${this.hass}
-                      .selector=${{ number: { min: 0, max: 59, mode: "box" } }}
-                      .value=${minutes}
-                      .label=${this.hass?.localize(
-                        "component.input_datetime.entity_component._.state_attributes.minute.name",
-                      ) || "Minutes"}
-                      .configValue=${"minutes"}
-                      @value-changed=${this._valueChanged}
-                    ></ha-selector>
-                  </div>
-                </div>
-              `
+            ? this._renderPeriod(
+                this.hass?.localize(
+                  "ui.panel.lovelace.editor.card.statistic.period",
+                ) || "Period",
+                "days",
+                "hours",
+                "minutes",
+                1,
+              )
             : ""}
 
           <div class="settings-row full-width" style="margin-bottom: 16px;">

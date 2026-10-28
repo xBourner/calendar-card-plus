@@ -33,6 +33,11 @@ export interface CalendarCardPlusConfig extends LovelaceCardConfig {
   show_empty_days?: boolean;
   empty_text?: string;
   read_only_calendars?: string[];
+  /** hide the card when no event starts within its own window (default: rest of today) */
+  hide_if_no_events?: boolean;
+  hide_days?: number;
+  hide_hours?: number;
+  hide_minutes?: number;
 }
 
 export interface CalendarEvent {

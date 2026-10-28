@@ -90,7 +90,7 @@ var o, s, c, l, u, d, f, ee, te, ne = t((() => {
 		for (let n of e.cssRules) t += n.cssText;
 		return d(t);
 	})(e) : e;
-})), re, ie, ae, oe, se, ce, p, le, ue, de, m, h, g, fe, _, v = t((() => {
+})), re, ie, ae, oe, se, ce, p, le, ue, de, m, h, g, fe, _, pe = t((() => {
 	ne(), {is: re, defineProperty: ie, getOwnPropertyDescriptor: ae, getOwnPropertyNames: oe, getOwnPropertySymbols: se, getPrototypeOf: ce} = Object, p = globalThis, le = p.trustedTypes, ue = le ? le.emptyScript : "", de = p.reactiveElementPolyfillSupport, m = (e, t) => e, h = {
 		toAttribute(e, t) {
 			switch (t) {
@@ -314,85 +314,85 @@ var o, s, c, l, u, d, f, ee, te, ne = t((() => {
 }));
 //#endregion
 //#region node_modules/lit-html/lit-html.js
-function pe(e, t) {
-	if (!be(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-	return ge === void 0 ? t : ge.createHTML(t);
+function me(e, t) {
+	if (!w(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+	return _e === void 0 ? t : _e.createHTML(t);
 }
-function y(e, t, n = e, r) {
-	if (t === A) return t;
-	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = w(t) ? void 0 : t._$litDirective$;
-	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = y(e, i._$AS(e, t.values), i, r)), t;
+function v(e, t, n = e, r) {
+	if (t === k) return t;
+	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = C(t) ? void 0 : t._$litDirective$;
+	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = v(e, i._$AS(e, t.values), i, r)), t;
 }
-var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, O, k, A, j, De, M, Oe, N, ke, P, F, Ae, je, Me, Ne, Pe, Fe, Ie = t((() => {
-	me = globalThis, he = (e) => e, b = me.trustedTypes, ge = b ? b.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, _e = "$lit$", x = `lit$${Math.random().toFixed(9).slice(2)}$`, ve = "?" + x, ye = `<${ve}>`, S = document, C = () => S.createComment(""), w = (e) => e === null || typeof e != "object" && typeof e != "function", be = Array.isArray, xe = (e) => be(e) || typeof e?.[Symbol.iterator] == "function", T = "[ 	\n\f\r]", E = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Se = /-->/g, Ce = />/g, D = RegExp(`>|${T}(?:([^\\s"'>=/]+)(${T}*=${T}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), we = /'/g, Te = /"/g, Ee = /^(?:script|style|textarea|title)$/i, O = (e) => (t, ...n) => ({
+var he, ge, y, _e, ve, b, ye, be, x, S, C, w, xe, Se, T, Ce, we, E, Te, Ee, De, D, O, k, A, Oe, j, ke, M, Ae, N, P, je, Me, Ne, Pe, Fe, Ie, Le = t((() => {
+	he = globalThis, ge = (e) => e, y = he.trustedTypes, _e = y ? y.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, ve = "$lit$", b = `lit$${Math.random().toFixed(9).slice(2)}$`, ye = "?" + b, be = `<${ye}>`, x = document, S = () => x.createComment(""), C = (e) => e === null || typeof e != "object" && typeof e != "function", w = Array.isArray, xe = (e) => w(e) || typeof e?.[Symbol.iterator] == "function", Se = "[ 	\n\f\r]", T = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Ce = /-->/g, we = />/g, E = RegExp(`>|${Se}(?:([^\\s"'>=/]+)(${Se}*=${Se}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), Te = /'/g, Ee = /"/g, De = /^(?:script|style|textarea|title)$/i, D = (e) => (t, ...n) => ({
 		_$litType$: e,
 		strings: t,
 		values: n
-	}), k = O(1), O(2), O(3), A = Symbol.for("lit-noChange"), j = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), M = S.createTreeWalker(S, 129), Oe = (e, t) => {
-		let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = E;
+	}), O = D(1), D(2), D(3), k = Symbol.for("lit-noChange"), A = Symbol.for("lit-nothing"), Oe = /* @__PURE__ */ new WeakMap(), j = x.createTreeWalker(x, 129), ke = (e, t) => {
+		let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = T;
 		for (let t = 0; t < n; t++) {
 			let n = e[t], s, c, l = -1, u = 0;
-			for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === E ? c[1] === "!--" ? o = Se : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = D) : (Ee.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = D) : o = Ce : o === D ? c[0] === ">" ? (o = i ?? E, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? D : c[3] === "\"" ? Te : we) : o === Te || o === we ? o = D : o === Se || o === Ce ? o = E : (o = D, i = void 0);
-			let d = o === D && e[t + 1].startsWith("/>") ? " " : "";
-			a += o === E ? n + ye : l >= 0 ? (r.push(s), n.slice(0, l) + _e + n.slice(l) + x + d) : n + x + (l === -2 ? t : d);
+			for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === T ? c[1] === "!--" ? o = Ce : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = E) : (De.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = E) : o = we : o === E ? c[0] === ">" ? (o = i ?? T, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? E : c[3] === "\"" ? Ee : Te) : o === Ee || o === Te ? o = E : o === Ce || o === we ? o = T : (o = E, i = void 0);
+			let d = o === E && e[t + 1].startsWith("/>") ? " " : "";
+			a += o === T ? n + be : l >= 0 ? (r.push(s), n.slice(0, l) + ve + n.slice(l) + b + d) : n + b + (l === -2 ? t : d);
 		}
-		return [pe(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
-	}, N = class e {
+		return [me(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
+	}, M = class e {
 		constructor({ strings: t, _$litType$: n }, r) {
 			let i;
 			this.parts = [];
-			let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = Oe(t, n);
-			if (this.el = e.createElement(l, r), M.currentNode = this.el.content, n === 2 || n === 3) {
+			let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = ke(t, n);
+			if (this.el = e.createElement(l, r), j.currentNode = this.el.content, n === 2 || n === 3) {
 				let e = this.el.content.firstChild;
 				e.replaceWith(...e.childNodes);
 			}
-			for (; (i = M.nextNode()) !== null && c.length < s;) {
+			for (; (i = j.nextNode()) !== null && c.length < s;) {
 				if (i.nodeType === 1) {
-					if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(_e)) {
-						let t = u[o++], n = i.getAttribute(e).split(x), r = /([.?@])?(.*)/.exec(t);
+					if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(ve)) {
+						let t = u[o++], n = i.getAttribute(e).split(b), r = /([.?@])?(.*)/.exec(t);
 						c.push({
 							type: 1,
 							index: a,
 							name: r[2],
 							strings: n,
-							ctor: r[1] === "." ? Ae : r[1] === "?" ? je : r[1] === "@" ? Me : F
+							ctor: r[1] === "." ? je : r[1] === "?" ? Me : r[1] === "@" ? Ne : P
 						}), i.removeAttribute(e);
-					} else e.startsWith(x) && (c.push({
+					} else e.startsWith(b) && (c.push({
 						type: 6,
 						index: a
 					}), i.removeAttribute(e));
-					if (Ee.test(i.tagName)) {
-						let e = i.textContent.split(x), t = e.length - 1;
+					if (De.test(i.tagName)) {
+						let e = i.textContent.split(b), t = e.length - 1;
 						if (t > 0) {
-							i.textContent = b ? b.emptyScript : "";
-							for (let n = 0; n < t; n++) i.append(e[n], C()), M.nextNode(), c.push({
+							i.textContent = y ? y.emptyScript : "";
+							for (let n = 0; n < t; n++) i.append(e[n], S()), j.nextNode(), c.push({
 								type: 2,
 								index: ++a
 							});
-							i.append(e[t], C());
+							i.append(e[t], S());
 						}
 					}
 				} else if (i.nodeType === 8) {
-					if (i.data === ve) c.push({
+					if (i.data === ye) c.push({
 						type: 2,
 						index: a
 					});
 					else {
 						let e = -1;
-						for (; (e = i.data.indexOf(x, e + 1)) !== -1;) c.push({
+						for (; (e = i.data.indexOf(b, e + 1)) !== -1;) c.push({
 							type: 7,
 							index: a
-						}), e += x.length - 1;
+						}), e += b.length - 1;
 					}
 				}
 				a++;
 			}
 		}
 		static createElement(e, t) {
-			let n = S.createElement("template");
+			let n = x.createElement("template");
 			return n.innerHTML = e, n;
 		}
-	}, ke = class {
+	}, Ae = class {
 		constructor(e, t) {
 			this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
 		}
@@ -403,28 +403,28 @@ var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, 
 			return this._$AM._$AU;
 		}
 		u(e) {
-			let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? S).importNode(t, !0);
-			M.currentNode = r;
-			let i = M.nextNode(), a = 0, o = 0, s = n[0];
+			let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? x).importNode(t, !0);
+			j.currentNode = r;
+			let i = j.nextNode(), a = 0, o = 0, s = n[0];
 			for (; s !== void 0;) {
 				if (a === s.index) {
 					let t;
-					s.type === 2 ? t = new P(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Ne(i, this, e)), this._$AV.push(t), s = n[++o];
+					s.type === 2 ? t = new N(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Pe(i, this, e)), this._$AV.push(t), s = n[++o];
 				}
-				a !== s?.index && (i = M.nextNode(), a++);
+				a !== s?.index && (i = j.nextNode(), a++);
 			}
-			return M.currentNode = S, r;
+			return j.currentNode = x, r;
 		}
 		p(e) {
 			let t = 0;
 			for (let n of this._$AV) n !== void 0 && (n.strings === void 0 ? n._$AI(e[t]) : (n._$AI(e, n, t), t += n.strings.length - 2)), t++;
 		}
-	}, P = class e {
+	}, N = class e {
 		get _$AU() {
 			return this._$AM?._$AU ?? this._$Cv;
 		}
 		constructor(e, t, n, r) {
-			this.type = 2, this._$AH = j, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
+			this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
 		}
 		get parentNode() {
 			let e = this._$AA.parentNode, t = this._$AM;
@@ -437,7 +437,7 @@ var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, 
 			return this._$AB;
 		}
 		_$AI(e, t = this) {
-			e = y(this, e, t), w(e) ? e === j || e == null || e === "" ? (this._$AH !== j && this._$AR(), this._$AH = j) : e !== this._$AH && e !== A && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? xe(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
+			e = v(this, e, t), C(e) ? e === A || e == null || e === "" ? (this._$AH !== A && this._$AR(), this._$AH = A) : e !== this._$AH && e !== k && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? xe(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
 		}
 		O(e) {
 			return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -446,36 +446,36 @@ var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, 
 			this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
 		}
 		_(e) {
-			this._$AH !== j && w(this._$AH) ? this._$AA.nextSibling.data = e : this.T(S.createTextNode(e)), this._$AH = e;
+			this._$AH !== A && C(this._$AH) ? this._$AA.nextSibling.data = e : this.T(x.createTextNode(e)), this._$AH = e;
 		}
 		$(e) {
-			let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = N.createElement(pe(n.h, n.h[0]), this.options)), n);
+			let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = M.createElement(me(n.h, n.h[0]), this.options)), n);
 			if (this._$AH?._$AD === r) this._$AH.p(t);
 			else {
-				let e = new ke(r, this), n = e.u(this.options);
+				let e = new Ae(r, this), n = e.u(this.options);
 				e.p(t), this.T(n), this._$AH = e;
 			}
 		}
 		_$AC(e) {
-			let t = De.get(e.strings);
-			return t === void 0 && De.set(e.strings, t = new N(e)), t;
+			let t = Oe.get(e.strings);
+			return t === void 0 && Oe.set(e.strings, t = new M(e)), t;
 		}
 		k(t) {
-			be(this._$AH) || (this._$AH = [], this._$AR());
+			w(this._$AH) || (this._$AH = [], this._$AR());
 			let n = this._$AH, r, i = 0;
-			for (let a of t) i === n.length ? n.push(r = new e(this.O(C()), this.O(C()), this, this.options)) : r = n[i], r._$AI(a), i++;
+			for (let a of t) i === n.length ? n.push(r = new e(this.O(S()), this.O(S()), this, this.options)) : r = n[i], r._$AI(a), i++;
 			i < n.length && (this._$AR(r && r._$AB.nextSibling, i), n.length = i);
 		}
 		_$AR(e = this._$AA.nextSibling, t) {
 			for (this._$AP?.(!1, !0, t); e !== this._$AB;) {
-				let t = he(e).nextSibling;
-				he(e).remove(), e = t;
+				let t = ge(e).nextSibling;
+				ge(e).remove(), e = t;
 			}
 		}
 		setConnected(e) {
 			this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
 		}
-	}, F = class {
+	}, P = class {
 		get tagName() {
 			return this.element.tagName;
 		}
@@ -483,47 +483,47 @@ var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, 
 			return this._$AM._$AU;
 		}
 		constructor(e, t, n, r, i) {
-			this.type = 1, this._$AH = j, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = j;
+			this.type = 1, this._$AH = A, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = A;
 		}
 		_$AI(e, t = this, n, r) {
 			let i = this.strings, a = !1;
-			if (i === void 0) e = y(this, e, t, 0), a = !w(e) || e !== this._$AH && e !== A, a && (this._$AH = e);
+			if (i === void 0) e = v(this, e, t, 0), a = !C(e) || e !== this._$AH && e !== k, a && (this._$AH = e);
 			else {
 				let r = e, o, s;
-				for (e = i[0], o = 0; o < i.length - 1; o++) s = y(this, r[n + o], t, o), s === A && (s = this._$AH[o]), a ||= !w(s) || s !== this._$AH[o], s === j ? e = j : e !== j && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
+				for (e = i[0], o = 0; o < i.length - 1; o++) s = v(this, r[n + o], t, o), s === k && (s = this._$AH[o]), a ||= !C(s) || s !== this._$AH[o], s === A ? e = A : e !== A && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
 			}
 			a && !r && this.j(e);
 		}
 		j(e) {
-			e === j ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+			e === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
 		}
-	}, Ae = class extends F {
+	}, je = class extends P {
 		constructor() {
 			super(...arguments), this.type = 3;
 		}
 		j(e) {
-			this.element[this.name] = e === j ? void 0 : e;
+			this.element[this.name] = e === A ? void 0 : e;
 		}
-	}, je = class extends F {
+	}, Me = class extends P {
 		constructor() {
 			super(...arguments), this.type = 4;
 		}
 		j(e) {
-			this.element.toggleAttribute(this.name, !!e && e !== j);
+			this.element.toggleAttribute(this.name, !!e && e !== A);
 		}
-	}, Me = class extends F {
+	}, Ne = class extends P {
 		constructor(e, t, n, r, i) {
 			super(e, t, n, r, i), this.type = 5;
 		}
 		_$AI(e, t = this) {
-			if ((e = y(this, e, t, 0) ?? j) === A) return;
-			let n = this._$AH, r = e === j && n !== j || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== j && (n === j || r);
+			if ((e = v(this, e, t, 0) ?? A) === k) return;
+			let n = this._$AH, r = e === A && n !== A || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== A && (n === A || r);
 			r && this.element.removeEventListener(this.name, this, n), i && this.element.addEventListener(this.name, this, e), this._$AH = e;
 		}
 		handleEvent(e) {
 			typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
 		}
-	}, Ne = class {
+	}, Pe = class {
 		constructor(e, t, n) {
 			this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = n;
 		}
@@ -531,18 +531,18 @@ var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, 
 			return this._$AM._$AU;
 		}
 		_$AI(e) {
-			y(this, e);
+			v(this, e);
 		}
-	}, Pe = me.litHtmlPolyfillSupport, Pe?.(N, P), (me.litHtmlVersions ??= []).push("3.3.2"), Fe = (e, t, n) => {
+	}, Fe = he.litHtmlPolyfillSupport, Fe?.(M, N), (he.litHtmlVersions ??= []).push("3.3.2"), Ie = (e, t, n) => {
 		let r = n?.renderBefore ?? t, i = r._$litPart$;
 		if (i === void 0) {
 			let e = n?.renderBefore ?? null;
-			r._$litPart$ = i = new P(t.insertBefore(C(), e), e, void 0, n ?? {});
+			r._$litPart$ = i = new N(t.insertBefore(S(), e), e, void 0, n ?? {});
 		}
 		return i._$AI(e), i;
 	};
-})), I, L, Le, Re = t((() => {
-	v(), v(), Ie(), Ie(), I = globalThis, L = class extends _ {
+})), F, I, Re, ze = t((() => {
+	pe(), pe(), Le(), Le(), F = globalThis, I = class extends _ {
 		constructor() {
 			super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 		}
@@ -552,7 +552,7 @@ var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, 
 		}
 		update(e) {
 			let t = this.render();
-			this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Fe(t, this.renderRoot, this.renderOptions);
+			this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ie(t, this.renderRoot, this.renderOptions);
 		}
 		connectedCallback() {
 			super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -561,13 +561,13 @@ var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, 
 			super.disconnectedCallback(), this._$Do?.setConnected(!1);
 		}
 		render() {
-			return A;
+			return k;
 		}
-	}, L._$litElement$ = !0, L.finalized = !0, I.litElementHydrateSupport?.({ LitElement: L }), Le = I.litElementPolyfillSupport, Le?.({ LitElement: L }), (I.litElementVersions ??= []).push("4.2.2");
-})), ze = t((() => {})), R = t((() => {
-	v(), Ie(), Re(), ze();
-})), z, Be = t((() => {
-	z = (e) => (t, n) => {
+	}, I._$litElement$ = !0, I.finalized = !0, F.litElementHydrateSupport?.({ LitElement: I }), Re = F.litElementPolyfillSupport, Re?.({ LitElement: I }), (F.litElementVersions ??= []).push("4.2.2");
+})), Be = t((() => {})), L = t((() => {
+	pe(), Le(), ze(), Be();
+})), R, Ve = t((() => {
+	R = (e) => (t, n) => {
 		n === void 0 ? customElements.define(e, t) : n.addInitializer(() => {
 			customElements.define(e, t);
 		});
@@ -575,20 +575,20 @@ var me, he, b, ge, _e, x, ve, ye, S, C, w, be, xe, T, E, Se, Ce, D, we, Te, Ee, 
 }));
 //#endregion
 //#region node_modules/@lit/reactive-element/decorators/property.js
-function B(e) {
-	return (t, n) => typeof n == "object" ? He(e, t, n) : ((e, t, n) => {
+function z(e) {
+	return (t, n) => typeof n == "object" ? Ue(e, t, n) : ((e, t, n) => {
 		let r = t.hasOwnProperty(n);
 		return t.constructor.createProperty(n, e), r ? Object.getOwnPropertyDescriptor(t, n) : void 0;
 	})(e, t, n);
 }
-var Ve, He, Ue = t((() => {
-	v(), Ve = {
+var He, Ue, We = t((() => {
+	pe(), He = {
 		attribute: !0,
 		type: String,
 		converter: h,
 		reflect: !1,
 		hasChanged: g
-	}, He = (e = Ve, t, n) => {
+	}, Ue = (e = He, t, n) => {
 		let { kind: r, metadata: i } = n, a = globalThis.litPropertyMetadata.get(i);
 		if (a === void 0 && globalThis.litPropertyMetadata.set(i, a = /* @__PURE__ */ new Map()), r === "setter" && ((e = Object.create(e)).wrapped = !0), a.set(n.name, e), r === "accessor") {
 			let { name: r } = n;
@@ -614,19 +614,19 @@ var Ve, He, Ue = t((() => {
 }));
 //#endregion
 //#region node_modules/@lit/reactive-element/decorators/state.js
-function V(e) {
-	return B({
+function B(e) {
+	return z({
 		...e,
 		state: !0,
 		attribute: !1
 	});
 }
-var We = t((() => {
-	Ue();
-})), Ge = t((() => {})), Ke = t((() => {})), qe = t((() => {})), Je = t((() => {})), Ye = t((() => {})), Xe = t((() => {})), Ze = t((() => {
-	Be(), Ue(), We(), Ge(), Ke(), qe(), Je(), Ye(), Xe();
-})), H, Qe = t((() => {
-	H = (e, t, n, r) => {
+var Ge = t((() => {
+	We();
+})), Ke = t((() => {})), qe = t((() => {})), Je = t((() => {})), Ye = t((() => {})), Xe = t((() => {})), Ze = t((() => {})), Qe = t((() => {
+	Ve(), We(), Ge(), Ke(), qe(), Je(), Ye(), Xe(), Ze();
+})), V, $e = t((() => {
+	V = (e, t, n, r) => {
 		r ||= {}, n ??= {};
 		let i = new Event(t, {
 			bubbles: r.bubbles === void 0 || r.bubbles,
@@ -638,15 +638,15 @@ var We = t((() => {
 }));
 //#endregion
 //#region src/localize.ts
-function U(e, t, n, r) {
+function H(e, t, n, r) {
 	let i = e.locale?.language || e.language || "en", a;
-	if (W[i] && W[i][t]) a = W[i][t];
-	else if (W.en && W.en[t]) a = W.en[t];
+	if (U[i] && U[i][t]) a = U[i][t];
+	else if (U.en && U.en[t]) a = U.en[t];
 	else return t;
 	return n && r && (a = a.replace(n, r)), a;
 }
-var W, $e = t((() => {
-	W = {
+var U, et = t((() => {
+	U = {
 		en: {
 			starts_in_min: "Starts in {x} minute",
 			starts_in_mins: "Starts in {x} minutes",
@@ -686,6 +686,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Group by Day and Calendar",
 			empty: "Empty",
 			editor_show_empty_days: "Show Empty Days",
+			editor_hide_if_no_events: "Hide card without events",
+			editor_hide_period: "Hide if no event within",
 			editor_empty_text: "Text for empty days",
 			editor_read_only: "Read only"
 		},
@@ -728,6 +730,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Nach Tag und Kalender gruppieren",
 			empty: "Leer",
 			editor_show_empty_days: "Zeige leere Tage",
+			editor_hide_if_no_events: "Karte ohne Termine ausblenden",
+			editor_hide_period: "Ausblenden, wenn kein Termin innerhalb",
 			editor_empty_text: "Text für leere Tage",
 			editor_read_only: "Nur lesen"
 		},
@@ -770,6 +774,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Grouper par jour et calendrier",
 			empty: "Aucun événement",
 			editor_show_empty_days: "Montrer les jours vides",
+			editor_hide_if_no_events: "Masquer la carte sans événements",
+			editor_hide_period: "Masquer si aucun événement dans",
 			editor_empty_text: "Texte pour les jours vides",
 			editor_read_only: "Lecture seule"
 		},
@@ -812,6 +818,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Raggruppa per giorno e calendario",
 			empty: "Vuoto",
 			editor_show_empty_days: "Mostra giorni vuoti",
+			editor_hide_if_no_events: "Nascondi la scheda senza eventi",
+			editor_hide_period: "Nascondi se nessun evento entro",
 			editor_empty_text: "Testo per i giorni vuoti",
 			editor_read_only: "Sola lettura"
 		},
@@ -854,6 +862,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Agrupar por día y calendario",
 			empty: "Vacío",
 			editor_show_empty_days: "Mostrar días vacíos",
+			editor_hide_if_no_events: "Ocultar tarjeta sin eventos",
+			editor_hide_period: "Ocultar si no hay eventos en",
 			editor_empty_text: "Texto para días vacíos",
 			editor_read_only: "Solo lectura"
 		},
@@ -896,6 +906,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Groepeer per dag en kalender",
 			empty: "Leeg",
 			editor_show_empty_days: "Toon lege dagen",
+			editor_hide_if_no_events: "Kaart verbergen zonder evenementen",
+			editor_hide_period: "Verbergen als er geen evenement is binnen",
 			editor_empty_text: "Tekst voor lege dagen",
 			editor_read_only: "Alleen lezen"
 		},
@@ -938,6 +950,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Agrupar por dia e calendário",
 			empty: "Vazio",
 			editor_show_empty_days: "Mostrar dias vazios",
+			editor_hide_if_no_events: "Ocultar cartão sem eventos",
+			editor_hide_period: "Ocultar se não houver eventos em",
 			editor_empty_text: "Texto para dias vazios",
 			editor_read_only: "Somente leitura"
 		},
@@ -980,6 +994,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Группировать по дням и календарю",
 			empty: "Пусто",
 			editor_show_empty_days: "Показать пустые дни",
+			editor_hide_if_no_events: "Скрывать карточку без событий",
+			editor_hide_period: "Скрывать, если нет событий в течение",
 			editor_empty_text: "Текст для пустых дней",
 			editor_read_only: "Только чтение"
 		},
@@ -1022,6 +1038,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Grupuj według dnia i kalendarza",
 			empty: "Pusty",
 			editor_show_empty_days: "Pokaż puste dni",
+			editor_hide_if_no_events: "Ukryj kartę bez wydarzeń",
+			editor_hide_period: "Ukryj, jeśli brak wydarzeń w ciągu",
 			editor_empty_text: "Tekst dla pustych dni",
 			editor_read_only: "Tylko do odczytu"
 		},
@@ -1064,6 +1082,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Gruppera per dag och kalender",
 			empty: "Tom",
 			editor_show_empty_days: "Visa tomma dagar",
+			editor_hide_if_no_events: "Dölj kortet utan händelser",
+			editor_hide_period: "Dölj om ingen händelse inom",
 			editor_empty_text: "Text för tomma dagar",
 			editor_read_only: "Skrivskyddad"
 		},
@@ -1106,6 +1126,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Gruppér efter dag og kalender",
 			empty: "Tom",
 			editor_show_empty_days: "Vis tomme dage",
+			editor_hide_if_no_events: "Skjul kortet uden begivenheder",
+			editor_hide_period: "Skjul hvis ingen begivenhed inden for",
 			editor_empty_text: "Tekst for tomme dage",
 			editor_read_only: "Skrivebeskyttet"
 		},
@@ -1148,6 +1170,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Grupper etter dag og kalender",
 			empty: "Tom",
 			editor_show_empty_days: "Vis tomme dager",
+			editor_hide_if_no_events: "Skjul kortet uten hendelser",
+			editor_hide_period: "Skjul hvis ingen hendelse innen",
 			editor_empty_text: "Tekst for tomme dager",
 			editor_read_only: "Skrivebeskyttet"
 		},
@@ -1190,6 +1214,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Ryhmittele päivän ja kalenterin mukaan",
 			empty: "Tyhjä",
 			editor_show_empty_days: "Näytä tyhjät päivät",
+			editor_hide_if_no_events: "Piilota kortti ilman tapahtumia",
+			editor_hide_period: "Piilota, jos ei tapahtumia ajassa",
 			editor_empty_text: "Teksti tyhjille päiville",
 			editor_read_only: "Vain luku"
 		},
@@ -1232,6 +1258,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Seskupit podle dne a kalendáře",
 			empty: "Prázdné",
 			editor_show_empty_days: "Zobrazit prázdné dny",
+			editor_hide_if_no_events: "Skrýt kartu bez událostí",
+			editor_hide_period: "Skrýt, pokud není událost do",
 			editor_empty_text: "Text pro prázdné dny",
 			editor_read_only: "Pouze pro čtení"
 		},
@@ -1274,6 +1302,8 @@ var W, $e = t((() => {
 			group_by_date_and_calendar: "Csoportosítás nap és naptár szerint",
 			empty: "Üres",
 			editor_show_empty_days: "Üres napok mutatása",
+			editor_hide_if_no_events: "Kártya elrejtése események nélkül",
+			editor_hide_period: "Elrejtés, ha nincs esemény ennyi időn belül",
 			editor_empty_text: "Szöveg üres napokhoz",
 			editor_read_only: "Csak olvasható"
 		}
@@ -1281,7 +1311,7 @@ var W, $e = t((() => {
 }));
 //#endregion
 //#region src/format.ts
-function et(e) {
+function W(e) {
 	return e.locale?.language || e.language || navigator.language || "en";
 }
 function tt(e) {
@@ -1293,7 +1323,7 @@ function tt(e) {
 	return t === "12";
 }
 function nt(e, t) {
-	let n = et(e), r = tt(e), i = e.locale?.time_format === "system";
+	let n = W(e), r = tt(e), i = e.locale?.time_format === "system";
 	return new Intl.DateTimeFormat(i ? void 0 : n, {
 		hour: "numeric",
 		minute: "2-digit",
@@ -1301,7 +1331,7 @@ function nt(e, t) {
 	}).format(t);
 }
 function rt(e, t) {
-	let n = et(e), r = e.locale?.date_format, i = r === "system", a = new Intl.DateTimeFormat(i ? void 0 : n, {
+	let n = W(e), r = e.locale?.date_format, i = r === "system", a = new Intl.DateTimeFormat(i ? void 0 : n, {
 		year: "numeric",
 		month: "numeric",
 		day: "numeric"
@@ -1338,27 +1368,27 @@ function lt(e, t, n, r) {
 	return !t.read_only_calendars?.includes(n) && ((e.states[n]?.attributes?.supported_features ?? 0) & r) !== 0;
 }
 function ut(e, t, n, r, i) {
-	if (t === void 0) return ft(U(e, "loading"), "mdi:calendar-clock", "var(--primary-color, #03a9f4)");
-	if (t.length === 0) return ft(U(e, "no_events"), "mdi:calendar-remove", "var(--disabled-text-color, #bdbdbb)");
+	if (t === void 0) return ft(H(e, "loading"), "mdi:calendar-clock", "var(--primary-color, #03a9f4)");
+	if (t.length === 0) return ft(H(e, "no_events"), "mdi:calendar-remove", "var(--disabled-text-color, #bdbdbb)");
 	if (!n.unfold_events) {
 		let r = t.slice(1).filter((e) => !e.is_empty).length, a = t.some((e) => !e.is_empty) ? i : void 0;
-		return k`
+		return O`
       <div class="calendar-container">
-        ${pt(e, t[0], n, a, { moreText: r > 0 ? ` ${U(e, "more_events", "{x}", r.toString())}` : "" })}
+        ${pt(e, t[0], n, a, { moreText: r > 0 ? ` ${H(e, "more_events", "{x}", r.toString())}` : "" })}
       </div>
     `;
 	}
-	return k`
+	return O`
     <div class="calendar-container">
       ${dt(e, t, n, r, i)}
     </div>
   `;
 }
 function dt(e, t, n, r, i) {
-	let a = i ? "" : "detail", o = (e) => n.show_divider && e > 0 ? k`<div class="calendar-divider"></div>` : j;
+	let a = i ? "" : "detail", o = (e) => n.show_divider && e > 0 ? O`<div class="calendar-divider"></div>` : A;
 	if (n.group_by_date_and_calendar || n.group_by_date) return yt(t, !!n.group_by_date_and_calendar).map((t, i) => {
 		let s = t.events[0];
-		return k`
+		return O`
           ${o(i)}
           <div
             class="calendar-item grouped ${a}"
@@ -1368,7 +1398,7 @@ function dt(e, t, n, r, i) {
               ${bt(e, t.date, gt(s.entity_id, n), n.dark_mode, n.icon_show_weekday)}
             </div>
             <div class="calendar-content">
-              ${t.events.map((t) => k`
+              ${t.events.map((t) => O`
                   <div
                     class="event-entry ${t.is_empty ? "empty static" : ""}"
                     @click=${t.is_empty ? null : () => r(t)}
@@ -1383,7 +1413,7 @@ function dt(e, t, n, r, i) {
 	let s = i && n.max_lines || 0, c = s > 0 ? t.slice(0, s) : t, l = t.slice(c.length).filter((e) => !e.is_empty).length;
 	return c.map((t, s) => {
 		let u = l > 0 && s === c.length - 1;
-		return k`
+		return O`
       ${o(s)}
       ${pt(e, t, n, u ? i : t.is_empty ? void 0 : () => r(t), {
 			cls: a,
@@ -1394,7 +1424,7 @@ function dt(e, t, n, r, i) {
 	});
 }
 function ft(e, t, n) {
-	return k`
+	return O`
     <div class="calendar-container">
       <div class="calendar-item" style="cursor: default;">
         <div class="calendar-icon" style="background-color: ${n};">
@@ -1409,17 +1439,17 @@ function ft(e, t, n) {
 }
 function pt(e, t, n, r, i) {
 	let a = J(t), o = Ct(t);
-	if (isNaN(a.getTime()) || isNaN(o.getTime())) return k`<div class="error">Date Error for ${t.summary}</div>`;
+	if (isNaN(a.getTime()) || isNaN(o.getTime())) return O`<div class="error">Date Error for ${t.summary}</div>`;
 	let s = /* @__PURE__ */ new Date(), c = a <= s && o >= s, l = -1;
 	if (i.progress && !t.is_empty && t.start.dateTime && c) {
 		let e = o.getTime() - a.getTime();
 		e > 0 && (l = Math.min(100, (s.getTime() - a.getTime()) / e * 100));
 	}
-	return k`
+	return O`
     <div
       class="calendar-item ${i.cls ?? ""} ${t.is_empty ? "empty" : ""} ${r ? "" : "static"}"
       style=${kt(t.entity_id, n)}
-      title=${i.badge ? U(e, "popup_upcoming_events") : Dt(e, t, n)}
+      title=${i.badge ? H(e, "popup_upcoming_events") : Dt(e, t, n)}
       @click=${r}
     >
       <div class="calendar-icon dynamic">
@@ -1427,42 +1457,42 @@ function pt(e, t, n, r, i) {
       </div>
       <div class="calendar-content">
         ${mt(e, t, n, !0, i.moreText, i.badge)}
-        ${l >= 0 ? k`
+        ${l >= 0 ? O`
               <div class="progress-bar">
                 <div class="progress-fill" style="width: ${l}%"></div>
               </div>
-            ` : j}
+            ` : A}
       </div>
     </div>
   `;
 }
 function mt(e, t, n, r, i = "", a = 0) {
-	let o = k`<div class="event-title">
+	let o = O`<div class="event-title">
     ${Dt(e, t, n)}
   </div>`;
-	return k`
-    ${a ? k`<div class="title-row">
+	return O`
+    ${a ? O`<div class="title-row">
           ${o}
           <span class="more-indicator">
             <ha-icon icon="mdi:dots-horizontal"></ha-icon>(${a})
           </span>
         </div>` : o}
     <div class="event-time">
-      ${!t.is_empty && (n.show_date || n.show_time) ? k`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : j}
+      ${!t.is_empty && (n.show_date || n.show_time) ? O`<ha-icon icon="mdi:clock-time-four-outline"></ha-icon>` : A}
       ${ht(e, t, n, r)}${i}
     </div>
-    ${!t.is_empty && n.show_location && t.location ? k`
+    ${!t.is_empty && n.show_location && t.location ? O`
           <div class="event-location">
             <ha-icon icon="mdi:map-marker"></ha-icon>
             ${t.location}
           </div>
-        ` : j}
-    ${n.show_calendar_name && t.calendar_name ? k`
+        ` : A}
+    ${n.show_calendar_name && t.calendar_name ? O`
           <div class="event-calendar">
             <ha-icon icon="mdi:calendar-blank-multiple"></ha-icon>
             ${t.calendar_name}
           </div>
-        ` : j}
+        ` : A}
   `;
 }
 function ht(e, t, n, r) {
@@ -1477,7 +1507,7 @@ function ht(e, t, n, r) {
 		c.endsWith(t) || (c += ` • ${t}`);
 	}
 	if (n.show_weekday) {
-		let t = n.show_weekday_long ? "long" : "short", r = i.toLocaleDateString(et(e), n.icon_show_weekday ? { month: t } : { weekday: t });
+		let t = n.show_weekday_long ? "long" : "short", r = i.toLocaleDateString(W(e), n.icon_show_weekday ? { month: t } : { weekday: t });
 		c.includes(r) || (c += ` • ${r}`);
 	}
 	return c;
@@ -1505,8 +1535,8 @@ function yt(e, t) {
 	return [...n.values()].sort((e, t) => e.date.getTime() - t.date.getTime() || e.calendar.localeCompare(t.calendar));
 }
 function bt(e, t, n, r = !1, i = !1) {
-	let a = t.toLocaleDateString(et(e), i ? { weekday: "short" } : { month: "short" }).toUpperCase(), o = t.getDate();
-	return k`
+	let a = t.toLocaleDateString(W(e), i ? { weekday: "short" } : { month: "short" }).toUpperCase(), o = t.getDate();
+	return O`
     <svg
       viewBox="0 0 100 100"
       class="dynamic-calendar-icon"
@@ -1553,16 +1583,16 @@ function bt(e, t, n, r = !1, i = !1) {
 function xt(e, t, n, r) {
 	let i = Math.round((n.getTime() - t.getTime()) / 6e4);
 	if (r && (i = Math.round(i / 1440) * 1440), r && i === 1440) return Ot(e);
-	if (i < 60) return `${i} ${U(e, "duration_min")}`;
+	if (i < 60) return `${i} ${H(e, "duration_min")}`;
 	let a = Math.floor(i / 1440), o = Math.floor(i % 1440 / 60), s = i % 60, c = [];
-	return a >= 1 && c.push(`${a} ${U(e, a === 1 ? "duration_day" : "duration_days")}`), o > 0 && c.push(`${o} ${U(e, "duration_hour")}`), s > 0 && c.push(`${s} ${U(e, "duration_min")}`), c.join(" ");
+	return a >= 1 && c.push(`${a} ${H(e, a === 1 ? "duration_day" : "duration_days")}`), o > 0 && c.push(`${o} ${H(e, "duration_hour")}`), s > 0 && c.push(`${s} ${H(e, "duration_min")}`), c.join(" ");
 }
 function St(e, t) {
-	let n = (t, n) => U(e, n === 1 ? t : `${t}s`, "{x}", n.toString());
+	let n = (t, n) => H(e, n === 1 ? t : `${t}s`, "{x}", n.toString());
 	return t < 60 ? n("starts_in_min", t) : t < 1440 ? n("starts_in_hour", Math.round(t / 60)) : t < 43200 ? n("starts_in_day", Math.round(t / 1440)) : n("starts_in_week", Math.round(t / 10080));
 }
-var J, Ct, wt, Tt, Et, Dt, Ot, kt, Y = t((() => {
-	R(), $e(), st(), J = (e) => at(e.start.dateTime || e.start.date), Ct = (e) => at(e.end.dateTime || e.end.date), wt = (e) => it(J(e)), Tt = f`
+var J, Ct, wt, Tt, Et, Dt, Ot, kt, At = t((() => {
+	L(), et(), st(), J = (e) => at(e.start.dateTime || e.start.date), Ct = (e) => at(e.end.dateTime || e.end.date), wt = (e) => it(J(e)), Tt = f`
   .empty {
     opacity: 0.7;
   }
@@ -1604,19 +1634,19 @@ var J, Ct, wt, Tt, Et, Dt, Ot, kt, Y = t((() => {
   .calendar-item.grouped .calendar-icon {
     align-self: center;
   }
-`, Et = (e, t, n) => !!n.uid && lt(e, t, n.entity_id, 6), Dt = (e, t, n) => t.is_empty ? n.empty_text || U(e, "empty") : t.summary, Ot = (e) => e.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day", kt = (e, t) => {
+`, Et = (e, t, n) => !!n.uid && lt(e, t, n.entity_id, 6), Dt = (e, t, n) => t.is_empty ? n.empty_text || H(e, "empty") : t.summary, Ot = (e) => e.localize("component.calendar.entity_component._.state_attributes.all_day.name") || "All day", kt = (e, t) => {
 		let n = _t(e, t);
 		return n ? `background-color: ${n}; border-color: transparent;` : "";
 	};
 }));
 //#endregion
 //#region src/events.ts
-function At(e, t) {
+function jt(e, t) {
 	let n = /* @__PURE__ */ new Date();
 	n.setHours(n.getHours() + 1, 0, 0, 0);
 	let r = new Date(n);
 	return r.setHours(r.getHours() + 1, 0, 0, 0), {
-		calendar_id: It(e, t)[0],
+		calendar_id: zt(e, t)[0],
 		name: "",
 		start_date: K(n),
 		start_time: q(n),
@@ -1628,7 +1658,7 @@ function At(e, t) {
 		all_day: !1
 	};
 }
-function jt(e) {
+function Mt(e) {
 	let t = J(e), n = Ct(e), r = !e.start.dateTime;
 	return r && n.setDate(n.getDate() - 1), {
 		calendar_id: e.entity_id,
@@ -1646,7 +1676,7 @@ function jt(e) {
 		rrule: e.rrule
 	};
 }
-async function Mt(e, t) {
+async function Nt(e, t) {
 	if (!t.calendar_id || !t.name || !t.start_date || !t.end_date) throw Error("Title, calendar, start and end date are required");
 	if (!ot(!!t.all_day, t.start_date, t.end_date, t.start_time, t.end_time)) throw Error("End must be after start");
 	let n = { summary: t.name };
@@ -1656,7 +1686,7 @@ async function Mt(e, t) {
 		let e = at(t.end_date);
 		e.setDate(e.getDate() + 1), r = t.start_date, i = K(e);
 	} else r = (/* @__PURE__ */ new Date(`${t.start_date}T${t.start_time || "09:00"}`)).toISOString(), i = (/* @__PURE__ */ new Date(`${t.end_date}T${t.end_time || "10:00"}`)).toISOString();
-	let a = !Lt(t) && Ft.includes(t.recurrence ?? "") ? `FREQ=${t.recurrence}` : void 0;
+	let a = !Bt(t) && Rt.includes(t.recurrence ?? "") ? `FREQ=${t.recurrence}` : void 0;
 	t.uid ? await e.callWS({
 		type: "calendar/event/update",
 		entity_id: t.calendar_id,
@@ -1681,7 +1711,7 @@ async function Mt(e, t) {
 		...a ? { rrule: a } : {}
 	});
 }
-function Nt(e, t, n = !1) {
+function Pt(e, t, n = !1) {
 	return e.callWS({
 		type: "calendar/event/delete",
 		entity_id: t.calendar_id,
@@ -1690,9 +1720,43 @@ function Nt(e, t, n = !1) {
 		...n ? { recurrence_range: "THISANDFUTURE" } : {}
 	});
 }
-function Pt(e, t, n, r, i, a, o) {
-	let s = !!n.uid, c = s ? [n.calendar_id] : It(e, t), l = !s || lt(e, t, n.calendar_id, 4), u = s && lt(e, t, n.calendar_id, 2), d = n.all_day || !1, f = (t, n) => e.localize(`ui.components.calendar.event.${t}`) || n;
-	return k`
+function Ft(e, t, n) {
+	let [r, i] = t.split(":").map(Number), a = tt(e), o = (e) => a ? `${e % 12 || 12} ${e < 12 ? "AM" : "PM"}` : Y(e), s = (e, t, n) => Array.from({ length: e }, (e, r) => O`<option value=${r} ?selected=${r === t}>${n(r)}</option>`);
+	return O`
+    <select
+      class="field-input"
+      @change=${(e) => n(`${Y(+e.target.value)}:${Y(i)}`)}
+    >
+      ${s(24, r, o)}
+    </select>
+    <select
+      class="field-input"
+      @change=${(e) => n(`${Y(r)}:${Y(+e.target.value)}`)}
+    >
+      ${s(60, i, Y)}
+    </select>
+  `;
+}
+function It(e, t) {
+	let n = {
+		...e,
+		...t
+	};
+	if (!("start_date" in t || "start_time" in t) || !n.start_date || ot(!!n.all_day, n.start_date, n.end_date, n.start_time, n.end_time)) return t;
+	if (n.all_day) return {
+		...t,
+		end_date: n.start_date
+	};
+	let r = /* @__PURE__ */ new Date(`${n.start_date}T${n.start_time || "09:00"}`);
+	return r.setHours(r.getHours() + 1), {
+		...t,
+		end_date: K(r),
+		end_time: q(r)
+	};
+}
+function Lt(e, t, n, r, i, a, o) {
+	let s = !!n.uid, c = s ? [n.calendar_id] : zt(e, t), l = !s || lt(e, t, n.calendar_id, 4), u = s && lt(e, t, n.calendar_id, 2), d = n.all_day || !1, f = (t, n) => e.localize(`ui.components.calendar.event.${t}`) || n;
+	return O`
     <div class="add-event-form">
       <div class="field">
         <label class="field-label">${f("summary", "Title")}</label>
@@ -1734,9 +1798,9 @@ function Pt(e, t, n, r, i, a, o) {
           .value=${n.calendar_id || ""}
           @change=${(e) => r({ calendar_id: e.target.value })}
         >
-          ${c.length === 0 ? k`<option value="">
+          ${c.length === 0 ? O`<option value="">
                 -- ${e.localize("ui.common.none") || "no calendars"} --
-              </option>` : c.map((t) => k`
+              </option>` : c.map((t) => O`
                   <option value=${t} ?selected=${t === n.calendar_id}>
                     ${e.states[t]?.attributes?.friendly_name || t}
                   </option>
@@ -1753,30 +1817,25 @@ function Pt(e, t, n, r, i, a, o) {
         </ha-formfield>
       </div>
 
-      ${["start", "end"].map((e) => k`
+      ${["start", "end"].map((t) => O`
           <div class="field">
             <label class="field-label"
-              >${f(e, e === "start" ? "Start" : "End")}</label
+              >${f(t, t === "start" ? "Start" : "End")}</label
             >
             <div class="date-row">
               <input
                 type="date"
                 class="field-input"
-                .value=${n[`${e}_date`] || ""}
-                @change=${(t) => r({ [`${e}_date`]: t.target.value })}
+                .value=${n[`${t}_date`] || ""}
+                @change=${(e) => r(It(n, { [`${t}_date`]: e.target.value }))}
               />
-              ${d ? j : k`
-                    <input
-                      type="time"
-                      class="field-input"
-                      .value=${n[`${e}_time`] || (e === "start" ? "09:00" : "10:00")}
-                      @change=${(t) => r({ [`${e}_time`]: t.target.value })}
-                    />
+              ${d ? A : O`
+                    ${Ft(e, n[`${t}_time`] || (t === "start" ? "09:00" : "10:00"), (e) => r(It(n, { [`${t}_time`]: e })))}
                   `}
             </div>
           </div>
         `)}
-      ${Lt(n) ? j : k`
+      ${Bt(n) ? A : O`
             <div class="field">
               <label class="field-label"
                 >${f("repeat.label", "Repeat")}</label
@@ -1786,7 +1845,7 @@ function Pt(e, t, n, r, i, a, o) {
                 .value=${n.recurrence || "none"}
                 @change=${(e) => r({ recurrence: e.target.value })}
               >
-                ${["none", ...Ft].map((e) => k`
+                ${["none", ...Rt].map((e) => O`
                     <option value=${e} ?selected=${e === (n.recurrence || "none")}>
                       ${f(`repeat.freq.${e.toLowerCase()}`, e.charAt(0) + e.slice(1).toLowerCase())}
                     </option>
@@ -1796,23 +1855,23 @@ function Pt(e, t, n, r, i, a, o) {
           `}
 
       <div class="dialog-actions">
-        ${u ? Lt(n) ? k`
+        ${u ? Bt(n) ? O`
                 <ha-button class="delete" @click=${() => o(!1)}>
                   ${f("confirm_delete.delete_this", "Delete only this event")}
                 </ha-button>
                 <ha-button class="delete" @click=${() => o(!0)}>
                   ${f("confirm_delete.delete_future", "Delete all future events")}
                 </ha-button>
-              ` : k`
+              ` : O`
                 <ha-button class="delete" @click=${() => o(!1)}>
                   ${e.localize("ui.common.delete") || "Delete"}
                 </ha-button>
-              ` : j}
+              ` : A}
         <span class="spacer"></span>
         <ha-button @click=${i}>
           ${e.localize("ui.common.cancel") || "Cancel"}
         </ha-button>
-        ${l ? k`
+        ${l ? O`
               <ha-button
                 unelevated
                 @click=${a}
@@ -1820,18 +1879,18 @@ function Pt(e, t, n, r, i, a, o) {
               >
                 ${e.localize("ui.common.save") || "Save"}
               </ha-button>
-            ` : j}
+            ` : A}
       </div>
     </div>
   `;
 }
-var Ft, It, Lt, Rt = t((() => {
-	R(), Y(), st(), Ft = [
+var Rt, zt, Bt, Y, Vt = t((() => {
+	L(), At(), st(), Rt = [
 		"DAILY",
 		"WEEKLY",
 		"MONTHLY",
 		"YEARLY"
-	], It = (e, t) => ct(e, t).filter((n) => lt(e, t, n, 1)), Lt = (e) => !!(e.rrule || e.recurrence_id);
+	], zt = (e, t) => ct(e, t).filter((n) => lt(e, t, n, 1)), Bt = (e) => !!(e.rrule || e.recurrence_id), Y = (e) => String(e).padStart(2, "0");
 }));
 //#endregion
 //#region \0@oxc-project+runtime@0.154.0/helpers/esm/decorate.js
@@ -1841,8 +1900,8 @@ function X(e, t, n, r) {
 	else for (var s = e.length - 1; s >= 0; s--) (o = e[s]) && (a = (i < 3 ? o(a) : i > 3 ? o(t, n, a) : o(t, n)) || a);
 	return i > 3 && a && Object.defineProperty(t, n, a), a;
 }
-var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z }), Z, Vt = t((() => {
-	R(), Ze(), Qe(), Rt(), Y(), zt(), Z = class extends L {
+var Ht = t((() => {})), Ut = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z }), Z, Wt = t((() => {
+	L(), Qe(), $e(), Vt(), At(), Ht(), Z = class extends I {
 		constructor(...e) {
 			super(...e), this.open = !1, this.mode = "detail", this.detailTitle = "", this.detailEvents = [], this._formState = {}, this._opener = null, this._onEventSaved = null, this._onPopState = (e) => {
 				this.open && !window.history.state?.calendarCardPlusPopup && this._close();
@@ -1869,11 +1928,11 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
 					...this._formState,
 					...e
 				};
-			}, this._handleSave = () => this._run(() => Mt(this.hass, this._formState)), this._handleDelete = (e) => {
+			}, this._handleSave = () => this._run(() => Nt(this.hass, this._formState)), this._handleDelete = (e) => {
 				let t = this.hass.localize("ui.components.calendar.event.confirm_delete.prompt") || "Do you want to delete this event?";
-				window.confirm(t) && this._run(() => Nt(this.hass, this._formState, e));
+				window.confirm(t) && this._run(() => Pt(this.hass, this._formState, e));
 			}, this._openEvent = (e) => {
-				Et(this.hass, this.config, e) ? (this._formState = jt(e), this.mode = "edit-event") : H(this._opener ?? window, "hass-more-info", { entityId: e.entity_id });
+				Et(this.hass, this.config, e) ? (this._formState = Mt(e), this.mode = "edit-event") : V(this._opener ?? window, "hass-more-info", { entityId: e.entity_id });
 			};
 		}
 		async showDialog(e) {
@@ -1905,7 +1964,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
 		}
 		render() {
 			let e = this.mode !== "detail", t = this.mode === "add-event" ? this.hass?.localize("ui.components.calendar.event.add") || "Add Event" : this.mode === "edit-event" ? this.hass?.localize("ui.components.calendar.event.edit") || "Edit Event" : this.detailTitle;
-			return k`
+			return O`
       <ha-adaptive-dialog
         .hass=${this.hass}
         .open=${this.open}
@@ -1917,7 +1976,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
         <div
           class="dialog-content scrollable ha-scrollbar ${this.config?.show_divider && !e ? "plain" : ""}"
         >
-          ${e ? Pt(this.hass, this.config, this._formState, this._updateFormState, this._closeDialog, this._handleSave, this._handleDelete) : dt(this.hass, this.detailEvents, this.config, this._openEvent)}
+          ${e ? Lt(this.hass, this.config, this._formState, this._updateFormState, this._closeDialog, this._handleSave, this._handleDelete) : dt(this.hass, this.detailEvents, this.config, this._openEvent)}
         </div>
       </ha-adaptive-dialog>
     `;
@@ -2088,9 +2147,9 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
     }
   `];
 		}
-	}, X([B({ attribute: !1 })], Z.prototype, "hass", void 0), X([B({ attribute: !1 })], Z.prototype, "config", void 0), X([B({ type: Boolean })], Z.prototype, "open", void 0), X([B({ type: String })], Z.prototype, "mode", void 0), X([B({ type: String })], Z.prototype, "detailTitle", void 0), X([B({ type: Array })], Z.prototype, "detailEvents", void 0), X([V()], Z.prototype, "_formState", void 0), Z = X([z("calendar-card-plus-popup")], Z);
-})), Ht = /* @__PURE__ */ n({ CalendarCardPlusEditor: () => Q }), Q, Ut = t((() => {
-	R(), Ze(), Qe(), $e(), Y(), zt(), Q = class extends L {
+	}, X([z({ attribute: !1 })], Z.prototype, "hass", void 0), X([z({ attribute: !1 })], Z.prototype, "config", void 0), X([z({ type: Boolean })], Z.prototype, "open", void 0), X([z({ type: String })], Z.prototype, "mode", void 0), X([z({ type: String })], Z.prototype, "detailTitle", void 0), X([z({ type: Array })], Z.prototype, "detailEvents", void 0), X([B()], Z.prototype, "_formState", void 0), Z = X([R("calendar-card-plus-popup")], Z);
+})), Gt = /* @__PURE__ */ n({ CalendarCardPlusEditor: () => Q }), Q, Kt = t((() => {
+	L(), Qe(), $e(), et(), At(), Ht(), Q = class extends I {
 		constructor(...e) {
 			super(...e), this._config = { type: "custom:calendar-card-plus" }, this._showAllCalendars = !1;
 		}
@@ -2100,10 +2159,36 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
 		setConfig(e) {
 			this._config = e;
 		}
+		_renderPeriod(e, t, n, r, i) {
+			let a = (e, t, n, r, i) => O`
+      <ha-selector
+        .hass=${this.hass}
+        .selector=${{ number: {
+				min: 0,
+				max: t,
+				mode: "box"
+			} }}
+        .value=${this._config[e] ?? n}
+        .label=${this.hass?.localize(`component.input_datetime.entity_component._.state_attributes.${r}.name`) || i}
+        .configValue=${e}
+        @value-changed=${this._valueChanged}
+      ></ha-selector>
+    `;
+			return O`
+      <div class="settings-row full-width" style="margin-bottom: 8px;">
+        <span class="label" style="margin-bottom: 8px;">${e}</span>
+        <div class="period-selectors">
+          ${a(t, 365, i, "day", "Days")}
+          ${a(n, 23, 0, "hour", "Hours")}
+          ${a(r, 59, 0, "minute", "Minutes")}
+        </div>
+      </div>
+    `;
+		}
 		render() {
-			if (!this.hass) return k``;
-			let e = this._config.upcoming_events ?? !1, t = this._config.unfold_events ?? !1, n = this._config.days ?? 1, r = this._config.hours ?? 0, i = this._config.minutes ?? 0, a = this._config.exclude_entities ?? [];
-			return k`
+			if (!this.hass) return O``;
+			let e = this._config.upcoming_events ?? !1, t = this._config.unfold_events ?? !1, n = this._config.exclude_entities ?? [];
+			return O`
       <div class="card-config">
         <ha-expansion-panel outlined>
           <div
@@ -2116,7 +2201,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
               icon="mdi:cog"
               style="color: var(--secondary-text-color);"
             ></ha-icon>
-            ${U(this.hass, "editor_configuration")}
+            ${H(this.hass, "editor_configuration")}
           </div>
           <div
             class="settings-grid"
@@ -2124,7 +2209,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
           >
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_unfold_events")}</span
+                >${H(this.hass, "editor_unfold_events")}</span
               >
               <ha-switch
                 .checked=${t}
@@ -2133,7 +2218,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_show_divider")}</span
+                >${H(this.hass, "editor_show_divider")}</span
               >
               <ha-switch
                 .checked=${this._config.show_divider ?? !1}
@@ -2142,7 +2227,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_show_add_event")}</span
+                >${H(this.hass, "editor_show_add_event")}</span
               >
               <ha-switch
                 .checked=${this._config.show_add_event ?? !1}
@@ -2150,7 +2235,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
               ></ha-switch>
             </div>
             <div class="settings-row">
-              <span class="label">${U(this.hass, "group_by_date")}</span>
+              <span class="label">${H(this.hass, "group_by_date")}</span>
               <ha-switch
                 .checked=${this._config.group_by_date ?? !1}
                 @change=${(e) => this._toggleBooleanConfig(e, "group_by_date")}
@@ -2158,7 +2243,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "group_by_date_and_calendar")}</span
+                >${H(this.hass, "group_by_date_and_calendar")}</span
               >
               <ha-switch
                 .checked=${this._config.group_by_date_and_calendar ?? !1}
@@ -2174,7 +2259,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_show_upcoming")}</span
+                >${H(this.hass, "editor_show_upcoming")}</span
               >
               <ha-switch
                 .checked=${e}
@@ -2183,16 +2268,27 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_show_empty_days")}</span
+                >${H(this.hass, "editor_show_empty_days")}</span
               >
               <ha-switch
                 .checked=${this._config.show_empty_days ?? !1}
                 @change=${(e) => this._toggleBooleanConfig(e, "show_empty_days")}
               ></ha-switch>
             </div>
+            <div class="settings-row">
+              <span class="label"
+                >${H(this.hass, "editor_hide_if_no_events")}</span
+              >
+              <ha-switch
+                .checked=${this._config.hide_if_no_events ?? !1}
+                @change=${(e) => this._toggleBooleanConfig(e, "hide_if_no_events")}
+              ></ha-switch>
+            </div>
           </div>
 
-          ${this._config.show_empty_days ? k`
+          ${this._config.hide_if_no_events ? this._renderPeriod(H(this.hass, "editor_hide_period"), "hide_days", "hide_hours", "hide_minutes", 0) : ""}
+
+          ${this._config.show_empty_days ? O`
                 <div
                   class="settings-row full-width"
                   style="margin-bottom: 16px;"
@@ -2201,15 +2297,15 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
                     .hass=${this.hass}
                     .selector=${{ text: {} }}
                     .value=${this._config.empty_text || ""}
-                    .label=${U(this.hass, "editor_empty_text")}
-                    .placeholder=${U(this.hass, "empty")}
+                    .label=${H(this.hass, "editor_empty_text")}
+                    .placeholder=${H(this.hass, "empty")}
                     .configValue=${"empty_text"}
                     @value-changed=${this._valueChanged}
                   ></ha-selector>
                 </div>
               ` : ""}
 
-          ${t ? k`
+          ${t ? O`
                 <div
                   class="settings-row full-width"
                   style="margin-bottom: 16px;"
@@ -2222,60 +2318,13 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
 				mode: "box"
 			} }}
                     .value=${this._config.max_lines || 0}
-                    .label=${U(this.hass, "editor_max_lines")}
+                    .label=${H(this.hass, "editor_max_lines")}
                     .configValue=${"max_lines"}
                     @value-changed=${this._valueChanged}
                   ></ha-selector>
                 </div>
               ` : ""}
-          ${e ? k`
-                <div
-                  class="settings-row full-width"
-                  style="margin-bottom: 8px;"
-                >
-                  <span class="label" style="margin-bottom: 8px;"
-                    >${this.hass?.localize("ui.panel.lovelace.editor.card.statistic.period") || "Period"}</span
-                  >
-                  <div class="period-selectors">
-                    <ha-selector
-                      .hass=${this.hass}
-                      .selector=${{ number: {
-				min: 0,
-				max: 365,
-				mode: "box"
-			} }}
-                      .value=${n}
-                      .label=${this.hass?.localize("component.input_datetime.entity_component._.state_attributes.day.name") || "Days"}
-                      .configValue=${"days"}
-                      @value-changed=${this._valueChanged}
-                    ></ha-selector>
-                    <ha-selector
-                      .hass=${this.hass}
-                      .selector=${{ number: {
-				min: 0,
-				max: 23,
-				mode: "box"
-			} }}
-                      .value=${r}
-                      .label=${this.hass?.localize("component.input_datetime.entity_component._.state_attributes.hour.name") || "Hours"}
-                      .configValue=${"hours"}
-                      @value-changed=${this._valueChanged}
-                    ></ha-selector>
-                    <ha-selector
-                      .hass=${this.hass}
-                      .selector=${{ number: {
-				min: 0,
-				max: 59,
-				mode: "box"
-			} }}
-                      .value=${i}
-                      .label=${this.hass?.localize("component.input_datetime.entity_component._.state_attributes.minute.name") || "Minutes"}
-                      .configValue=${"minutes"}
-                      @value-changed=${this._valueChanged}
-                    ></ha-selector>
-                  </div>
-                </div>
-              ` : ""}
+          ${e ? this._renderPeriod(this.hass?.localize("ui.panel.lovelace.editor.card.statistic.period") || "Period", "days", "hours", "minutes", 1) : ""}
 
           <div class="settings-row full-width" style="margin-bottom: 16px;">
             <ha-selector
@@ -2293,7 +2342,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
               .hass=${this.hass}
               .selector=${{ ui_color: {} }}
               .value=${this._config.background_color || ""}
-              .label=${U(this.hass, "editor_background_color")}
+              .label=${H(this.hass, "editor_background_color")}
               .configValue=${"background_color"}
               @value-changed=${this._valueChanged}
             ></ha-selector>
@@ -2311,7 +2360,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
               icon="mdi:card-text"
               style="color: var(--secondary-text-color);"
             ></ha-icon>
-            ${U(this.hass, "editor_text_visibility")}
+            ${H(this.hass, "editor_text_visibility")}
           </div>
           <div
             class="settings-grid"
@@ -2340,7 +2389,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_show_location")}</span
+                >${H(this.hass, "editor_show_location")}</span
               >
               <ha-switch
                 .checked=${this._config.show_location ?? !1}
@@ -2349,7 +2398,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_show_duration")}</span
+                >${H(this.hass, "editor_show_duration")}</span
               >
               <ha-switch
                 .checked=${this._config.show_duration ?? !1}
@@ -2358,7 +2407,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_show_time")}</span
+                >${H(this.hass, "editor_show_time")}</span
               >
               <ha-switch
                 .checked=${this._config.show_time ?? !1}
@@ -2367,7 +2416,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${U(this.hass, "editor_icon_show_weekday")}</span
+                >${H(this.hass, "editor_icon_show_weekday")}</span
               >
               <ha-switch
                 .checked=${this._config.icon_show_weekday ?? !1}
@@ -2376,19 +2425,19 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
             </div>
             <div class="settings-row">
               <span class="label"
-                >${this._config.icon_show_weekday ? U(this.hass, "editor_show_month") : U(this.hass, "editor_show_weekday")}</span
+                >${this._config.icon_show_weekday ? H(this.hass, "editor_show_month") : H(this.hass, "editor_show_weekday")}</span
               >
               <ha-switch
                 .checked=${this._config.show_weekday ?? !1}
                 @change=${(e) => this._toggleBooleanConfig(e, "show_weekday")}
               ></ha-switch>
             </div>
-            ${this._config.show_weekday ? k`
+            ${this._config.show_weekday ? O`
                   <div class="settings-row">
                     <span
                       class="label"
                       style="color: var(--secondary-text-color);"
-                      >${this._config.icon_show_weekday ? U(this.hass, "editor_show_month_long") : U(this.hass, "editor_show_weekday_long")}</span
+                      >${this._config.icon_show_weekday ? H(this.hass, "editor_show_month_long") : H(this.hass, "editor_show_weekday_long")}</span
                     >
                     <ha-switch
                       .checked=${this._config.show_weekday_long ?? !1}
@@ -2405,11 +2454,11 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
         </h4>
         <div class="entities-list">
           ${(() => {
-				let e = this._getCalendarEntities(), t = this._showAllCalendars ? e : e.slice(0, 3), n = e.length > 3;
-				return k`
+				let e = this._getCalendarEntities(), t = this._showAllCalendars ? e : e.slice(0, 3), r = e.length > 3;
+				return O`
               ${t.map((e) => {
-					let t = !a.includes(e.entity_id), n = this._config.calendar_colors?.[e.entity_id] || "", r = !!((e.attributes.supported_features ?? 0) & 7);
-					return k`
+					let t = !n.includes(e.entity_id), r = this._config.calendar_colors?.[e.entity_id] || "", i = !!((e.attributes.supported_features ?? 0) & 7);
+					return O`
                   <div class="entity-row ${t ? "" : "disabled"}">
                     <div class="entity-row-top">
                       <div
@@ -2436,11 +2485,11 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
                     </div>
                     <div class="settings-row">
                       <span class="label"
-                        >${U(this.hass, "editor_read_only")}</span
+                        >${H(this.hass, "editor_read_only")}</span
                       >
                       <ha-switch
-                        .checked=${!r || (this._config.read_only_calendars ?? []).includes(e.entity_id)}
-                        .disabled=${!r}
+                        .checked=${!i || (this._config.read_only_calendars ?? []).includes(e.entity_id)}
+                        .disabled=${!i}
                         @change=${(t) => this._toggleListEntry(t, "read_only_calendars", e.entity_id)}
                       ></ha-switch>
                     </div>
@@ -2448,7 +2497,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
                       <ha-selector
                         .hass=${this.hass}
                         .selector=${{ ui_color: {} }}
-                        .value=${n}
+                        .value=${r}
                         .label=${this.hass?.localize("ui.panel.lovelace.editor.card.tile.color") || "Color"}
                         @value-changed=${(t) => this._mapValueChanged(t, "calendar_colors", e.entity_id)}
                       ></ha-selector>
@@ -2456,21 +2505,21 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
                         .hass=${this.hass}
                         .selector=${{ ui_color: {} }}
                         .value=${this._config.calendar_background_colors?.[e.entity_id] || ""}
-                        .label=${U(this.hass, "editor_background_color")}
+                        .label=${H(this.hass, "editor_background_color")}
                         @value-changed=${(t) => this._mapValueChanged(t, "calendar_background_colors", e.entity_id)}
                       ></ha-selector>
                     </div>
                   </div>
                 `;
 				})}
-              ${n ? k`
+              ${r ? O`
                     <div class="show-more-row">
                       <ha-button
                         @click=${() => {
 					this._showAllCalendars = !this._showAllCalendars;
 				}}
                       >
-                        ${this._showAllCalendars ? U(this.hass, "editor_show_less") : U(this.hass, "editor_show_more")}
+                        ${this._showAllCalendars ? H(this.hass, "editor_show_less") : H(this.hass, "editor_show_more")}
                       </ha-button>
                     </div>
                   ` : ""}
@@ -2484,7 +2533,7 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
 			return this.hass ? Object.keys(this.hass.states).filter((e) => e.startsWith("calendar.")).map((e) => this.hass?.states[e]) : [];
 		}
 		_setConfig(e) {
-			this._config = e, H(this, "config-changed", { config: this._config });
+			this._config = e, V(this, "config-changed", { config: this._config });
 		}
 		_toggleListEntry(e, t, n) {
 			e.stopPropagation();
@@ -2634,33 +2683,38 @@ var zt = t((() => {})), Bt = /* @__PURE__ */ n({ CalendarCardPlusPopup: () => Z 
       }
     `;
 		}
-	}, X([B({ attribute: !1 })], Q.prototype, "hass", void 0), X([V()], Q.prototype, "_config", void 0), X([V()], Q.prototype, "_showAllCalendars", void 0), Q = X([z("calendar-card-plus-editor")], Q);
+	}, X([z({ attribute: !1 })], Q.prototype, "hass", void 0), X([B()], Q.prototype, "_config", void 0), X([B()], Q.prototype, "_showAllCalendars", void 0), Q = X([R("calendar-card-plus-editor")], Q);
 }));
-R(), Ze(), Qe(), Y(), $e(), st(), Rt(), Vt(), zt();
-var Wt = 3e5, $ = class extends L {
+L(), Qe(), $e(), At(), et(), st(), Vt(), Wt(), Ht();
+var qt = 3e5, $ = class extends I {
 	constructor(...e) {
-		super(...e), this._events = void 0, this._lastFetch = 0, this._showAll = () => {
+		super(...e), this._events = void 0, this._lastFetch = 0, this._hidden = !1, this.preview = !1, this._showAll = () => {
 			this._showPopup({
 				mode: "detail",
-				title: U(this.hass, "popup_upcoming_events"),
+				title: H(this.hass, "popup_upcoming_events"),
 				events: this._events
 			});
 		}, this._openEvent = (e) => {
 			Et(this.hass, this.config, e) ? this._showPopup({
 				mode: "edit-event",
-				formState: jt(e)
-			}) : H(this, "hass-more-info", { entityId: e.entity_id });
+				formState: Mt(e)
+			}) : V(this, "hass-more-info", { entityId: e.entity_id });
 		}, this._openAddEventPopup = () => {
 			this._showPopup({
 				mode: "add-event",
-				formState: At(this.hass, this.config)
+				formState: jt(this.hass, this.config)
 			});
 		}, this._onEventSaved = () => {
 			this._events = void 0, this._fetchEvents();
 		};
 	}
+	updated(e) {
+		super.updated(e);
+		let t = this._hidden && !this.preview;
+		t !== this.hidden && (this.hidden = t, V(this, "card-visibility-changed", { value: !t }));
+	}
 	willUpdate(e) {
-		super.willUpdate(e), this.hass && this.config && (e.has("config") || Date.now() - this._lastFetch > Wt) && this._fetchEvents();
+		super.willUpdate(e), this.hass && this.config && (e.has("config") || Date.now() - this._lastFetch > qt) && this._fetchEvents();
 	}
 	setConfig(e) {
 		if (!e) throw Error("Invalid configuration");
@@ -2673,13 +2727,15 @@ var Wt = 3e5, $ = class extends L {
 			let n = 1440;
 			this.config.days !== void 0 || this.config.hours !== void 0 || this.config.minutes !== void 0 ? n = (this.config.days || 0) * 1440 + (this.config.hours || 0) * 60 + (this.config.minutes || 0) : this.config.max_minutes_until_start !== void 0 && (n = this.config.max_minutes_until_start), t = new Date(e.getTime() + n * 6e4);
 		} else t = new Date(e), t.setHours(23, 59, 59, 999);
-		let n = ct(this.hass, this.config);
-		if (n.length === 0) {
-			this._events = [];
+		let n = this.config, r;
+		n.hide_if_no_events && (n.hide_days || n.hide_hours || n.hide_minutes ? r = new Date(e.getTime() + ((n.hide_days || 0) * 1440 + (n.hide_hours || 0) * 60 + (n.hide_minutes || 0)) * 6e4) : (r = new Date(e), r.setHours(23, 59, 59, 999)));
+		let i = ct(this.hass, this.config);
+		if (i.length === 0) {
+			this._events = [], this._hidden = !!r;
 			return;
 		}
-		let r = await a(this.hass, e, t, n);
-		this.config.show_empty_days && (r = r.concat(this._emptyDays(r, e, t))), this._events = r.sort((e, t) => J(e).getTime() - J(t).getTime());
+		let o = r && r > t ? r : t, s = await a(this.hass, e, o, i);
+		this._hidden = !!r && !s.some((e) => J(e) <= r), s = s.filter((e) => J(e) <= t), this.config.show_empty_days && (s = s.concat(this._emptyDays(s, e, t))), this._events = s.sort((e, t) => J(e).getTime() - J(t).getTime());
 	}
 	_emptyDays(e, t, n) {
 		let r = new Set(e.map((e) => K(wt(e)))), i = [], a = new Date(t);
@@ -2697,13 +2753,13 @@ var Wt = 3e5, $ = class extends L {
 		return i;
 	}
 	render() {
-		if (!this.config || !this.hass) return k``;
-		let e = this.config.show_add_event && It(this.hass, this.config).length > 0;
-		return k`
+		if (!this.config || !this.hass) return O``;
+		let e = this.config.show_add_event && zt(this.hass, this.config).length > 0;
+		return O`
       <ha-card
         class=${!this.config.unfold_events || this.config.show_divider ? "plain" : ""}
       >
-        ${e ? k`
+        ${e ? O`
               <div class="add-event-btn" @click=${this._openAddEventPopup}>
                 <ha-icon-button .path=${i}></ha-icon-button>
               </div>
@@ -2713,9 +2769,9 @@ var Wt = 3e5, $ = class extends L {
     `;
 	}
 	_showPopup(e) {
-		H(this, "show-dialog", {
+		V(this, "show-dialog", {
 			dialogTag: "calendar-card-plus-popup",
-			dialogImport: () => Promise.resolve().then(() => (Vt(), Bt)),
+			dialogImport: () => Promise.resolve().then(() => (Wt(), Ut)),
 			dialogParams: {
 				...e,
 				hass: this.hass,
@@ -2729,6 +2785,9 @@ var Wt = 3e5, $ = class extends L {
 		return [Tt, f`
       :host {
         display: block;
+      }
+      :host([hidden]) {
+        display: none;
       }
       ha-card {
         height: 100%;
@@ -2849,7 +2908,7 @@ var Wt = 3e5, $ = class extends L {
 		return 1;
 	}
 	static async getConfigElement() {
-		return await Promise.resolve().then(() => (Ut(), Ht)), document.createElement("calendar-card-plus-editor");
+		return await Promise.resolve().then(() => (Kt(), Gt)), document.createElement("calendar-card-plus-editor");
 	}
 	static getStubConfig(e) {
 		return {
@@ -2859,7 +2918,7 @@ var Wt = 3e5, $ = class extends L {
 		};
 	}
 };
-X([B({ attribute: !1 })], $.prototype, "hass", void 0), X([V()], $.prototype, "config", void 0), X([V()], $.prototype, "_events", void 0), $ = X([z("calendar-card-plus")], $), console.info(`%c CALENDAR-CARD-PLUS %c v${r} `, "color: steelblue; background: black; font-weight: bold;", "color: white ; background: dimgray; font-weight: bold;"), window.customCards = window.customCards || [], window.customCards.push({
+X([z({ attribute: !1 })], $.prototype, "hass", void 0), X([B()], $.prototype, "config", void 0), X([B()], $.prototype, "_events", void 0), X([B()], $.prototype, "_hidden", void 0), X([z({ type: Boolean })], $.prototype, "preview", void 0), $ = X([R("calendar-card-plus")], $), console.info(`%c CALENDAR-CARD-PLUS %c v${r} `, "color: steelblue; background: black; font-weight: bold;", "color: white ; background: dimgray; font-weight: bold;"), window.customCards = window.customCards || [], window.customCards.push({
 	type: "calendar-card-plus",
 	name: "Dynamic Calendar Card Plus",
 	preview: !0,
